@@ -1,0 +1,127 @@
+body {
+  margin: 0;
+  padding: 20;
+  font-family: sans-serif;
+  background-color: #f0f0f0;
+}
+.card.known-number {
+  color: white;
+}
+
+.card.unknown-number {
+  color: black;
+}
+
+.card.known-color {
+  border-left: 3px solid black;
+  border-right: 3px solid black;
+  border-top: 3px solid black;
+  border-bottom: 3px solid black;
+}
+
+.card.unknown-color {
+  border-left: 5px dashed black;
+  border-right: 5px dashed black;
+  border-top: 5px dashed black;
+  border-bottom: 5px dashed black;
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+}
+
+.info {
+  text-align: right;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.player, .discard, .center {
+  background: #ffffff;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.player .hand {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+
+.discard {
+  background: #ffdede;
+  border: 2px solid #f88;
+}
+.discard strong {
+      display: block;
+      margin-bottom: 10px;
+      text-align: center;
+      font-size: 18px;
+}
+.discard-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 5px;
+}
+.discard-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.firework-area {
+      background: #fffbe0;
+      border: 2px solid #ffcc00;
+      padding: 10px;
+      border-radius: 8px;
+}
+.firework-area strong {
+      display: block;
+      margin-bottom: 10px;
+      text-align: center;
+      font-size: 18px;
+}
+.fireworks-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.fireworks-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card {
+  width: 50px;
+  height: 70px;
+  background: white;
+  border: 2px solid #444;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: #fff;
+}
+
+.card.unknown {
+  background: #ddd;
+  color: #999;
+}
+
+.card.RED    { background-color: crimson; }
+.card.GREEN  { background-color: seagreen; }
+.card.BLUE   { background-color: royalblue; }
+.card.YELLOW { background-color: goldenrod; }
+.card.WHITE  { background-color: lightgray; color: #000; }

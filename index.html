@@ -1,93 +1,34 @@
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>刮一刮</title>
-        <style>
-            p{font-size: 30px;line-height: 60px;}
-            #mycanvas{position: absolute;top: 0;left: 0;}
-        </style>
-        <!--<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>-->
-    </head>
-    <body>
-        <p>哇，你看到我了吗？</p>
-        <p>哇，你看到我了吗？</p>
-        <p>哇，你看到我了吗？</p>
-        <p>哇，你看到我了吗？</p>
-        <p>哇，你看到我了吗？</p>
-        <p>哇，你看到我了吗？</p>
-        <canvas id="mycanvas"></canvas>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Hanabi</title>
+    <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div class="table">
+    <div class="info" id="info-area">提示：8｜命數：3</div>
 
-        <script>
-            //可视区域的宽高
-        var width = document.documentElement.clientWidth
-        var height = document.documentElement.clientHeight;
-        console.log(width,height);
-        var boxTop = 0;//canvas的top值
-        var boxLeft = 0;//canvas的left值
-        console.log(boxTop)
-        var device = /android|iphone|ipad|ipod|webos|iemobile|opear mini|linux/i.test(navigator.userAgent.toLowerCase());
-        var startEvtName = device ? "touchstart" : "mousedown";
-        var moveEvtName = device ? "touchmove" : "mousemove";
-        var endEvtName = device ? "touchend" : "mouseup";
+	<div class="player" id="player-left"></div>
+    <div class="player" id="player-top"></div>
+	<div class="player" id="player-right"></div>
 
-        var canvas=document.getElementById("mycanvas");
-        //定义画布的大小
-        canvas.height = height;
-        canvas.width = width;
-        can=canvas.getContext("2d");
+    <div class="firework-area">
+        <strong>出牌堆（煙火）</strong>
+        <div class="fireworks-group" id="fireworks"></div>
+    </div>
 
-        //进行画布的图片
-//      var oImg = new Image();
-//      oImg.src = "img/p702.png";
-//      oImg.onload = function () {
-//          can.beginPath();
-//          can.drawImage(oImg, 0, 0, width, height);
-//          can.closePath();
-//      }
-            can.fillStyle="#000";
-            can.fillRect(0,0,width,height);
-         /* 根据手指移动画线，使之变透明*/
-        function draw(event) {
-            var x = device ? event.touches[0].clientX : event.clientX;
-            var y = device ? event.touches[0].clientY : event.clientY;
-            console.log(x,y);
+    <div class="discard" id="discard-area">
+        <strong>棄牌區</strong>
+        <div class="discard-group" id="discard-pile"></div>
+    </div>
 
-            can.beginPath();
-            can.globalCompositeOperation = "destination-out";
-            can.arc(x-boxLeft, y-boxTop, 40, 0, Math.PI * 2, false);
-            can.fill();
-            can.closePath();
-        }
-        /* 增加触摸监听*/
-        //true  捕获 false  冒泡
-        canvas.addEventListener(startEvtName, function () {
-            console.log("touch1");
+    <div class="player" id="player-bottom"></div>
+</div>
 
-            canvas.addEventListener(moveEvtName, draw, false);
-        }, false);
-
-        canvas.addEventListener(endEvtName, function () {
-            console.log("touch2");
-            canvas.removeEventListener(moveEvtName, draw, false);
-        }, false);
-        document.addEventListener(endEvtName, function () {
-            /* 获取imageData对象*/
-            var imageDate = can.getImageData(0, 0, canvas.width, canvas.height);
-            /* */
-            var allPX = imageDate.width * imageDate.height;
-
-            var iNum = 0;//记录刮开的像素点个数
-
-            for (var i = 0; i < allPX; i++) {
-                if (imageDate.data[i * 4 + 3] == 0) {
-                    iNum++;
-                }
-            }
-            if (iNum >= allPX * 1 / 3 ) {
-                canvas.style.display = "none";
-                alert("擦干净了");
-            }
-        }, false);
-        </script>
-    </body>
+<script src="data.js"></script>
+<script src="render.js"></script>
+<script src="main.js"></script>
+</body>
 </html>
