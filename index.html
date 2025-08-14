@@ -2,30 +2,77 @@
 <head>
   <meta charset="UTF-8" />
   <title>API 表格範例</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    table, th, td {
-      border: 1px solid black;
+    body {
+      background: #f7f7f7;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    h2 {
+      margin-top: 32px;
+      color: #333;
+      letter-spacing: 2px;
+    }
+    .table-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 24px 0;
+      width: 100%;
+    }
+    table {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
       border-collapse: collapse;
+      width: 95vw;
+      max-width: 400px;
+      margin: 0 auto;
+      overflow: hidden;
     }
     th, td {
-      padding: 8px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+    th {
+      background: #4f8cff;
+      color: #fff;
+      font-weight: 600;
+      border: none;
+    }
+    td {
+      border-top: 1px solid #eaeaea;
+      color: #444;
+    }
+    @media (max-width: 600px) {
+      table {
+        font-size: 15px;
+        max-width: 98vw;
+      }
+      th, td {
+        padding: 10px 4px;
+      }
     }
   </style>
 </head>
 <body>
   <h2>資料表格</h2>
-  <table id="dataTable">
-    <thead>
-      <tr>
-        <th>in</th>
-        <th>out</th>
-        <th>顏色</th>
-      </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
-
+  <div class="table-container">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>in</th>
+          <th>out</th>
+          <th>顏色</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
   <script src="main.js"></script>
 </body>
 </html>

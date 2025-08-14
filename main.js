@@ -7,15 +7,16 @@ fetch('https://voter.dev.box70000.com/api/admin/voter/ofDocument/68/fieldEdit', 
   }
 })
   .then(response => response.json())
-  .then(data => {
+  .then(result => {
+    const data = JSON.parse(result.data);
     const tbody = document.querySelector('#dataTable tbody');
     tbody.innerHTML = '';
-    Object.values(data).forEach(item => {
+    data.forEach(item => {
       const row = document.createElement('tr');
       row.innerHTML = `
         <td>${item.in}</td>
         <td>${item.out}</td>
-        <td>${item.resource}</td>
+        <td>${item.color}</td>
       `;
       tbody.appendChild(row);
     });
