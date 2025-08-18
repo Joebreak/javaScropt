@@ -2,7 +2,7 @@
 fetch('https://voter.dev.box70000.com/api/admin/voter/ofDocument/68/fieldEdit', {
   method: 'GET',
   headers: {
-    'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5IiwiZXhwIjoxNzU1MDUyNjc3fQ.r0yqu6xFUUtTliIVSyJBwWXpJj846CEqlN1eY3eiO-Q',
+    'Authorization': 'Bearer ',
     'Content-Type': 'application/json'
   }
 })
