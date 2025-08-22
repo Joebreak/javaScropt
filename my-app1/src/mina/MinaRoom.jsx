@@ -18,19 +18,55 @@ export default function MinaRoom() {
       ...prev,
     }));
   }, [incomingData, navigate]);
+
+  const rows = 10;
+  const cols = 8;
+  const grid = Array.from({ length: rows }, () =>
+    Array.from({ length: cols }, () => null)
+  );
+
   return (
-    <div style={{ padding: 20, textAlign: "center", background: "#f7f7f7", minHeight: "100vh" }}>
-      <h2 style={{ marginTop: 32, color: "#333", letterSpacing: 2 }}>mina(房間號碼 {room})</h2>
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", margin: "24px 0", width: "100%" }}>
-        <table style={{
-          background: "#fff",
-          borderRadius: 12,
-          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-          borderCollapse: "collapse",
-          width: "95vw",
-          maxWidth: 400,
-          overflow: "hidden"
-        }}>
+    <div style={{ padding: 20, minHeight: "100vh", background: "#f7f7f7" }}>
+      {/* 上方 10x8 格子 */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows: `repeat(${rows}, 40px)`,
+          gridTemplateColumns: `repeat(${cols}, 40px)`,
+          gap: 4,
+          justifyContent: "center",
+          marginBottom: 40,
+        }}
+      >
+        {grid.map((_, idx) => (
+          <div
+            key={idx}
+            style={{
+              border: "1px solid #ccc",
+              background: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+            }}
+          ></div>
+        ))}
+      </div>
+      <h2 style={{ marginTop: 0, marginBottom: 16, color: "#333", textAlign: "center", letterSpacing: 2 }}>
+        mina (房間號碼 {room})
+      </h2>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+        <table
+          style={{
+            background: "#fff",
+            borderRadius: 12,
+            boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+            borderCollapse: "collapse",
+            width: "95vw",
+            maxWidth: 400,
+            overflow: "hidden",
+          }}
+        >
           <thead>
             <tr style={{ background: "#4f8cff", color: "#fff" }}>
               <th style={{ padding: "12px 8px" }}>in</th>
@@ -39,27 +75,30 @@ export default function MinaRoom() {
             </tr>
           </thead>
           <tbody>
-            {Array.isArray(data.list) && data.list.map((item, index) => (
-              <tr key={index}>
-                <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", color: "#444" }}>{item.in}</td>
-                <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", color: "#444" }}>{item.out}</td>
-                <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", color: "#444" }}>{item.color}</td>
-              </tr>
-            ))}
+            {Array.isArray(data.list) &&
+              data.list.map((item, index) => (
+                <tr key={index}>
+                  <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", color: "#444" }}>{item.in}</td>
+                  <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", color: "#444" }}>{item.out}</td>
+                  <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", color: "#444" }}>{item.color}</td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
+
       <button
         onClick={() => navigate("/")}
         style={{
-          marginTop: 20,
+          display: "block",
+          margin: "0 auto",
           padding: "10px 32px",
           fontSize: 16,
           background: "#ff7043",
           color: "#fff",
           border: "none",
           borderRadius: 6,
-          cursor: "pointer"
+          cursor: "pointer",
         }}
       >
         返回首頁
