@@ -13,49 +13,40 @@ function App() {
   };
   const handleLogin = async () => {
     if (!room.trim() || !num.trim()) {
-      alert("請輸入房間號碼和數字");
+      alert("請輸入房間號碼和順位編號");
       return;
     }
 
     try {
-      const url = "https://vlntr-api.dev.box70000.com";
-      // 1️⃣ 呼叫 API
-      const resA = await fetch(url + "/vlntr/api/backend/auth", {
+      const resA = await fetch("https://apis.neweggbox.com/meta/api/v5/file/get_description", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "neweggbox-sso-token": "001001de8ec4de22244d599cbeeb2dce0490aa"
         },
         body: JSON.stringify({
-          userId: 'joe',
-          password: 'joe',
+          path: 'ghost/share/note.txt',
         }),
       });
       if (!resA.ok) {
-        goToRoom(room, null);
+        goToRoom(room);
         return
       }
-      const raw = resA.headers.get("Set-Cookie");
-      const token = raw?.split(";")[0]?.trim() ?? null;
-
-      const resB = await fetch(url + "/vlntr/api/backend/vlntr_member/list/A26?year=2025", {
-        method: "GET",
-        headers: { "Cookie": token }
-      });
-      // 2️⃣ 解析回傳
-      const data = await resB.json();
-      console.log(data.data.group1Name);
-
-      // 3️⃣ 成功才跳轉，並把 API 資料帶過去
-      navigate("/room", {
-        state: {
-          room: room.trim(),
-          num: num.trim(),
-          apiResult: data, // 這裡也可以帶後端回應
-        },
-      });
+      const data = await resA.json();
+      const body = JSON.parse(data.description);
+      const matchedData = Array.isArray(body) ? body.find(item => item.room === room.trim()) : null;
+      if (!matchedData) {
+        goToRoom(room, num);
+        return;
+      }
+      if (matchedData && matchedData.type === "mina") {
+        navigate("/mina", { state: { data: matchedData, room, num }, });
+        return
+      }
+      goToRoom(room, num);
     } catch (error) {
       console.error("呼叫 API 失敗：", error);
-      goToRoom(room, null);
+      goToRoom(room, num);
     }
   };
   return (
@@ -80,7 +71,7 @@ function App() {
         }}
       >
         <h2 style={{ color: "#1976d2", marginBottom: "24px" }}>
-          輸入房間號碼與數字
+          輸入房間號碼與順位編號
         </h2>
         <input
           type="text"
@@ -98,7 +89,7 @@ function App() {
         />
         <input
           type="text"
-          placeholder="數字"
+          placeholder="順位編號"
           value={num}
           onChange={(e) => setNum(e.target.value)}
           style={{

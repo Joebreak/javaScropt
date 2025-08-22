@@ -7,7 +7,6 @@ function Room() {
 
   const { room, num } = location.state || {};
 
-  // 沒有參數就返回首頁
   if (!room || !num) {
     navigate("/");
     return null;
@@ -24,10 +23,14 @@ function Room() {
         background: "#e8f5e9",
       }}
     >
-      <h1 style={{ fontSize: "24px", marginBottom: "20px" }}>
-        房間號碼：{room}
-      </h1>
-      <h2>數字參數：{num}</h2>
+      <>
+        <h1 style={{ fontSize: "28px", marginBottom: "16px", color: "#ff7043" }}>
+          空房間(房間號碼：{room})
+        </h1>
+        <p style={{ fontSize: "18px", color: "#555" }}>
+          目前沒有任何資料，請確認房間號碼或稍後再試。
+        </p>
+      </>
       <button
         onClick={() => navigate("/")}
         style={{
