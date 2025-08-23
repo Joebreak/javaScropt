@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import Draggable from "react-draggable";
 
 export default function MinaRoom() {
   const location = useLocation();
@@ -16,10 +17,28 @@ export default function MinaRoom() {
     }
     setData(prev => ({
       ...prev,
+      list: [
+        { in: "A1", out: "B1", color: "red" },
+        { in: "A2", out: "B2", color: "green" },
+        { in: "A3", out: "B3", color: "blue" },
+        { in: "A4", out: "B4", color: "yellow" },
+      ],
     }));
   }, [incomingData, navigate]);
 
+  const nodeRef = useRef(null);
 
+  const [position, setPosition] = useState(() => {
+    const saved = localStorage.getItem("triangle-pos");
+    return saved ? JSON.parse(saved) : { x: 0, y: 0 };
+  });
+
+  // 拖曳結束時存入 localStorage
+  const handleStop = (e, data) => {
+    const newPos = { x: data.x, y: data.y };
+    setPosition(newPos);
+    localStorage.setItem("triangle-pos", JSON.stringify(newPos));
+  };
   const rows = 8;
   const cols = 10;
   const grid = Array.from({ length: rows }, () =>
@@ -52,8 +71,24 @@ export default function MinaRoom() {
             ></div>
           ))
         )}
+        <Draggable
+          nodeRef={nodeRef}
+          position={position}
+          onStop={handleStop}
+        >
+          <div
+            ref={nodeRef}
+            style={{
+              position: "absolute",
+              width: 60,
+              height: 60,
+              background: "red",
+              clipPath: "polygon(0 0, 100% 0, 0 100%)",
+              cursor: "grab",
+            }}
+          />
+        </Draggable>
       </div>
-
       <h2
         style={{
           marginTop: 0,

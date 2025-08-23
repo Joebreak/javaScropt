@@ -16,7 +16,6 @@ function App() {
       alert("請輸入房間號碼");
       return;
     }
-
     try {
       const resA = await fetch("https://apis.neweggbox.com/meta/api/v5/file/get_description", {
         method: "POST",
