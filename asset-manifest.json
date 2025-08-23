@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/javaScropt/static/js/main.98fd2f1d.js",
+    "main.js": "/javaScropt/static/js/main.00a0dc16.js",
     "index.html": "/javaScropt/index.html",
-    "main.98fd2f1d.js.map": "/javaScropt/static/js/main.98fd2f1d.js.map"
+    "main.00a0dc16.js.map": "/javaScropt/static/js/main.00a0dc16.js.map"
   },
   "entrypoints": [
-    "static/js/main.98fd2f1d.js"
+    "static/js/main.00a0dc16.js"
   ]
 }
