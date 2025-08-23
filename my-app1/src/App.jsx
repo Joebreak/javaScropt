@@ -12,8 +12,8 @@ function App() {
     });
   };
   const handleLogin = async () => {
-    if (!room.trim() || !num.trim()) {
-      alert("請輸入房間號碼和順位編號");
+    if (!room.trim()) {
+      alert("請輸入房間號碼");
       return;
     }
 
@@ -74,7 +74,7 @@ function App() {
           輸入房間號碼與順位編號
         </h2>
         <input
-          type="text"
+          type="number"
           placeholder="房間號碼"
           value={room}
           onChange={(e) => setRoom(e.target.value)}
@@ -88,7 +88,7 @@ function App() {
           }}
         />
         <input
-          type="text"
+          type="number"
           placeholder="順位編號"
           value={num}
           onChange={(e) => setNum(e.target.value)}
