@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 function Room() {
@@ -7,10 +7,13 @@ function Room() {
 
   const { room, num } = location.state || {};
 
-  if (!room || !num) {
-    navigate("/");
-    return null;
-  }
+  useEffect(() => {
+    if (!room) {
+      navigate("/");
+    }
+  }, [room, num, navigate]);
+
+  if (!room) return null;
 
   return (
     <div
