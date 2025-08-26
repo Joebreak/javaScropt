@@ -1,0 +1,96 @@
+.container {
+  padding: 20px;
+  min-height: 100vh;
+  background: #f7f7f7;
+}
+
+.loading {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.gridWrapper {
+  display: grid;
+  gap: 4px;
+  justify-content: center;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.gridCell {
+  border: 1px solid #ccc;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.draggableTriangle {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: red;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+  cursor: grab;
+}
+
+.title {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #333;
+  text-align: center;
+  letter-spacing: 2px;
+}
+
+.tableWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  width: 95vw;
+  max-width: 400px;
+  overflow: hidden;
+}
+
+.tableScroll {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.stickyHeader {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #4f8cff;
+  color: #fff;
+  padding: 12px 8px;
+}
+
+.tdCell {
+  padding: 12px 8px;
+  border-top: 1px solid #eaeaea;
+  color: #444;
+}
+
+.button {
+  display: block;
+  margin: 0 auto;
+  padding: 10px 32px;
+  font-size: 16px;
+  background: #ff7043;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}

@@ -3,50 +3,13 @@ import { useNavigate } from "react-router-dom";
 
 function App() {
   const [room, setRoom] = useState("");
-  const [num, setNum] = useState("");
   const navigate = useNavigate();
-
-  const goToRoom = (room, num) => {
-    navigate("/room", {
-      state: { room, num }
-    });
-  };
   const handleLogin = async () => {
     if (!room.trim()) {
       alert("請輸入房間號碼");
       return;
     }
-    try {
-      const resA = await fetch("https://apis.neweggbox.com/meta/api/v5/file/get_description", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "neweggbox-sso-token": "001001de8ec4de22244d599cbeeb2dce0490aa"
-        },
-        body: JSON.stringify({
-          path: 'ghost/share/note.txt',
-        }),
-      });
-      if (!resA.ok) {
-        goToRoom(room);
-        return
-      }
-      const data = await resA.json();
-      const body = JSON.parse(data.description);
-      const matchedData = Array.isArray(body) ? body.find(item => item.room === room.trim()) : null;
-      if (!matchedData) {
-        goToRoom(room, num);
-        return;
-      }
-      if (matchedData && matchedData.type === "mina") {
-        navigate("/mina", { state: { data: matchedData, room, num }, });
-        return
-      }
-      goToRoom(room, num);
-    } catch (error) {
-      console.error("呼叫 API 失敗：", error);
-      goToRoom(room, num);
-    }
+      navigate("/mina", { state: { room }, });
   };
   return (
     <div
@@ -70,7 +33,7 @@ function App() {
         }}
       >
         <h2 style={{ color: "#1976d2", marginBottom: "24px" }}>
-          輸入房間號碼與順位編號
+          輸入房間號碼
         </h2>
         <input
           type="number"
@@ -83,20 +46,6 @@ function App() {
             border: "1px solid #ccc",
             borderRadius: "6px",
             marginBottom: "16px",
-            width: "220px",
-          }}
-        />
-        <input
-          type="number"
-          placeholder="順位編號"
-          value={num}
-          onChange={(e) => setNum(e.target.value)}
-          style={{
-            padding: "10px",
-            fontSize: "16px",
-            border: "1px solid #ccc",
-            borderRadius: "6px",
-            marginBottom: "24px",
             width: "220px",
           }}
         />
