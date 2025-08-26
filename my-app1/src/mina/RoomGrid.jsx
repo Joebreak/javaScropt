@@ -1,155 +1,204 @@
 import React, { useState, useRef } from "react";
 import Draggable from "react-draggable";
 
-// 圖形設定
-const SHAPE_CONFIG = {
-  triangle: { size: [60, 60], color: "red", clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)" },
-  rightTriangle: { size: [60, 60], color: "yellow", clipPath: "polygon(0 0, 100% 0, 0 100%)" },
-  parallelogram: { size: [90, 60], color: "blue", clipPath: "polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%)" },
+const rows = 8;
+const cols = 10;
+
+// 格子初始化
+const initGrid = Array.from({ length: rows }, () =>
+    Array.from({ length: cols }, () => null)
+);
+
+const shapeStyles = {
+    triangle: {
+        width: 60,
+        height: 60,
+        background: "red",
+        clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
+    },
+    rightTriangle: {
+        width: 60,
+        height: 60,
+        background: "yellow",
+        clipPath: "polygon(0 0, 100% 0, 0 100%)",
+    },
+    parallelogram: {
+        width: 90,
+        height: 60,
+        background: "white",
+        clipPath: "polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%)",
+    },
 };
 
-function RoomGrid({ rows = 8, cols = 10 }) {
-  // 初始格子
-  const grid = Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
+function MinaRoom() {
+    const getInitialShapes = () => {
+        const shapes = {};
+        Object.keys(shapeStyles).forEach((type) => {
+            const saved = localStorage.getItem(type);
+            shapes[type] = saved ? JSON.parse(saved) : null;
+        });
+        return shapes;
+    };
+    const [shapes, setShapes] = useState(getInitialShapes);
 
-  // 圖形位置與旋轉
-  const [shapes, setShapes] = useState({
-    triangle: loadPos("triangle-pos"),
-    rightTriangle: loadPos("right-triangle-pos"),
-    parallelogram: loadPos("para-pos"),
-  });
+    const refs = {
+        triangle: useRef(null),
+        rightTriangle: useRef(null),
+        parallelogram: useRef(null),
+    };
 
-  // Ref 預先創建好
-  const triangleRef = useRef(null);
-  const rightTriangleRef = useRef(null);
-  const parallelogramRef = useRef(null);
-  const shapeRefs = { triangle: triangleRef, rightTriangle: rightTriangleRef, parallelogram: parallelogramRef };
+    // 新增圖形
+    const addShape = (type) => {
+        const initPos = { x: 0, y: 0, rotate: 0 };
+        setShapes((prev) => ({ ...prev, [type]: initPos }));
+        localStorage.setItem(type, JSON.stringify(initPos));
+    };
 
-  function loadPos(key) {
-    const saved = localStorage.getItem(key);
-    return saved ? JSON.parse(saved) : null;
-  }
+    const removeShape = (type) => {
+        setShapes((prev) => ({ ...prev, [type]: null }));
+        localStorage.removeItem(type);
+    };
+    const deleteArea = { x: window.innerWidth - 100, y: window.innerHeight - 100, width: 80, height: 80 };
 
-  const handleStop = (type, e, data) => {
-    const pos = { x: data.x, y: data.y, rotation: shapes[type]?.rotation || 0 };
-    setShapes((prev) => ({ ...prev, [type]: pos }));
-    localStorage.setItem(keyToStorage(type), JSON.stringify(pos));
-  };
+    const handleStop = (type, e, data) => {
+        const { x, y } = data;
+        if (
+            x + shapeStyles[type].width > deleteArea.x &&
+            x < deleteArea.x + deleteArea.width &&
+            y + shapeStyles[type].height > deleteArea.y &&
+            y < deleteArea.y + deleteArea.height
+        ) {
+            removeShape(type);
+            return;
+        }
 
-  const rotateShape = (type) => {
-    setShapes((prev) => {
-      const s = prev[type];
-      if (!s) return prev;
-      const newRot = ((s.rotation || 0) + 90) % 360;
-      const newShape = { ...s, rotation: newRot };
-      localStorage.setItem(keyToStorage(type), JSON.stringify(newShape));
-      return { ...prev, [type]: newShape };
-    });
-  };
+        setShapes(prev => {
+            const updated = { ...prev, [type]: { ...prev[type], x, y } };
+            localStorage.setItem(type, JSON.stringify(updated[type]));
+            return updated;
+        });
+    };
 
-  const keyToStorage = (type) => {
-    if (type === "triangle") return "triangle-pos";
-    if (type === "rightTriangle") return "right-triangle-pos";
-    if (type === "parallelogram") return "para-pos";
-  };
+    const rotateShape = (type) => {
+        setShapes((prev) => {
+            const shape = prev[type];
+            if (!shape) return prev;
+            const rotated = { ...shape, rotate: (shape.rotate + 90) % 360 };
+            localStorage.setItem(type, JSON.stringify(rotated));
+            return { ...prev, [type]: rotated };
+        });
+    };
 
-  const addShape = (type) => {
-    if (!shapes[type]) {
-      const initPos = { x: 0, y: 0, rotation: 0 };
-      setShapes((prev) => ({ ...prev, [type]: initPos }));
-      localStorage.setItem(keyToStorage(type), JSON.stringify(initPos));
-    }
-  };
+    const renderShape = (type) => {
+        const shape = shapes[type];
+        if (!shape) return null;
 
-  const removeShape = (type) => {
-    setShapes((prev) => ({ ...prev, [type]: null }));
-    localStorage.removeItem(keyToStorage(type));
-  };
-
-  return (
-    <div style={{ padding: 20 }}>
-      <div style={{ marginBottom: 10, textAlign: "center" }}>
-        {Object.keys(SHAPE_CONFIG).map((type) => (
-          <React.Fragment key={type}>
-            <button onClick={() => addShape(type)} style={{ marginRight: 6 }}>新增 {type}</button>
-            <button onClick={() => removeShape(type)} style={{ marginRight: 6 }}>刪除 {type}</button>
-          </React.Fragment>
-        ))}
-      </div>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateRows: `repeat(${rows}, 30px)`,
-          gridTemplateColumns: `repeat(${cols}, 30px)`,
-          gap: 4,
-          justifyContent: "center",
-          position: "relative",
-          minHeight: 200,
-          marginBottom: 20,
-        }}
-      >
-        {grid.map((row, rowIndex) =>
-          row.map((_, colIndex) => (
-            <div
-              key={`${rowIndex}-${colIndex}`}
-              style={{
-                border: "1px solid #ccc",
-                background: "#fff",
-                width: 30,
-                height: 30,
-              }}
-            />
-          ))
-        )}
-
-        {Object.keys(SHAPE_CONFIG).map((type) => {
-          const s = shapes[type];
-          if (!s) return null;
-          const cfg = SHAPE_CONFIG[type];
-          const nodeRef = shapeRefs[type];
-
-          return (
-            <Draggable key={type} nodeRef={nodeRef} position={{ x: s.x, y: s.y }} onStop={(e, d) => handleStop(type, e, d)}>
-              <div
-                ref={nodeRef}
-                style={{
-                  position: "absolute",
-                  width: cfg.size[0],
-                  height: cfg.size[1],
-                  transform: `rotate(${s.rotation || 0}deg)`,
-                  cursor: "grab",
-                }}
-              >
-                <div style={{ width: "100%", height: "100%", background: cfg.color, clipPath: cfg.clipPath }} />
-                <button
-                  onClick={(e) => { e.stopPropagation(); rotateShape(type); }}
-                  style={{
-                    position: "absolute",
-                    top: -8,
-                    right: -8,
-                    width: 20,
-                    height: 20,
-                    borderRadius: "50%",
-                    border: "none",
-                    background: "#fff",
-                    cursor: "pointer",
-                    fontSize: 12,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-                  }}
+        return (
+            <Draggable
+                nodeRef={refs[type]}
+                position={{ x: shape.x, y: shape.y }}
+                onStop={(e, data) => handleStop(type, e, data)}
+            >
+                <div
+                    ref={refs[type]}
+                    style={{
+                        position: "absolute",
+                        ...shapeStyles[type],
+                        transform: `rotate(${shape.rotate}deg)`,
+                        cursor: "grab",
+                    }}
                 >
-                  🔄
-                </button>
-              </div>
+                    {/* 右上角旋轉按鈕 */}
+                    <div
+                        onClick={() => rotateShape(type)}
+                        style={{
+                            position: "absolute",
+                            top: -10,
+                            right: -10,
+                            width: 20,
+                            height: 20,
+                            background: "#4f8cff",
+                            color: "#fff",
+                            fontSize: 12,
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            borderRadius: "50%",
+                            cursor: "pointer",
+                            zIndex: 2,
+                        }}
+                    >
+                        ⟳
+                    </div>
+                </div>
             </Draggable>
-          );
-        })}
-      </div>
-    </div>
-  );
+        );
+    };
+
+    return (
+        <div style={{ padding: 20, minHeight: "100vh", position: "relative", background: "#f7f7f7" }}>
+            {/* 上方格子 */}
+            <div
+                style={{
+                    display: "grid",
+                    gridTemplateRows: `repeat(${rows}, 30px)`,
+                    gridTemplateColumns: `repeat(${cols}, 30px)`,
+                    gap: 4,
+                    justifyContent: "center",
+                    marginBottom: 40,
+                }}
+            >
+                {initGrid.map((row, rIdx) =>
+                    row.map((_, cIdx) => (
+                        <div
+                            key={`${rIdx}-${cIdx}`}
+                            style={{
+                                border: "1px solid #ccc",
+                                background: "#fff",
+                            }}
+                        />
+                    ))
+                )}
+            </div>
+
+            {/* 操作按鈕 */}
+            <div style={{ textAlign: "center", marginBottom: 20 }}>
+                <button onClick={() => addShape("triangle")}>新增三角形</button>
+                <button onClick={() => addShape("rightTriangle")}>新增直角三角形</button>
+                <button onClick={() => addShape("parallelogram")}>新增平行四邊形</button>
+            </div>
+
+            {/* 圖形渲染 */}
+            {renderShape("triangle")}
+            {renderShape("rightTriangle")}
+            {renderShape("parallelogram")}
+
+            {/* 固定刪除區域 */}
+            <div
+                onDrop={(e) => {
+                    e.preventDefault();
+                    const type = e.dataTransfer.getData("type");
+                    removeShape(type);
+                }}
+                onDragOver={(e) => e.preventDefault()}
+                style={{
+                    position: "relative",
+                    bottom: 20,
+                    right: 20,
+                    width: 80,
+                    height: 80,
+                    background: "transparent",
+                    border: "2px dashed red",
+                    color: "#fff",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    fontWeight: "bold",
+                    borderRadius: 8,
+                }}
+            ></div>
+        </div>
+    );
 }
 
-export default RoomGrid;
+export default MinaRoom;
