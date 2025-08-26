@@ -138,7 +138,7 @@ function MinaRoom() {
     };
 
     return (
-        <div style={{ padding: 20, minHeight: "100vh", position: "relative", background: "#f7f7f7" }}>
+        <div style={{ padding: 20, minHeight: "10vh", position: "relative", background: "#f7f7f7" }}>
             {/* 上方格子 */}
             <div
                 style={{

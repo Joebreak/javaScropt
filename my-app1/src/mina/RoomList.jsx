@@ -13,7 +13,7 @@ export default function RoomList({ data }) {
           overflow: "hidden",
         }}
       >
-        <div style={{ maxHeight: 200, overflowY: "auto" }}>
+       <div style={{ maxHeight: 200, overflowY: "auto" }}>
           <table style={{ borderCollapse: "collapse", width: "100%" }}>
             <thead>
               <tr>
@@ -25,9 +25,9 @@ export default function RoomList({ data }) {
             <tbody>
               {data.list.map((item, idx) => (
                 <tr key={idx}>
-                  <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea" }}>{item.in}</td>
-                  <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea" }}>{item.out}</td>
-                  <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea" }}>{item.color}</td>
+                  <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center" }}>{item.in}</td>
+                  <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center" }}>{item.out}</td>
+                  <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center" }}>{item.color}</td>
                 </tr>
               ))}
             </tbody>

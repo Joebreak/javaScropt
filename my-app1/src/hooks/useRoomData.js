@@ -19,7 +19,7 @@ export function useRoomData() {
             method: "GET",
             headers: {
               authorization:
-                "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.xxx",
+                "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5IiwiZXhwIjoxNzU1OTQwMTYwfQ.yKvsvZkRtAt5UQEFdQ3h8wkFh6XG0WWaftX2O95umnk",
             },
             signal: controller.signal,
           }
@@ -31,7 +31,7 @@ export function useRoomData() {
 
         let body = {};
         try {
-          body = JSON.parse(json.description ?? "{}");
+          body = JSON.parse(json.data.description ?? "{}");
         } catch {
           body = {};
         }
