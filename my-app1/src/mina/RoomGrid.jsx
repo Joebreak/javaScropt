@@ -46,8 +46,6 @@ function MinaRoom() {
         rightTriangle: useRef(null),
         parallelogram: useRef(null),
     };
-
-    // 新增圖形
     const addShape = (type) => {
         const initPos = { x: 0, y: 0, rotate: 0 };
         setShapes((prev) => ({ ...prev, [type]: initPos }));
@@ -58,22 +56,25 @@ function MinaRoom() {
         setShapes((prev) => ({ ...prev, [type]: null }));
         localStorage.removeItem(type);
     };
-    const deleteArea = { x: window.innerWidth - 100, y: window.innerHeight - 100, width: 80, height: 80 };
+    const deleteArea = { width: 80, height: 80 };
 
     const handleStop = (type, e, data) => {
         const { x, y } = data;
+        const deleteX = window.innerWidth - deleteArea.width - 20;
+        const deleteY = window.innerHeight - deleteArea.height - 20;
+
         if (
-            x + shapeStyles[type].width > deleteArea.x &&
-            x < deleteArea.x + deleteArea.width &&
-            y + shapeStyles[type].height > deleteArea.y &&
-            y < deleteArea.y + deleteArea.height
+            x + shapeStyles[type].width > deleteX &&
+            x < deleteX + deleteArea.width &&
+            y + shapeStyles[type].height > deleteY &&
+            y < deleteY + deleteArea.height
         ) {
             removeShape(type);
             return;
         }
-
         setShapes(prev => {
             const updated = { ...prev, [type]: { ...prev[type], x, y } };
+            console.log(updated);
             localStorage.setItem(type, JSON.stringify(updated[type]));
             return updated;
         });
@@ -84,6 +85,7 @@ function MinaRoom() {
             const shape = prev[type];
             if (!shape) return prev;
             const rotated = { ...shape, rotate: (shape.rotate + 90) % 360 };
+             console.log(rotated);
             localStorage.setItem(type, JSON.stringify(rotated));
             return { ...prev, [type]: rotated };
         });
@@ -175,25 +177,17 @@ function MinaRoom() {
 
             {/* 固定刪除區域 */}
             <div
-                onDrop={(e) => {
-                    e.preventDefault();
-                    const type = e.dataTransfer.getData("type");
-                    removeShape(type);
-                }}
-                onDragOver={(e) => e.preventDefault()}
                 style={{
-                    position: "relative",
+                    position: "fixed",
                     bottom: 20,
                     right: 20,
-                    width: 80,
-                    height: 80,
+                    width: deleteArea.width,
+                    height: deleteArea.height,
                     background: "transparent",
                     border: "2px dashed red",
-                    color: "#fff",
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    fontWeight: "bold",
                     borderRadius: 8,
                 }}
             ></div>
