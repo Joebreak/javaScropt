@@ -4,10 +4,13 @@ import Draggable from "react-draggable";
 const rows = 8;
 const cols = 10;
 
-// 格子初始化
-const initGrid = Array.from({ length: rows }, () =>
-    Array.from({ length: cols }, () => null)
-);
+const initGrid = Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
+
+const leftRowLabels = Array.from({ length: rows }, (_, i) => String.fromCharCode(65 + i));
+
+const rightColLabels = Array.from({ length: cols }, (_, i) => i + 11);
+
+const bottomRowLabels = Array.from({ length: cols }, (_, i) => String.fromCharCode("I".charCodeAt(0) + i));
 
 const shapeStyles = {
     triangle: {
@@ -56,25 +59,26 @@ function MinaRoom() {
         setShapes((prev) => ({ ...prev, [type]: null }));
         localStorage.removeItem(type);
     };
-    const deleteArea = { width: 80, height: 80 };
+    const deleteArea = { width: 40, height: 40 };
+    const deleteRef = useRef(null);
 
     const handleStop = (type, e, data) => {
         const { x, y } = data;
-        const deleteX = window.innerWidth - deleteArea.width - 20;
-        const deleteY = window.innerHeight - deleteArea.height - 20;
-
-        if (
-            x + shapeStyles[type].width > deleteX &&
-            x < deleteX + deleteArea.width &&
-            y + shapeStyles[type].height > deleteY &&
-            y < deleteY + deleteArea.height
-        ) {
-            removeShape(type);
-            return;
+        if (deleteRef.current) {
+            const shapeXInWindow = e.clientX;
+            const shapeYInWindow = e.clientY;
+            const deleteRect = deleteRef.current.getBoundingClientRect();
+            const overlapX =
+                shapeXInWindow > deleteRect.left && shapeXInWindow < deleteRect.right;
+            const overlapY =
+                shapeYInWindow > deleteRect.top && shapeYInWindow < deleteRect.bottom;
+            if (overlapX && overlapY) {
+                removeShape(type);
+                return;
+            }
         }
-        setShapes(prev => {
+        setShapes((prev) => {
             const updated = { ...prev, [type]: { ...prev[type], x, y } };
-            console.log(updated);
             localStorage.setItem(type, JSON.stringify(updated[type]));
             return updated;
         });
@@ -85,7 +89,6 @@ function MinaRoom() {
             const shape = prev[type];
             if (!shape) return prev;
             const rotated = { ...shape, rotate: (shape.rotate + 90) % 360 };
-             console.log(rotated);
             localStorage.setItem(type, JSON.stringify(rotated));
             return { ...prev, [type]: rotated };
         });
@@ -143,54 +146,134 @@ function MinaRoom() {
             <div
                 style={{
                     display: "grid",
-                    gridTemplateRows: `repeat(${rows}, 30px)`,
-                    gridTemplateColumns: `repeat(${cols}, 30px)`,
+                    gridTemplateRows: `40px repeat(${rows}, 30px) 40px`, // 上 + 中間 + 下
+                    gridTemplateColumns: `40px repeat(${cols}, 30px) 40px`, // 左 + 中間 + 右
                     gap: 4,
                     justifyContent: "center",
                     marginBottom: 40,
                 }}
             >
-                {initGrid.map((row, rIdx) =>
-                    row.map((_, cIdx) => (
+                {/* 左上角空白 */}
+                <div style={{}} />
+
+                {/* 上方欄號 */}
+                {Array.from({ length: cols }, (_, cIdx) => (
+                    <div
+                        key={`col-header-${cIdx}`}
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            fontWeight: "bold",
+                        }}
+                    >
+                        {cIdx + 1}
+                    </div>
+                ))}
+                <div style={{}} /> {/* 右上角空白 */}
+                {/* 行號 + 格子 */}
+                {initGrid.map((row, rIdx) => (
+                    <React.Fragment key={`row-${rIdx}`}>
+                        {/* 左側行號 */}
                         <div
-                            key={`${rIdx}-${cIdx}`}
                             style={{
-                                border: "1px solid #ccc",
-                                background: "#fff",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                fontWeight: "bold",
                             }}
-                        />
-                    ))
-                )}
+                        >
+                            {leftRowLabels[rIdx]}
+                        </div>
+
+                        {/* 這一列的格子 */}
+                        {row.map((_, cIdx) => (
+                            <div
+                                key={`${rIdx}-${cIdx}`}
+                                style={{
+                                    border: "1px solid #ccc",
+                                    background: "#fff",
+                                    width: 30,
+                                    height: 30,
+                                }}
+                            />
+                        ))}
+                        {/* 右邊行號 (A~H) */}
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                fontWeight: "bold",
+                            }}
+                        >
+                            {rightColLabels[rIdx]}
+                        </div>
+                    </React.Fragment>
+                ))}
+                <div style={{}} /> {/* 右上角空白 */}
+                {/* 下方欄號 */}
+                {Array.from({ length: cols }, (_, cIdx) => (
+                    <div
+                        key={`bottom-${cIdx}`}
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            fontWeight: "bold",
+                        }}
+                    >
+                        {bottomRowLabels[cIdx]}
+                    </div>
+                ))}
             </div>
 
-            {/* 操作按鈕 */}
-            <div style={{ textAlign: "center", marginBottom: 20 }}>
-                <button onClick={() => addShape("triangle")}>新增三角形</button>
-                <button onClick={() => addShape("rightTriangle")}>新增直角三角形</button>
-                <button onClick={() => addShape("parallelogram")}>新增平行四邊形</button>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 20, gap: 10, }}>
+                {/* 刪除區域 */}
+                <div
+                    ref={deleteRef}
+                    style={{
+                        position: "fixed",
+                        top: 20,
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        width: deleteArea.width,
+                        height: deleteArea.height,
+                        background: "transparent",
+                        border: "2px dashed red",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        borderRadius: 8,
+                        zIndex: 999,
+                    }}>X</div>
+                {Object.keys(shapeStyles).map((type) => (
+                    <button
+                        key={type}
+                        onClick={() => addShape(type)}
+                        style={{
+                            width: 50,
+                            height: 50,
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            border: "1px solid #ccc",
+                            borderRadius: 8,
+                            background: "#f9f9f9",
+                            cursor: "pointer",
+                        }}
+                    >
+                        <div style={{ ...shapeStyles[type], transform: "scale(0.5)" }} />
+                    </button>
+                ))}
             </div>
 
+            {/* 右下角空白 */}
+            <div />
             {/* 圖形渲染 */}
             {renderShape("triangle")}
             {renderShape("rightTriangle")}
             {renderShape("parallelogram")}
-
-            {/* 固定刪除區域 */}
-            <div
-                style={{
-                    position: "fixed",
-                    bottom: 20,
-                    right: 20,
-                    width: deleteArea.width,
-                    height: deleteArea.height,
-                    background: "transparent",
-                    border: "2px dashed red",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    borderRadius: 8,
-                }}
-            ></div>
         </div>
     );
 }
