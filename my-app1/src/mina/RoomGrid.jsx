@@ -105,6 +105,7 @@ function MinaRoom() {
                 onStop={(e, data) => handleStop(type, e, data)}
             >
                 <div
+                    key={type}
                     ref={refs[type]}
                     style={{
                         position: "absolute",
@@ -142,7 +143,6 @@ function MinaRoom() {
 
     return (
         <div style={{ padding: 20, minHeight: "10vh", position: "relative", background: "#f7f7f7" }}>
-            {/* 上方格子 */}
             <div
                 style={{
                     display: "grid",
@@ -153,10 +153,7 @@ function MinaRoom() {
                     marginBottom: 40,
                 }}
             >
-                {/* 左上角空白 */}
                 <div style={{}} />
-
-                {/* 上方欄號 */}
                 {Array.from({ length: cols }, (_, cIdx) => (
                     <div
                         key={`col-header-${cIdx}`}
@@ -170,11 +167,10 @@ function MinaRoom() {
                         {cIdx + 1}
                     </div>
                 ))}
-                <div style={{}} /> {/* 右上角空白 */}
+                <div style={{}} /> 
                 {/* 行號 + 格子 */}
                 {initGrid.map((row, rIdx) => (
                     <React.Fragment key={`row-${rIdx}`}>
-                        {/* 左側行號 */}
                         <div
                             style={{
                                 display: "flex",
@@ -185,8 +181,6 @@ function MinaRoom() {
                         >
                             {leftRowLabels[rIdx]}
                         </div>
-
-                        {/* 這一列的格子 */}
                         {row.map((_, cIdx) => (
                             <div
                                 key={`${rIdx}-${cIdx}`}
@@ -198,7 +192,6 @@ function MinaRoom() {
                                 }}
                             />
                         ))}
-                        {/* 右邊行號 (A~H) */}
                         <div
                             style={{
                                 display: "flex",
@@ -212,7 +205,6 @@ function MinaRoom() {
                     </React.Fragment>
                 ))}
                 <div style={{}} /> {/* 右上角空白 */}
-                {/* 下方欄號 */}
                 {Array.from({ length: cols }, (_, cIdx) => (
                     <div
                         key={`bottom-${cIdx}`}
@@ -233,7 +225,7 @@ function MinaRoom() {
                 <div
                     ref={deleteRef}
                     style={{
-                        position: "fixed",
+                        //position: "fixed",
                         top: 20,
                         left: "50%",
                         transform: "translateX(-50%)",
@@ -267,13 +259,12 @@ function MinaRoom() {
                     </button>
                 ))}
             </div>
-
-            {/* 右下角空白 */}
             <div />
-            {/* 圖形渲染 */}
-            {renderShape("triangle")}
-            {renderShape("rightTriangle")}
-            {renderShape("parallelogram")}
+            {Object.keys(shapes).map((type) => (
+                <React.Fragment key={type}>
+                    {renderShape(type)}
+                </React.Fragment>
+            ))}
         </div>
     );
 }

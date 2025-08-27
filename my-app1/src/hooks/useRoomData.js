@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 export function useRoomData() {
   const [data, setData] = useState({ list: [] });
   const [loading, setLoading] = useState(true);
+  const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5IiwiZXhwIjoxNzU1OTQwMTYwfQ.yKvsvZkRtAt5UQEFdQ3h8wkFh6XG0WWaftX2O95umnk"
 
   useEffect(() => {
     let mounted = true;
@@ -18,8 +19,7 @@ export function useRoomData() {
           {
             method: "GET",
             headers: {
-              authorization:
-                "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5IiwiZXhwIjoxNzU1OTQwMTYwfQ.yKvsvZkRtAt5UQEFdQ3h8wkFh6XG0WWaftX2O95umnk",
+              authorization: `Bearer ${token}`,
             },
             signal: controller.signal,
           }

@@ -1,10 +1,8 @@
 name: Deploy React App to GitHub Pages
 
 on:
-  push:
-    branches:
-      - hanabi
-
+  schedule:
+      - cron: "0 10,14 * * *"
 jobs:
   build:
     runs-on: ubuntu-latest
