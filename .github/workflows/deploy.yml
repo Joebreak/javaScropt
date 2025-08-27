@@ -1,8 +1,9 @@
 name: Deploy React App to GitHub Pages
 
 on:
+  workflow_dispatch:
   schedule:
-      - cron: "0 10,14,22 * * *"
+    - cron: "0 10,14,22 * * *"
 jobs:
   build:
     runs-on: ubuntu-latest
