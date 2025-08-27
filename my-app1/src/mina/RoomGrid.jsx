@@ -65,8 +65,15 @@ function MinaRoom() {
     const handleStop = (type, e, data) => {
         const { x, y } = data;
         if (deleteRef.current) {
-            const shapeXInWindow = e.clientX;
-            const shapeYInWindow = e.clientY;
+            let shapeXInWindow, shapeYInWindow;
+            if (e.type.startsWith("touch")) {
+                const touch = e.changedTouches[0];
+                shapeXInWindow = touch.clientX;
+                shapeYInWindow = touch.clientY;
+            } else {
+                shapeXInWindow = e.clientX;
+                shapeYInWindow = e.clientY;
+            }
             const deleteRect = deleteRef.current.getBoundingClientRect();
             const overlapX =
                 shapeXInWindow > deleteRect.left && shapeXInWindow < deleteRect.right;
@@ -124,7 +131,7 @@ function MinaRoom() {
                             width: 20,
                             height: 20,
                             background: "#4f8cff",
-                            color: "#fff",
+                            color: "#1f0303ff",
                             fontSize: 12,
                             display: "flex",
                             justifyContent: "center",
@@ -142,7 +149,7 @@ function MinaRoom() {
     };
 
     return (
-        <div style={{ padding: 20, minHeight: "10vh", position: "relative", background: "#f7f7f7" }}>
+        <div style={{ padding: 0, position: "relative", background: "#f7f7f7" }}>
             <div
                 style={{
                     display: "grid",
@@ -167,7 +174,7 @@ function MinaRoom() {
                         {cIdx + 1}
                     </div>
                 ))}
-                <div style={{}} /> 
+                <div style={{}} />
                 {/* 行號 + 格子 */}
                 {initGrid.map((row, rIdx) => (
                     <React.Fragment key={`row-${rIdx}`}>
@@ -220,7 +227,7 @@ function MinaRoom() {
                 ))}
             </div>
 
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 20, gap: 10, }}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 10, gap: 10, }}>
                 {/* 刪除區域 */}
                 <div
                     ref={deleteRef}

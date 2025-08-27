@@ -16,7 +16,7 @@ export default function MinaRoom() {
   }
 
   return (
-    <div style={{ padding: 20, minHeight: "100vh", background: "#f7f7f7" }}>
+    <div style={{ padding: 0, background: "#f7f7f7" }}>
       <RoomGrid />
       <h2 style={{ textAlign: "center" }}>mina (房間號碼 {room})</h2>
       {loading ? <div style={{ textAlign: "center" }}>⏳ 載入中...</div> : <RoomList data={data} />}
@@ -25,7 +25,7 @@ export default function MinaRoom() {
         style={{
           display: "block",
           margin: "0 auto",
-          padding: "10px 32px",
+          padding: "0px 32px",
           fontSize: 16,
           background: "#ff7043",
           color: "#fff",
