@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import RoomGrid from "./RoomGrid";
 import RoomList from "./RoomList";
@@ -10,6 +10,12 @@ export default function MinaRoom() {
   const { room } = location.state || {};
   const { data, loading } = useRoomData();
 
+  useEffect(() => {
+    if (room) {
+      document.title = `mina (房間號碼 ${room})`;
+    }
+  }, [room]);
+
   if (!room) {
     navigate("/");
     return null;
@@ -18,7 +24,6 @@ export default function MinaRoom() {
   return (
     <div style={{ padding: 0, background: "#f7f7f7" }}>
       <RoomGrid />
-      <h2 style={{ textAlign: "center" }}>mina (房間號碼 {room})</h2>
       {loading ? <div style={{ textAlign: "center" }}>⏳ 載入中...</div> : <RoomList data={data} />}
       <button
         onClick={() => navigate("/")}
