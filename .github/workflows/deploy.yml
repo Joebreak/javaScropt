@@ -1,0 +1,40 @@
+name: Deploy hanabi
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 10,14,22 * * *"
+  push:
+    branches:
+      - hanabi
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with :
+        ref: hanabi
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./my-app1
+
+      - name: Build React App
+        run: npm run build
+        working-directory: ./my-app1
+
+      - name: Create 404.html for SPA routing
+        run: cp build/index.html build/404.html
+        working-directory: ./my-app1
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./my-app1/build
