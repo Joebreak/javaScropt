@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import Draggable from "react-draggable";
+import "./MinaRoom.css";
 
 const rows = 8;
 const cols = 10;
@@ -14,24 +15,33 @@ const bottomRowLabels = Array.from({ length: cols }, (_, i) => String.fromCharCo
 
 const shapeStyles = {
     triangle: {
+        canRotate: true,
         width: 60,
         height: 60,
-        background: "red",
+        background: "blue",
         clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
-        border: "3px solid black",
     },
     rightTriangle: {
+        canRotate: true,
         width: 60,
         height: 60,
         background: "yellow",
         clipPath: "polygon(0 0, 100% 0, 0 100%)",
-        border: "3px solid black",
     },
     parallelogram: {
+        canRotate: true,
         width: 90,
         height: 60,
-        background: "white",
+        background: "red",
         clipPath: "polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%)",
+    },
+    diamond: {
+        canRotate: false,
+        width: 80,
+        height: 80,
+        background: "white",
+        clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
+        border: "3px solid black",
     },
 };
 
@@ -46,11 +56,13 @@ function MinaRoom() {
     };
     const [shapes, setShapes] = useState(getInitialShapes);
 
-    const refs = {
-        triangle: useRef(null),
-        rightTriangle: useRef(null),
-        parallelogram: useRef(null),
-    };
+    const refs = React.useMemo(() => {
+        const obj = {};
+        Object.keys(shapeStyles).forEach((type) => {
+            obj[type] = React.createRef();
+        });
+        return obj;
+    }, []);
     const addShape = (type) => {
         const initPos = { x: 0, y: 0, rotate: 0 };
         setShapes((prev) => ({ ...prev, [type]: initPos }));
@@ -105,7 +117,6 @@ function MinaRoom() {
 
     const renderShape = (type) => {
         const shape = shapes[type];
-        console.log(shape);
         if (!shape) return null;
 
         return (
@@ -120,32 +131,13 @@ function MinaRoom() {
                     style={{
                         position: "absolute",
                         ...shapeStyles[type],
-                        transform: `translate(${shape.x}px, ${shape.y}px) rotate(${shape.rotate}deg)`,
+                        transform: `rotate(${shape.rotate}deg)`,
                         cursor: "grab",
                     }}
                 >
-                    {/* 右上角旋轉按鈕 */}
-                    <div
-                        onClick={() => rotateShape(type)}
-                        style={{
-                            position: "absolute",
-                            top: -10,
-                            right: -10,
-                            width: 20,
-                            height: 20,
-                            background: "#4f8cff",
-                            color: "#1f0303ff",
-                            fontSize: 12,
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            borderRadius: "50%",
-                            cursor: "pointer",
-                            zIndex: 2,
-                        }}
-                    >
-                        ⟳
-                    </div>
+                    {shapeStyles[type].canRotate && (
+                        <div className="rotate-btn" onClick={() => rotateShape(type)}> ⟳</div>
+                    )}
                 </div>
             </Draggable>
         );
