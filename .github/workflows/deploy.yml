@@ -4,17 +4,12 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 10,14,22 * * *"
-  push:
-    branches:
-      - hanabi
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with :
-        ref: hanabi
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
