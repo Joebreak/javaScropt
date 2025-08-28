@@ -18,12 +18,14 @@ const shapeStyles = {
         height: 60,
         background: "red",
         clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
+        border: "3px solid black",
     },
     rightTriangle: {
         width: 60,
         height: 60,
         background: "yellow",
         clipPath: "polygon(0 0, 100% 0, 0 100%)",
+        border: "3px solid black",
     },
     parallelogram: {
         width: 90,
@@ -103,6 +105,7 @@ function MinaRoom() {
 
     const renderShape = (type) => {
         const shape = shapes[type];
+        console.log(shape);
         if (!shape) return null;
 
         return (
@@ -117,7 +120,7 @@ function MinaRoom() {
                     style={{
                         position: "absolute",
                         ...shapeStyles[type],
-                        transform: `rotate(${shape.rotate}deg)`,
+                        transform: `translate(${shape.x}px, ${shape.y}px) rotate(${shape.rotate}deg)`,
                         cursor: "grab",
                     }}
                 >
