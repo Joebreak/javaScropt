@@ -102,7 +102,6 @@ function MinaRoom() {
         setShapes((prev) => ({ ...prev, [type]: null }));
         localStorage.removeItem(type);
     };
-    const deleteArea = { width: 40, height: 40 };
     const deleteRef = useRef(null);
 
     const handleStop = (type, e, data) => {
@@ -144,6 +143,25 @@ function MinaRoom() {
         });
     };
 
+    const handleDrag = (type, e, data) => {
+        // 拖曳過程中持續保持旋轉角度
+        if (refs[type].current) {
+            const element = refs[type].current;
+            const shape = shapes[type];
+            if (shape) {
+                // 使用 requestAnimationFrame 確保在 Draggable 更新後執行
+                requestAnimationFrame(() => {
+                    const currentTransform = element.style.transform;
+                    const translateMatch = currentTransform.match(/translate\([^)]+\)/);
+                    if (translateMatch) {
+                        // 強制保持旋轉角度，覆蓋 Draggable 的設置
+                        element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
+                    }
+                });
+            }
+        }
+    };
+
     const renderShape = (type) => {
         const shape = shapes[type];
         if (!shape) return null;
@@ -153,6 +171,7 @@ function MinaRoom() {
                 nodeRef={refs[type]}
                 position={{ x: shape.x, y: shape.y }}
                 onStop={(e, data) => handleStop(type, e, data)}
+                onDrag={(e, data) => handleDrag(type, e, data)}
             >
                 <div
                     key={type}
@@ -260,8 +279,8 @@ function MinaRoom() {
                         top: 20,
                         left: "50%",
                         transform: "translateX(-50%)",
-                        width: deleteArea.width,
-                        height: deleteArea.height,
+                        width: 40,
+                        height: 40,
                         background: "transparent",
                         border: "2px dashed red",
                         display: "flex",
