@@ -9,7 +9,7 @@ function App() {
       alert("請輸入房間號碼");
       return;
     }
-      navigate("/test", { state: { room }, });
+      navigate("/mina", { state: { room }, });
   };
   return (
     <div
