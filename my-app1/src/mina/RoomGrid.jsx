@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Draggable from "react-draggable";
 import "./MinaRoom.css";
 
@@ -55,6 +55,7 @@ function MinaRoom() {
         return shapes;
     };
     const [shapes, setShapes] = useState(getInitialShapes);
+    const [isLoaded, setIsLoaded] = useState(false);
 
     const refs = React.useMemo(() => {
         const obj = {};
@@ -63,6 +64,34 @@ function MinaRoom() {
         });
         return obj;
     }, []);
+
+    // 從 localStorage 讀取保存的狀態
+    useEffect(() => {
+        const savedShapes = getInitialShapes();
+        setShapes(savedShapes);
+        setIsLoaded(true);
+    }, []);
+
+    // 強制更新旋轉 - 只有在載入完成後才執行
+    useEffect(() => {
+        if (!isLoaded) return;
+        Object.keys(shapes).forEach((type) => {
+            const shape = shapes[type];
+            if (shape && refs[type].current) {
+                const element = refs[type].current;
+                // 只更新旋轉，保持當前位置
+                const currentTranslate = element.style.transform.match(/translate\([^)]+\)/);
+                if (currentTranslate) {
+                    // 如果有 translate，保持位置並更新旋轉
+                   element.style.transform = `${currentTranslate[0]} rotate(${shape.rotate}deg)`;
+                } else {
+                    // 如果沒有 translate，只設置旋轉
+                    element.style.transform = `rotate(${shape.rotate}deg)`;
+                }
+            }
+        });
+    }, [shapes, refs, isLoaded]);
+
     const addShape = (type) => {
         const initPos = { x: 0, y: 0, rotate: 0 };
         setShapes((prev) => ({ ...prev, [type]: initPos }));
