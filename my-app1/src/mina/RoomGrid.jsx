@@ -143,6 +143,27 @@ function MinaRoom() {
         });
     };
 
+    // 觸控事件處理
+    const handleTouchStart = (e, type) => {
+        // 不阻止預設行為，避免 passive event listener 錯誤
+        e.stopPropagation();
+        // 記錄觸控開始
+        console.log(`Touch start for ${type}`);
+    };
+
+    const handleTouchEnd = (e, type) => {
+        // 不阻止預設行為，避免 passive event listener 錯誤
+        e.stopPropagation();
+        // 記錄觸控結束並執行旋轉
+        console.log(`Touch end for ${type}`);
+        rotateShape(type);
+    };
+
+    // 防止觸控移動時的意外行為
+    const handleTouchMove = (e, type) => {
+        e.stopPropagation();
+    };
+
     const handleDrag = (type, e, data) => {
         // 拖曳過程中持續保持旋轉角度
         if (refs[type].current) {
@@ -184,7 +205,15 @@ function MinaRoom() {
                     }}
                 >
                     {shapeStyles[type].canRotate && (
-                        <div className="rotate-btn" onClick={() => rotateShape(type)}> ⟳</div>
+                        <div 
+                            className="rotate-btn" 
+                            onClick={() => rotateShape(type)}
+                            onTouchStart={(e) => handleTouchStart(e, type)}
+                            onTouchEnd={(e) => handleTouchEnd(e, type)}
+                            onTouchMove={(e) => handleTouchMove(e, type)}
+                        > 
+                            ⟳
+                        </div>
                     )}
                 </div>
             </Draggable>

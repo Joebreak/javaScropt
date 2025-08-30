@@ -1,4 +1,43 @@
 /* MinaRoom.css */
+
+/* 手機觸控優化 */
+* {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 改善觸控響應 */
+.rotate-btn {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* 確保觸控事件正常工作 */
+html, body {
+  touch-action: manipulation;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 觸控設備優化 */
+@media (hover: none) and (pointer: coarse) {
+  .rotate-btn {
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 16px;
+  }
+  
+  .shape-button {
+    min-width: 60px;
+    min-height: 60px;
+  }
+}
+
 .grid-container {
   display: grid;
   gap: 4px;
@@ -34,6 +73,8 @@
   border-radius: 50%;
   cursor: pointer;
   z-index: 2;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .delete-area {
