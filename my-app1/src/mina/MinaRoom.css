@@ -24,14 +24,6 @@
   will-change: transform;
   /* 確保拖曳過程中旋轉角度不丟失 */
   transform-origin: center center;
-  /* 強制保持旋轉角度 */
-  animation: maintain-rotation 0.1s linear infinite;
-}
-
-@keyframes maintain-rotation {
-  0%, 100% {
-    /* 動畫保持旋轉角度 */
-  }
 }
 
 .shape-dragging * {
@@ -74,11 +66,11 @@ html, body {
 /* 觸控設備優化 */
 @media (hover: none) and (pointer: coarse) {
   .rotate-btn {
-    min-width: 44px;
-    min-height: 44px;
-    font-size: 16px;
-    width: 44px !important;
-    height: 44px !important;
+    min-width: 30px;
+    min-height: 30px;
+    font-size: 14px;
+    width: 30px !important;
+    height: 30px !important;
   }
   
   .shape-button {

@@ -151,26 +151,12 @@ function MinaRoom() {
                 const element = refs[type].current;
                 const shape = shapes[type];
                 if (shape) {
-                    // 使用 setInterval 持續監控和保持旋轉角度
-                    if (!element._rotationInterval) {
-                        element._rotationInterval = setInterval(() => {
-                            const currentTransform = element.style.transform;
-                            const rotationMatch = currentTransform.match(/rotate\(([^)]+)\)/);
-                            if (!rotationMatch || rotationMatch[1] !== `${shape.rotate}deg`) {
-                                const translateMatch = currentTransform.match(/translate\([^)]+\)/);
-                                if (translateMatch) {
-                                    element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
-                                }
-                            }
-                        }, 16); // 約60fps的更新頻率
+                    const currentTransform = element.style.transform;
+                    const translateMatch = currentTransform.match(/translate\([^)]+\)/);
+                    if (translateMatch) {
+                        element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
+                        console.log(`拖曳結束後恢復 ${type} 的旋轉角度: ${shape.rotate}°`);
                     }
-                }
-            } else if (!isDragging[type] && refs[type].current) {
-                // 拖曳結束時清理 interval
-                const element = refs[type].current;
-                if (element._rotationInterval) {
-                    clearInterval(element._rotationInterval);
-                    element._rotationInterval = null;
                 }
             }
         });
@@ -292,7 +278,7 @@ function MinaRoom() {
                     const newTransform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
                     element.style.transform = newTransform;
                 }
-                
+
                 // 使用 MutationObserver 監聽樣式變化，立即恢復旋轉角度
                 if (!element._rotationObserver) {
                     element._rotationObserver = new MutationObserver(() => {
@@ -305,7 +291,7 @@ function MinaRoom() {
                             }
                         }
                     });
-                    
+
                     element._rotationObserver.observe(element, {
                         attributes: true,
                         attributeFilter: ['style']
@@ -315,10 +301,10 @@ function MinaRoom() {
         }
     };
 
-        const handleDragStop = (type) => {
+    const handleDragStop = (type) => {
         console.log(`拖曳停止: ${type}`);
         setIsDragging(prev => ({ ...prev, [type]: false }));
-        
+
         // 清理 MutationObserver
         if (refs[type].current && refs[type].current._rotationObserver) {
             refs[type].current._rotationObserver.disconnect();
@@ -331,70 +317,64 @@ function MinaRoom() {
         if (!shape) return null;
 
         return (
-                         <Draggable
-                 nodeRef={refs[type]}
-                 position={{ x: shape.x, y: shape.y }}
-                 onStart={() => handleDragStart(type)}
-                 onDrag={() => handleDrag(type)}
-                 onStop={(e, data) => {
-                     handleDragStop(type);
-                     handleStop(type, e, data);
-                 }}
-                 enableUserSelectHack={false}
-                 allowAnyClick={true}
-                 cancel=".rotate-btn"
-                 onMouseDown={(e) => {
-                     // 確保拖曳開始時保持旋轉角度
-                     if (e.target === e.currentTarget || e.target.closest('.rotate-btn')) {
-                         return;
-                     }
-                     handleDragStart(type);
-                 }}
-             >
-                                 <div
-                     key={`${type}-${shape.rotate}`}
-                     ref={refs[type]}
-                     className={`${isDragging[type] ? 'shape-dragging' : ''} shape-${type}`}
-                     style={{
-                         position: "absolute",
-                         ...shapeStyles[type],
-                         transform: `rotate(${shape.rotate}deg)`,
-                         cursor: isDragging[type] ? "grabbing" : "grab",
-                         // 強制保持旋轉角度
-                         ...(isDragging[type] && {
-                             '--rotation-angle': `${shape.rotate}deg`,
-                             '--force-rotation': 'true'
-                         })
-                     }}
-                     data-rotation={shape.rotate}
-                     onTouchStart={(e) => {
-                         // 只在旋轉按鈕外的區域允許拖曳
-                         if (e.target === e.currentTarget) {
-                             console.log(`圖形觸控開始: ${type} - 允許拖曳`);
-                         }
-                     }}
-                 >
+            <Draggable
+                nodeRef={refs[type]}
+                position={{ x: shape.x, y: shape.y }}
+                onStart={() => handleDragStart(type)}
+                onDrag={() => handleDrag(type)}
+                onStop={(e, data) => {
+                    handleDragStop(type);
+                    handleStop(type, e, data);
+                }}
+                enableUserSelectHack={false}
+                allowAnyClick={true}
+                cancel=".rotate-btn"
+                onMouseDown={(e) => {
+                    // 確保拖曳開始時保持旋轉角度
+                    if (e.target === e.currentTarget || e.target.closest('.rotate-btn')) {
+                        return;
+                    }
+                    handleDragStart(type);
+                }}
+            >
+                <div
+                    key={`${type}-${shape.rotate}`}
+                    ref={refs[type]}
+                    className={`${isDragging[type] ? 'shape-dragging' : ''} shape-${type}`}
+                    style={{
+                        position: "absolute",
+                        ...shapeStyles[type],
+                        transform: `rotate(${shape.rotate}deg)`,
+                        cursor: isDragging[type] ? "grabbing" : "grab",
+                        // 強制保持旋轉角度
+                        ...(isDragging[type] && {
+                            '--rotation-angle': `${shape.rotate}deg`,
+                            '--force-rotation': 'true'
+                        })
+                    }}
+                    data-rotation={shape.rotate}
+                    onTouchStart={(e) => {
+                        // 只在旋轉按鈕外的區域允許拖曳
+                        if (e.target === e.currentTarget) {
+                            console.log(`圖形觸控開始: ${type} - 允許拖曳`);
+                        }
+                    }}
+                >
                     {shapeStyles[type].canRotate && (
                         <div
                             className="rotate-btn"
                             onClick={(e) => {
+                                if ("ontouchstart" in window) return; // 手機上不執行 click
                                 e.preventDefault();
                                 e.stopPropagation();
-                                console.log(`點擊旋轉按鈕: ${type}`);
                                 rotateShape(type);
-                            }}
-                            onTouchStart={(e) => {
-                                e.stopPropagation();
-                                console.log(`旋轉按鈕觸控開始: ${type}`);
+                                setIsDragging(prev => ({ ...prev, [type]: false })); // 保證能繼續拖曳
                             }}
                             onTouchEnd={(e) => {
-                                e.stopPropagation();
-                                console.log(`旋轉按鈕觸控結束: ${type}`);
-                                rotateShape(type);
-                            }}
-                            onMouseDown={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
+                                rotateShape(type);
+                                setIsDragging(prev => ({ ...prev, [type]: false })); // 保證能繼續拖曳
                             }}
                         >
                             ⟳
