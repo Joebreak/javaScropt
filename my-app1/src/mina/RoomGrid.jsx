@@ -71,46 +71,9 @@ function MinaRoom() {
         const savedShapes = getInitialShapes();
         setShapes(savedShapes);
         setIsLoaded(true);
-
-        // 防卡死機制：定期檢查並重置異常狀態
-        const resetInterval = setInterval(() => {
-            setIsDragging(prev => {
-                const hasActiveDragging = Object.values(prev).some(isDragging => isDragging);
-                if (hasActiveDragging) {
-                    console.log('定期檢查：發現活躍拖曳狀態，重置所有拖曳狀態');
-                    return {};
-                }
-                return prev;
-            });
-        }, 5000); // 每5秒檢查一次
-
-        return () => clearInterval(resetInterval);
     }, []);
 
-    // 全局觸控事件監聽，防止觸控卡死
-    useEffect(() => {
-        const handleGlobalTouchEnd = () => {
-            // 觸控結束時檢查是否有異常的拖曳狀態
-            setTimeout(() => {
-                setIsDragging(prev => {
-                    const hasActiveDragging = Object.values(prev).some(isDragging => isDragging);
-                    if (hasActiveDragging) {
-                        console.log('全局觸控結束：發現異常拖曳狀態，重置所有拖曳狀態');
-                        return {};
-                    }
-                    return prev;
-                });
-            }, 200);
-        };
 
-        document.addEventListener('touchend', handleGlobalTouchEnd);
-        document.addEventListener('touchcancel', handleGlobalTouchEnd);
-
-        return () => {
-            document.removeEventListener('touchend', handleGlobalTouchEnd);
-            document.removeEventListener('touchcancel', handleGlobalTouchEnd);
-        };
-    }, []);
 
     // 監聽 shapes 變化，強制更新 DOM 中的旋轉角度
     useEffect(() => {
@@ -218,25 +181,20 @@ function MinaRoom() {
             // 保存到 localStorage
             localStorage.setItem(type, JSON.stringify(rotated));
 
-            // 立即強制更新 DOM
-            setTimeout(() => {
-                if (refs[type].current) {
-                    const element = refs[type].current;
-                    const currentTransform = element.style.transform;
-                    const translateMatch = currentTransform.match(/translate\([^)]+\)/);
+            // 立即更新 DOM
+            if (refs[type].current) {
+                const element = refs[type].current;
+                const currentTransform = element.style.transform;
+                const translateMatch = currentTransform.match(/translate\([^)]+\)/);
 
-                    if (translateMatch) {
-                        element.style.transform = `${translateMatch[0]} rotate(${newRotation}deg)`;
-                    } else {
-                        element.style.transform = `rotate(${newRotation}deg)`;
-                    }
-
-                    console.log(`強制更新 DOM: ${type} 旋轉到 ${newRotation}°`);
-
-                    // 強制重繪
-                    void element.offsetHeight;
+                if (translateMatch) {
+                    element.style.transform = `${translateMatch[0]} rotate(${newRotation}deg)`;
+                } else {
+                    element.style.transform = `rotate(${newRotation}deg)`;
                 }
-            }, 0);
+
+                console.log(`立即更新 DOM: ${type} 旋轉到 ${newRotation}°`);
+            }
 
             return { ...prev, [type]: rotated };
         });
@@ -367,14 +325,24 @@ function MinaRoom() {
                                 if ("ontouchstart" in window) return; // 手機上不執行 click
                                 e.preventDefault();
                                 e.stopPropagation();
+                                console.log(`點擊旋轉按鈕: ${type}`);
                                 rotateShape(type);
                                 setIsDragging(prev => ({ ...prev, [type]: false })); // 保證能繼續拖曳
                             }}
-                            onTouchEnd={(e) => {
-                                e.preventDefault();
+                            onTouchStart={(e) => {
                                 e.stopPropagation();
+                                console.log(`旋轉按鈕觸控開始: ${type}`);
+                            }}
+                            onTouchEnd={(e) => {
+                                e.stopPropagation();
+                                console.log(`旋轉按鈕觸控結束: ${type}`);
+                                // 直接調用旋轉，不使用 setTimeout
                                 rotateShape(type);
                                 setIsDragging(prev => ({ ...prev, [type]: false })); // 保證能繼續拖曳
+                            }}
+                            onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
                             }}
                         >
                             ⟳
