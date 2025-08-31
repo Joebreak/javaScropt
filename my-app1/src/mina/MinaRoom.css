@@ -18,6 +18,53 @@
   -webkit-touch-callout: none;
 }
 
+/* 強制保持旋轉角度的樣式 */
+.shape-dragging {
+  transition: none !important;
+  will-change: transform;
+  /* 確保拖曳過程中旋轉角度不丟失 */
+  transform-origin: center center;
+  /* 強制保持旋轉角度 */
+  animation: maintain-rotation 0.1s linear infinite;
+}
+
+@keyframes maintain-rotation {
+  0%, 100% {
+    /* 動畫保持旋轉角度 */
+  }
+}
+
+.shape-dragging * {
+  pointer-events: none;
+}
+
+.rotate-btn {
+  pointer-events: auto !important;
+}
+
+/* 旋轉過渡效果 */
+.shape {
+  transition: transform 0.2s ease-out;
+}
+
+.shape-dragging {
+  transition: none !important;
+}
+
+/* 強制旋轉更新 */
+.shape-triangle,
+.shape-rightTriangle,
+.shape-parallelogram {
+  will-change: transform;
+  transform-style: preserve-3d;
+}
+
+/* 旋轉按鈕點擊時的即時反饋 */
+.rotate-btn:active {
+  transform: translate(-50%, -50%) scale(0.9);
+  transition: transform 0.1s ease;
+}
+
 /* 確保觸控事件正常工作 */
 html, body {
   touch-action: manipulation;
@@ -30,6 +77,8 @@ html, body {
     min-width: 44px;
     min-height: 44px;
     font-size: 16px;
+    width: 44px !important;
+    height: 44px !important;
   }
   
   .shape-button {
@@ -55,6 +104,9 @@ html, body {
 .shape {
   position: absolute;
   cursor: grab;
+  touch-action: pan-x pan-y;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .rotate-btn {
@@ -72,9 +124,18 @@ html, body {
   align-items: center;
   border-radius: 50%;
   cursor: pointer;
-  z-index: 2;
+  z-index: 999;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  pointer-events: auto !important;
+  user-select: none;
+  -webkit-user-select: none;
+  /* 觸控優化 */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .delete-area {
@@ -98,4 +159,15 @@ html, body {
   border-radius: 8px;
   background: #f9f9f9;
   cursor: pointer;
+}
+
+/* 拖曳區域優化 */
+.shape-triangle,
+.shape-rightTriangle,
+.shape-parallelogram,
+.shape-diamond {
+  touch-action: pan-x pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }

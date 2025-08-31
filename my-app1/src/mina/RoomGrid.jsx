@@ -56,6 +56,7 @@ function MinaRoom() {
     };
     const [shapes, setShapes] = useState(getInitialShapes);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [isDragging, setIsDragging] = useState({});
 
     const refs = React.useMemo(() => {
         const obj = {};
@@ -70,27 +71,110 @@ function MinaRoom() {
         const savedShapes = getInitialShapes();
         setShapes(savedShapes);
         setIsLoaded(true);
+
+        // 防卡死機制：定期檢查並重置異常狀態
+        const resetInterval = setInterval(() => {
+            setIsDragging(prev => {
+                const hasActiveDragging = Object.values(prev).some(isDragging => isDragging);
+                if (hasActiveDragging) {
+                    console.log('定期檢查：發現活躍拖曳狀態，重置所有拖曳狀態');
+                    return {};
+                }
+                return prev;
+            });
+        }, 5000); // 每5秒檢查一次
+
+        return () => clearInterval(resetInterval);
     }, []);
 
-    // 強制更新旋轉 - 只有在載入完成後才執行
+    // 全局觸控事件監聽，防止觸控卡死
+    useEffect(() => {
+        const handleGlobalTouchEnd = () => {
+            // 觸控結束時檢查是否有異常的拖曳狀態
+            setTimeout(() => {
+                setIsDragging(prev => {
+                    const hasActiveDragging = Object.values(prev).some(isDragging => isDragging);
+                    if (hasActiveDragging) {
+                        console.log('全局觸控結束：發現異常拖曳狀態，重置所有拖曳狀態');
+                        return {};
+                    }
+                    return prev;
+                });
+            }, 200);
+        };
+
+        document.addEventListener('touchend', handleGlobalTouchEnd);
+        document.addEventListener('touchcancel', handleGlobalTouchEnd);
+
+        return () => {
+            document.removeEventListener('touchend', handleGlobalTouchEnd);
+            document.removeEventListener('touchcancel', handleGlobalTouchEnd);
+        };
+    }, []);
+
+    // 監聽 shapes 變化，強制更新 DOM 中的旋轉角度
     useEffect(() => {
         if (!isLoaded) return;
+
         Object.keys(shapes).forEach((type) => {
             const shape = shapes[type];
             if (shape && refs[type].current) {
                 const element = refs[type].current;
-                // 只更新旋轉，保持當前位置
-                const currentTranslate = element.style.transform.match(/translate\([^)]+\)/);
-                if (currentTranslate) {
-                    // 如果有 translate，保持位置並更新旋轉
-                   element.style.transform = `${currentTranslate[0]} rotate(${shape.rotate}deg)`;
-                } else {
-                    // 如果沒有 translate，只設置旋轉
-                    element.style.transform = `rotate(${shape.rotate}deg)`;
+
+                // 檢查當前 DOM 中的旋轉角度
+                const currentTransform = element.style.transform;
+                const translateMatch = currentTransform.match(/translate\([^)]+\)/);
+                const rotationMatch = currentTransform.match(/rotate\(([^)]+)\)/);
+
+                // 如果旋轉角度不匹配，強制更新
+                if (!rotationMatch || rotationMatch[1] !== `${shape.rotate}deg`) {
+                    if (translateMatch) {
+                        element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
+                    } else {
+                        element.style.transform = `rotate(${shape.rotate}deg)`;
+                    }
+
+                    console.log(`強制修正 ${type} 的旋轉: ${shape.rotate}°`);
+
+                    // 強制重繪
+                    void element.offsetHeight;
                 }
             }
         });
     }, [shapes, refs, isLoaded]);
+
+    // 監聽拖曳狀態，在拖曳過程中保持旋轉角度
+    useEffect(() => {
+        Object.keys(isDragging).forEach((type) => {
+            if (isDragging[type] && refs[type].current) {
+                // 在拖曳過程中實時保持旋轉角度
+                const element = refs[type].current;
+                const shape = shapes[type];
+                if (shape) {
+                    // 使用 setInterval 持續監控和保持旋轉角度
+                    if (!element._rotationInterval) {
+                        element._rotationInterval = setInterval(() => {
+                            const currentTransform = element.style.transform;
+                            const rotationMatch = currentTransform.match(/rotate\(([^)]+)\)/);
+                            if (!rotationMatch || rotationMatch[1] !== `${shape.rotate}deg`) {
+                                const translateMatch = currentTransform.match(/translate\([^)]+\)/);
+                                if (translateMatch) {
+                                    element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
+                                }
+                            }
+                        }, 16); // 約60fps的更新頻率
+                    }
+                }
+            } else if (!isDragging[type] && refs[type].current) {
+                // 拖曳結束時清理 interval
+                const element = refs[type].current;
+                if (element._rotationInterval) {
+                    clearInterval(element._rotationInterval);
+                    element._rotationInterval = null;
+                }
+            }
+        });
+    }, [isDragging, shapes, refs]);
 
     const addShape = (type) => {
         const initPos = { x: 0, y: 0, rotate: 0 };
@@ -134,52 +218,111 @@ function MinaRoom() {
     };
 
     const rotateShape = (type) => {
+        console.log(`開始旋轉 ${type}`);
+
         setShapes((prev) => {
             const shape = prev[type];
             if (!shape) return prev;
-            const rotated = { ...shape, rotate: (shape.rotate + 90) % 360 };
+
+            const newRotation = (shape.rotate + 90) % 360;
+            const rotated = { ...shape, rotate: newRotation };
+
+            console.log(`狀態更新: ${type} 從 ${shape.rotate}° 到 ${newRotation}°`);
+
+            // 保存到 localStorage
             localStorage.setItem(type, JSON.stringify(rotated));
+
+            // 立即強制更新 DOM
+            setTimeout(() => {
+                if (refs[type].current) {
+                    const element = refs[type].current;
+                    const currentTransform = element.style.transform;
+                    const translateMatch = currentTransform.match(/translate\([^)]+\)/);
+
+                    if (translateMatch) {
+                        element.style.transform = `${translateMatch[0]} rotate(${newRotation}deg)`;
+                    } else {
+                        element.style.transform = `rotate(${newRotation}deg)`;
+                    }
+
+                    console.log(`強制更新 DOM: ${type} 旋轉到 ${newRotation}°`);
+
+                    // 強制重繪
+                    void element.offsetHeight;
+                }
+            }, 0);
+
             return { ...prev, [type]: rotated };
         });
     };
 
-    // 觸控事件處理
+    // 觸控事件處理 - 避免 preventDefault 錯誤
     const handleTouchStart = (e, type) => {
-        // 不阻止預設行為，避免 passive event listener 錯誤
         e.stopPropagation();
-        // 記錄觸控開始
-        console.log(`Touch start for ${type}`);
+        console.log(`觸控開始: ${type}`);
     };
 
     const handleTouchEnd = (e, type) => {
-        // 不阻止預設行為，避免 passive event listener 錯誤
         e.stopPropagation();
-        // 記錄觸控結束並執行旋轉
-        console.log(`Touch end for ${type}`);
+
+        // 觸控旋轉也需要立即生效
+        console.log(`觸控旋轉 ${type}`);
         rotateShape(type);
     };
 
     // 防止觸控移動時的意外行為
-    const handleTouchMove = (e, type) => {
+    const handleTouchMove = (e) => {
         e.stopPropagation();
     };
 
-    const handleDrag = (type, e, data) => {
-        // 拖曳過程中持續保持旋轉角度
+    const handleDragStart = (type) => {
+        setIsDragging(prev => ({ ...prev, [type]: true }));
+    };
+
+    const handleDrag = (type) => {
+        // 在拖曳過程中實時保持旋轉角度
         if (refs[type].current) {
             const element = refs[type].current;
             const shape = shapes[type];
             if (shape) {
-                // 使用 requestAnimationFrame 確保在 Draggable 更新後執行
-                requestAnimationFrame(() => {
-                    const currentTransform = element.style.transform;
-                    const translateMatch = currentTransform.match(/translate\([^)]+\)/);
-                    if (translateMatch) {
-                        // 強制保持旋轉角度，覆蓋 Draggable 的設置
-                        element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
-                    }
-                });
+                // 強制保持旋轉角度，使用更激進的方式
+                const currentTransform = element.style.transform;
+                const translateMatch = currentTransform.match(/translate\([^)]+\)/);
+                if (translateMatch) {
+                    const newTransform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
+                    element.style.transform = newTransform;
+                }
+                
+                // 使用 MutationObserver 監聽樣式變化，立即恢復旋轉角度
+                if (!element._rotationObserver) {
+                    element._rotationObserver = new MutationObserver(() => {
+                        const currentTransform = element.style.transform;
+                        const rotationMatch = currentTransform.match(/rotate\(([^)]+)\)/);
+                        if (!rotationMatch || rotationMatch[1] !== `${shape.rotate}deg`) {
+                            const translateMatch = currentTransform.match(/translate\([^)]+\)/);
+                            if (translateMatch) {
+                                element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
+                            }
+                        }
+                    });
+                    
+                    element._rotationObserver.observe(element, {
+                        attributes: true,
+                        attributeFilter: ['style']
+                    });
+                }
             }
+        }
+    };
+
+        const handleDragStop = (type) => {
+        console.log(`拖曳停止: ${type}`);
+        setIsDragging(prev => ({ ...prev, [type]: false }));
+        
+        // 清理 MutationObserver
+        if (refs[type].current && refs[type].current._rotationObserver) {
+            refs[type].current._rotationObserver.disconnect();
+            refs[type].current._rotationObserver = null;
         }
     };
 
@@ -188,30 +331,72 @@ function MinaRoom() {
         if (!shape) return null;
 
         return (
-            <Draggable
-                nodeRef={refs[type]}
-                position={{ x: shape.x, y: shape.y }}
-                onStop={(e, data) => handleStop(type, e, data)}
-                onDrag={(e, data) => handleDrag(type, e, data)}
-            >
-                <div
-                    key={type}
-                    ref={refs[type]}
-                    style={{
-                        position: "absolute",
-                        ...shapeStyles[type],
-                        transform: `rotate(${shape.rotate}deg)`,
-                        cursor: "grab",
-                    }}
-                >
+                         <Draggable
+                 nodeRef={refs[type]}
+                 position={{ x: shape.x, y: shape.y }}
+                 onStart={() => handleDragStart(type)}
+                 onDrag={() => handleDrag(type)}
+                 onStop={(e, data) => {
+                     handleDragStop(type);
+                     handleStop(type, e, data);
+                 }}
+                 enableUserSelectHack={false}
+                 allowAnyClick={true}
+                 cancel=".rotate-btn"
+                 onMouseDown={(e) => {
+                     // 確保拖曳開始時保持旋轉角度
+                     if (e.target === e.currentTarget || e.target.closest('.rotate-btn')) {
+                         return;
+                     }
+                     handleDragStart(type);
+                 }}
+             >
+                                 <div
+                     key={`${type}-${shape.rotate}`}
+                     ref={refs[type]}
+                     className={`${isDragging[type] ? 'shape-dragging' : ''} shape-${type}`}
+                     style={{
+                         position: "absolute",
+                         ...shapeStyles[type],
+                         transform: `rotate(${shape.rotate}deg)`,
+                         cursor: isDragging[type] ? "grabbing" : "grab",
+                         // 強制保持旋轉角度
+                         ...(isDragging[type] && {
+                             '--rotation-angle': `${shape.rotate}deg`,
+                             '--force-rotation': 'true'
+                         })
+                     }}
+                     data-rotation={shape.rotate}
+                     onTouchStart={(e) => {
+                         // 只在旋轉按鈕外的區域允許拖曳
+                         if (e.target === e.currentTarget) {
+                             console.log(`圖形觸控開始: ${type} - 允許拖曳`);
+                         }
+                     }}
+                 >
                     {shapeStyles[type].canRotate && (
-                        <div 
-                            className="rotate-btn" 
-                            onClick={() => rotateShape(type)}
-                            onTouchStart={(e) => handleTouchStart(e, type)}
-                            onTouchEnd={(e) => handleTouchEnd(e, type)}
-                            onTouchMove={(e) => handleTouchMove(e, type)}
-                        > 
+                        <div
+                            className="rotate-btn"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log(`點擊旋轉按鈕: ${type}`);
+                                rotateShape(type);
+                            }}
+                            onTouchStart={(e) => {
+                                e.stopPropagation();
+                                console.log(`旋轉按鈕觸控開始: ${type}`);
+                            }}
+                            onTouchEnd={(e) => {
+                                e.stopPropagation();
+                                console.log(`旋轉按鈕觸控結束: ${type}`);
+                                rotateShape(type);
+                            }}
+                            onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }}
+                        >
                             ⟳
                         </div>
                     )}
