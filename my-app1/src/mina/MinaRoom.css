@@ -11,13 +11,6 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* 改善觸控響應 */
-.rotate-btn {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-}
-
 /* 強制保持旋轉角度的樣式 */
 .shape-dragging {
   transition: none !important;
@@ -26,7 +19,7 @@
   transform-origin: center center;
 }
 
-.shape-dragging * {
+.shape-dragging *:not(.rotate-btn) {
   pointer-events: none;
 }
 
@@ -36,7 +29,7 @@
 
 /* 旋轉過渡效果 */
 .shape {
-  transition: transform 0.2s ease-out;
+  transition: none;
 }
 
 .shape-dragging {
@@ -55,6 +48,11 @@
 .rotate-btn:active {
   transform: translate(-50%, -50%) scale(0.9);
   transition: transform 0.1s ease;
+}
+
+/* 確保旋轉按鈕在 active 狀態下仍然可見 */
+.rotate-btn:active {
+  z-index: 1000;
 }
 
 /* 確保觸控事件正常工作 */
@@ -128,6 +126,7 @@ html, body {
   -khtml-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  
 }
 
 .delete-area {

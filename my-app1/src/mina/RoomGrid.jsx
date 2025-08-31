@@ -73,57 +73,23 @@ function MinaRoom() {
         setIsLoaded(true);
     }, []);
 
-
-
-    // 監聽 shapes 變化，強制更新 DOM 中的旋轉角度
+    // 監控旋轉狀態變化，強制更新 DOM（只在拖曳停止後）
     useEffect(() => {
-        if (!isLoaded) return;
-
         Object.keys(shapes).forEach((type) => {
-            const shape = shapes[type];
-            if (shape && refs[type].current) {
-                const element = refs[type].current;
-
-                // 檢查當前 DOM 中的旋轉角度
-                const currentTransform = element.style.transform;
-                const translateMatch = currentTransform.match(/translate\([^)]+\)/);
-                const rotationMatch = currentTransform.match(/rotate\(([^)]+)\)/);
-
-                // 如果旋轉角度不匹配，強制更新
-                if (!rotationMatch || rotationMatch[1] !== `${shape.rotate}deg`) {
-                    if (translateMatch) {
-                        element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
-                    } else {
-                        element.style.transform = `rotate(${shape.rotate}deg)`;
-                    }
-
-                    console.log(`強制修正 ${type} 的旋轉: ${shape.rotate}°`);
-
-                    // 強制重繪
-                    void element.offsetHeight;
-                }
-            }
-        });
-    }, [shapes, refs, isLoaded]);
-
-    // 監聽拖曳狀態，在拖曳過程中保持旋轉角度
-    useEffect(() => {
-        Object.keys(isDragging).forEach((type) => {
-            if (isDragging[type] && refs[type].current) {
-                // 在拖曳過程中實時保持旋轉角度
+            if (shapes[type] && refs[type].current && !isDragging[type]) {
                 const element = refs[type].current;
                 const shape = shapes[type];
-                if (shape) {
-                    const currentTransform = element.style.transform;
-                    const translateMatch = currentTransform.match(/translate\([^)]+\)/);
-                    if (translateMatch) {
-                        element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
-                        console.log(`拖曳結束後恢復 ${type} 的旋轉角度: ${shape.rotate}°`);
-                    }
+                const currentTransform = element.style.transform;
+                const translateMatch = currentTransform.match(/translate\([^)]+\)/);
+
+                if (translateMatch) {
+                    element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
+                } else {
+                    element.style.transform = `rotate(${shape.rotate}deg)`;
                 }
             }
         });
-    }, [isDragging, shapes, refs]);
+    }, [shapes, isDragging]);
 
     const addShape = (type) => {
         const initPos = { x: 0, y: 0, rotate: 0 };
@@ -167,8 +133,6 @@ function MinaRoom() {
     };
 
     const rotateShape = (type) => {
-        console.log(`開始旋轉 ${type}`);
-
         setShapes((prev) => {
             const shape = prev[type];
             if (!shape) return prev;
@@ -176,12 +140,10 @@ function MinaRoom() {
             const newRotation = (shape.rotate + 90) % 360;
             const rotated = { ...shape, rotate: newRotation };
 
-            console.log(`狀態更新: ${type} 從 ${shape.rotate}° 到 ${newRotation}°`);
-
             // 保存到 localStorage
             localStorage.setItem(type, JSON.stringify(rotated));
 
-            // 立即更新 DOM
+            // 強制更新 DOM 以確保旋轉立即生效
             if (refs[type].current) {
                 const element = refs[type].current;
                 const currentTransform = element.style.transform;
@@ -193,7 +155,8 @@ function MinaRoom() {
                     element.style.transform = `rotate(${newRotation}deg)`;
                 }
 
-                console.log(`立即更新 DOM: ${type} 旋轉到 ${newRotation}°`);
+                // 強制瀏覽器重新渲染
+                void element.offsetHeight;
             }
 
             return { ...prev, [type]: rotated };
@@ -203,14 +166,11 @@ function MinaRoom() {
     // 觸控事件處理 - 避免 preventDefault 錯誤
     const handleTouchStart = (e, type) => {
         e.stopPropagation();
-        console.log(`觸控開始: ${type}`);
     };
 
     const handleTouchEnd = (e, type) => {
         e.stopPropagation();
-
         // 觸控旋轉也需要立即生效
-        console.log(`觸控旋轉 ${type}`);
         rotateShape(type);
     };
 
@@ -221,52 +181,82 @@ function MinaRoom() {
 
     const handleDragStart = (type) => {
         setIsDragging(prev => ({ ...prev, [type]: true }));
-    };
-
-    const handleDrag = (type) => {
-        // 在拖曳過程中實時保持旋轉角度
-        if (refs[type].current) {
+        
+        // 網頁：設置 MutationObserver 來監控樣式變化
+        const isTouchDevice = "ontouchstart" in window;
+        if (!isTouchDevice && refs[type].current) {
             const element = refs[type].current;
             const shape = shapes[type];
-            if (shape) {
-                // 強制保持旋轉角度，使用更激進的方式
-                const currentTransform = element.style.transform;
-                const translateMatch = currentTransform.match(/translate\([^)]+\)/);
-                if (translateMatch) {
-                    const newTransform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
-                    element.style.transform = newTransform;
-                }
-
-                // 使用 MutationObserver 監聽樣式變化，立即恢復旋轉角度
-                if (!element._rotationObserver) {
-                    element._rotationObserver = new MutationObserver(() => {
+            
+            // 創建 MutationObserver 來監控樣式變化
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
                         const currentTransform = element.style.transform;
-                        const rotationMatch = currentTransform.match(/rotate\(([^)]+)\)/);
-                        if (!rotationMatch || rotationMatch[1] !== `${shape.rotate}deg`) {
+                        const hasRotation = currentTransform.includes('rotate');
+                        
+                        if (!hasRotation) {
+                            // 如果沒有旋轉，強制添加回來
                             const translateMatch = currentTransform.match(/translate\([^)]+\)/);
                             if (translateMatch) {
                                 element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
+                            } else {
+                                element.style.transform = `rotate(${shape.rotate}deg)`;
                             }
                         }
-                    });
+                    }
+                });
+            });
+            
+            // 開始監控
+            observer.observe(element, { attributes: true, attributeFilter: ['style'] });
+            
+            // 保存 observer 引用，以便在拖曳停止時清理
+            element._rotationObserver = observer;
+        }
+    };
 
-                    element._rotationObserver.observe(element, {
-                        attributes: true,
-                        attributeFilter: ['style']
-                    });
-                }
+        const handleDrag = (type) => {
+        // 檢測是否為觸控設備
+        const isTouchDevice = "ontouchstart" in window;
+        
+        if (isTouchDevice) {
+            // 手機：拖曳時不做任何干擾，讓 react-draggable 自由處理
+            return;
+        } else {
+            // 網頁：拖曳過程中強制保持旋轉角度
+            if (refs[type].current && shapes[type]) {
+                const element = refs[type].current;
+                const shape = shapes[type];
+                
+                // 使用 requestAnimationFrame 來確保在正確的時機更新
+                requestAnimationFrame(() => {
+                    if (element && element.style) {
+                        const currentTransform = element.style.transform;
+                        const translateMatch = currentTransform.match(/translate\([^)]+\)/);
+                        
+                        if (translateMatch) {
+                            element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
+                        } else {
+                            element.style.transform = `rotate(${shape.rotate}deg)`;
+                        }
+                    }
+                });
             }
         }
     };
 
     const handleDragStop = (type) => {
-        console.log(`拖曳停止: ${type}`);
         setIsDragging(prev => ({ ...prev, [type]: false }));
-
-        // 清理 MutationObserver
-        if (refs[type].current && refs[type].current._rotationObserver) {
-            refs[type].current._rotationObserver.disconnect();
-            refs[type].current._rotationObserver = null;
+        
+        // 網頁：清理 MutationObserver
+        const isTouchDevice = "ontouchstart" in window;
+        if (!isTouchDevice && refs[type].current) {
+            const element = refs[type].current;
+            if (element._rotationObserver) {
+                element._rotationObserver.disconnect();
+                delete element._rotationObserver;
+            }
         }
     };
 
@@ -274,6 +264,9 @@ function MinaRoom() {
         const shape = shapes[type];
         if (!shape) return null;
 
+        // 檢測是否為觸控設備
+        const isTouchDevice = "ontouchstart" in window;
+        
         return (
             <Draggable
                 nodeRef={refs[type]}
@@ -284,10 +277,17 @@ function MinaRoom() {
                     handleDragStop(type);
                     handleStop(type, e, data);
                 }}
-                enableUserSelectHack={false}
-                allowAnyClick={true}
+                // 手機和網頁使用不同的配置
+                enableUserSelectHack={isTouchDevice ? true : false}
+                allowAnyClick={isTouchDevice ? true : false}
                 cancel=".rotate-btn"
+                // 手機上啟用觸控拖曳優化
+                touchAction={isTouchDevice ? "pan-x pan-y" : undefined}
+
                 onMouseDown={(e) => {
+                    // 只在網頁上處理滑鼠事件
+                    if (isTouchDevice) return;
+                    
                     // 確保拖曳開始時保持旋轉角度
                     if (e.target === e.currentTarget || e.target.closest('.rotate-btn')) {
                         return;
@@ -304,50 +304,54 @@ function MinaRoom() {
                         ...shapeStyles[type],
                         transform: `rotate(${shape.rotate}deg)`,
                         cursor: isDragging[type] ? "grabbing" : "grab",
-                        // 強制保持旋轉角度
-                        ...(isDragging[type] && {
-                            '--rotation-angle': `${shape.rotate}deg`,
-                            '--force-rotation': 'true'
-                        })
+                        // 強制保持旋轉
+                        willChange: "transform",
                     }}
                     data-rotation={shape.rotate}
-                    onTouchStart={(e) => {
-                        // 只在旋轉按鈕外的區域允許拖曳
-                        if (e.target === e.currentTarget) {
-                            console.log(`圖形觸控開始: ${type} - 允許拖曳`);
-                        }
-                    }}
                 >
-                    {shapeStyles[type].canRotate && (
-                        <div
-                            className="rotate-btn"
-                            onClick={(e) => {
-                                if ("ontouchstart" in window) return; // 手機上不執行 click
-                                e.preventDefault();
-                                e.stopPropagation();
-                                console.log(`點擊旋轉按鈕: ${type}`);
-                                rotateShape(type);
-                                setIsDragging(prev => ({ ...prev, [type]: false })); // 保證能繼續拖曳
-                            }}
-                            onTouchStart={(e) => {
-                                e.stopPropagation();
-                                console.log(`旋轉按鈕觸控開始: ${type}`);
-                            }}
-                            onTouchEnd={(e) => {
-                                e.stopPropagation();
-                                console.log(`旋轉按鈕觸控結束: ${type}`);
-                                // 直接調用旋轉，不使用 setTimeout
-                                rotateShape(type);
-                                setIsDragging(prev => ({ ...prev, [type]: false })); // 保證能繼續拖曳
-                            }}
-                            onMouseDown={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                            }}
-                        >
-                            ⟳
-                        </div>
-                    )}
+                                         {shapeStyles[type].canRotate && (
+                         <div
+                             className="rotate-btn"
+                             onClick={(e) => {
+                                 // 只在網頁上處理點擊
+                                 if (isTouchDevice) return;
+                                 
+                                 e.preventDefault();
+                                 e.stopPropagation();
+                                 rotateShape(type);
+                             }}
+                             onTouchStart={(e) => {
+                                 // 只在手機上處理觸控
+                                 if (!isTouchDevice) return;
+                                 
+                                 e.stopPropagation();
+                             }}
+                             onTouchEnd={(e) => {
+                                 // 只在手機上處理觸控
+                                 if (!isTouchDevice) return;
+                                 
+                                 e.stopPropagation();
+                                 // 防止重複觸發
+                                 if (!e.target._rotated) {
+                                     e.target._rotated = true;
+                                     rotateShape(type);
+                                     // 延遲重置標記，防止快速點擊
+                                     setTimeout(() => {
+                                         e.target._rotated = false;
+                                     }, 300);
+                                 }
+                             }}
+                             onMouseDown={(e) => {
+                                 // 只在網頁上處理滑鼠
+                                 if (isTouchDevice) return;
+                                 
+                                 e.preventDefault();
+                                 e.stopPropagation();
+                             }}
+                         >
+                             ⟳
+                         </div>
+                     )}
                 </div>
             </Draggable>
         );
