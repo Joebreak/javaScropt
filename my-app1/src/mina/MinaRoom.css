@@ -61,19 +61,93 @@ html, body {
   -webkit-overflow-scrolling: touch;
 }
 
+/* 小螢幕手機優化 */
+@media (max-width: 480px) {
+  /* 標籤字體大小 - 適中但清晰 */
+  .grid-label {
+    font-size: 12px !important;
+    font-weight: bold !important;
+    color: #000 !important;
+    text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.9) !important;
+  }
+  
+  /* 刪除按鈕 - 適中尺寸但明顯 */
+  .delete-area {
+    width: 35px !important;
+    height: 35px !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    background: rgba(255, 0, 0, 0.2) !important;
+    border-width: 2px !important;
+    color: #d00 !important;
+  }
+  
+  /* 形狀按鈕 - 適中尺寸 */
+  .shape-button {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    border-width: 1px !important;
+  }
+  
+  /* 旋轉按鈕 - 小但可點擊 */
+  .rotate-btn {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 10px !important;
+  }
+}
+
 /* 觸控設備優化 */
 @media (hover: none) and (pointer: coarse) {
   .rotate-btn {
-    min-width: 30px;
-    min-height: 30px;
-    font-size: 14px;
-    width: 30px !important;
-    height: 30px !important;
+    min-width: 25px;
+    min-height: 25px;
+    font-size: 12px;
+    width: 25px !important;
+    height: 25px !important;
   }
   
   .shape-button {
-    min-width: 60px;
-    min-height: 60px;
+    min-width: 45px;
+    min-height: 45px;
+  }
+  
+  /* 手機版標籤字體大小優化 */
+  .grid-label {
+    font-size: 14px !important;
+    font-weight: bold !important;
+    color: #333 !important;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8) !important;
+  }
+  
+  /* 手機版刪除按鈕優化 */
+  .delete-area {
+    width: 45px !important;
+    height: 45px !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+    background: rgba(255, 0, 0, 0.1) !important;
+    border-width: 2px !important;
+    box-shadow: 0 2px 4px rgba(255, 0, 0, 0.3) !important;
+  }
+  
+  /* 手機版形狀按鈕優化 */
+  .shape-button {
+    min-width: 50px !important;
+    min-height: 50px !important;
+    border-width: 1px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  /* 手機版網格優化 */
+  .grid-container {
+    gap: 3px !important;
+  }
+  
+  .grid-cell {
+    border-width: 1px !important;
   }
 }
 

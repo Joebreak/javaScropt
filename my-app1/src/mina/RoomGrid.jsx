@@ -4,7 +4,17 @@ import "./MinaRoom.css";
 
 const rows = 8;
 const cols = 10;
-const cellSize = 40;
+// 根據螢幕大小動態調整格子大小
+const getCellSize = () => {
+    if (typeof window !== 'undefined') {
+        const width = window.innerWidth;
+        if (width <= 480) return 25; // 小螢幕手機
+        if (width <= 768) return 30; // 一般手機
+        return 40; // 桌面
+    }
+    return 40;
+};
+const cellSize = getCellSize();
 
 const initGrid = Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
 
@@ -94,6 +104,22 @@ function MinaRoom() {
     };
     const [shapes, setShapes] = useState(getInitialShapes);
     const [isDragging, setIsDragging] = useState({});
+    const [currentCellSize, setCurrentCellSize] = useState(cellSize);
+
+    // 響應式調整格子大小
+    useEffect(() => {
+        const handleResize = () => {
+            const width = window.innerWidth;
+            let newSize = 40;
+            if (width <= 480) newSize = 25;
+            else if (width <= 768) newSize = 30;
+            setCurrentCellSize(newSize);
+        };
+
+        handleResize(); // 初始設置
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const refs = React.useMemo(() => {
         const obj = {};
@@ -397,22 +423,24 @@ function MinaRoom() {
             <div
                 style={{
                     display: "grid",
-                    gridTemplateRows: `${cellSize}px repeat(${rows}, ${cellSize}px) ${cellSize}px`, // 上 + 中間 + 下
-                    gridTemplateColumns: `${cellSize}px repeat(${cols}, ${cellSize}px) ${cellSize}px`, // 左 + 中間 + 右
-                    gap: 4,
+                    gridTemplateRows: `${currentCellSize}px repeat(${rows}, ${currentCellSize}px) ${currentCellSize}px`, // 上 + 中間 + 下
+                    gridTemplateColumns: `${currentCellSize}px repeat(${cols}, ${currentCellSize}px) ${currentCellSize}px`, // 左 + 中間 + 右
+                    gap: window.innerWidth <= 480 ? 2 : 4,
                     justifyContent: "center",
-                    marginBottom: 40,
+                    marginBottom: window.innerWidth <= 480 ? 20 : 40,
                 }}
             >
                 <div style={{}} />
                 {Array.from({ length: cols }, (_, cIdx) => (
                     <div
                         key={`col-header-${cIdx}`}
+                        className="grid-label"
                         style={{
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
                             fontWeight: "bold",
+                            fontSize: "14px",
                         }}
                     >
                         {cIdx + 1}
@@ -423,11 +451,13 @@ function MinaRoom() {
                 {initGrid.map((row, rIdx) => (
                     <React.Fragment key={`row-${rIdx}`}>
                         <div
+                            className="grid-label"
                             style={{
                                 display: "flex",
                                 justifyContent: "center",
                                 alignItems: "center",
                                 fontWeight: "bold",
+                                fontSize: "14px",
                             }}
                         >
                             {leftRowLabels[rIdx]}
@@ -438,17 +468,19 @@ function MinaRoom() {
                                 style={{
                                     border: "1px solid #ccc",
                                     background: "#fff",
-                                    width: `${cellSize}px`,
-                                    height: `${cellSize}px`,
+                                    width: `${currentCellSize}px`,
+                                    height: `${currentCellSize}px`,
                                 }}
                             />
                         ))}
                         <div
+                            className="grid-label"
                             style={{
                                 display: "flex",
                                 justifyContent: "center",
                                 alignItems: "center",
                                 fontWeight: "bold",
+                                fontSize: "14px",
                             }}
                         >
                             {rightColLabels[rIdx]}
@@ -459,11 +491,13 @@ function MinaRoom() {
                 {Array.from({ length: cols }, (_, cIdx) => (
                     <div
                         key={`bottom-${cIdx}`}
+                        className="grid-label"
                         style={{
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
                             fontWeight: "bold",
+                            fontSize: "14px",
                         }}
                     >
                         {bottomRowLabels[cIdx]}
@@ -471,51 +505,106 @@ function MinaRoom() {
                 ))}
             </div>
 
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 10, gap: 10, }}>
-                {/* 刪除區域 */}
-                <div
-                    ref={deleteRef}
-                    style={{
-                        //position: "fixed",
-                        top: 20,
-                        left: "50%",
-                        transform: "translateX(-50%)",
-                        width: 40,
-                        height: 40,
-                        background: "transparent",
-                        border: "2px dashed red",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        borderRadius: 8,
-                        zIndex: 999,
-                    }}>X</div>
-                {Object.keys(shapeStyles).map((type) => (
-                    <button
-                        key={type}
-                        onClick={() => addShape(type)}
+            <div style={{ 
+                display: "flex", 
+                flexDirection: "column",
+                alignItems: "center", 
+                marginBottom: window.innerWidth <= 480 ? 5 : 10, 
+                gap: window.innerWidth <= 480 ? 8 : 12,
+            }}>
+                {/* 第一排：刪除按鈕 + 前5個形狀按鈕 */}
+                <div style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: window.innerWidth <= 480 ? 5 : 10,
+                    flexWrap: "wrap"
+                }}>
+                    {/* 刪除區域 */}
+                    <div
+                        ref={deleteRef}
+                        className="delete-area"
                         style={{
-                            width: 50,
-                            height: 50,
+                            width: 40,
+                            height: 40,
+                            background: "transparent",
+                            border: "2px dashed red",
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
-                            border: "1px solid #ccc",
                             borderRadius: 8,
-                            background: "#f9f9f9",
-                            cursor: "pointer",
-                        }}
-                    >
-                        <div style={{
-                            ...shapeStyles[type],
-                            transform: "scale(0.5)",
-                            position: "static",
-                            cursor: "default",
-                            background: shapeStyles[type].useLayered ? shapeStyles[type].innerLayer.background : shapeStyles[type].background,
-                            border: "1px solid black"
-                        }} />
-                    </button>
-                ))}
+                            zIndex: 999,
+                            fontSize: "16px",
+                            fontWeight: "bold",
+                            color: "red",
+                        }}>X</div>
+                    {Object.keys(shapeStyles).slice(0, 5).map((type) => (
+                        <button
+                            key={type}
+                            className="shape-button"
+                            onClick={() => addShape(type)}
+                            style={{
+                                width: 50,
+                                height: 50,
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                border: "1px solid #ccc",
+                                borderRadius: 8,
+                                background: "#f9f9f9",
+                                cursor: "pointer",
+                            }}
+                        >
+                            <div style={{
+                                ...shapeStyles[type],
+                                transform: "scale(0.5)",
+                                position: "static",
+                                cursor: "default",
+                                background: shapeStyles[type].useLayered ? shapeStyles[type].innerLayer.background : shapeStyles[type].background,
+                                border: "1px solid black"
+                            }} />
+                        </button>
+                    ))}
+                </div>
+
+                {/* 第二排：剩餘的形狀按鈕 */}
+                {Object.keys(shapeStyles).length > 5 && (
+                    <div style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: window.innerWidth <= 480 ? 5 : 10,
+                        flexWrap: "wrap"
+                    }}>
+                        {Object.keys(shapeStyles).slice(5).map((type) => (
+                            <button
+                                key={type}
+                                className="shape-button"
+                                onClick={() => addShape(type)}
+                                style={{
+                                    width: 50,
+                                    height: 50,
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    border: "1px solid #ccc",
+                                    borderRadius: 8,
+                                    background: "#f9f9f9",
+                                    cursor: "pointer",
+                                }}
+                            >
+                                <div style={{
+                                    ...shapeStyles[type],
+                                    transform: "scale(0.5)",
+                                    position: "static",
+                                    cursor: "default",
+                                    background: shapeStyles[type].useLayered ? shapeStyles[type].innerLayer.background : shapeStyles[type].background,
+                                    border: "1px solid black"
+                                }} />
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
             <div />
             {Object.keys(shapes).map((type) => (
