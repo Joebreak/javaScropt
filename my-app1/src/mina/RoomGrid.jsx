@@ -130,21 +130,7 @@ function MinaRoom() {
             if (!shape) return prev;
             const newRotation = (shape.rotate + 90) % 360;
             const rotated = { ...shape, rotate: newRotation };
-            // 保存到 localStorage
             localStorage.setItem(type, JSON.stringify(rotated));
-            // 觸控設備上也需要強制更新 DOM，確保拖曳功能正常
-            if (("ontouchstart" in window) && refs[type].current) {
-                const element = refs[type].current;
-                const currentTransform = element.style.transform;
-                const translateMatch = currentTransform.match(/translate\([^)]+\)/);
-
-                if (translateMatch) {
-                    element.style.transform = `${translateMatch[0]} rotate(${newRotation}deg)`;
-                } else {
-                    element.style.transform = `rotate(${newRotation}deg)`;
-                }
-            }
-            // 強制更新 DOM 以確保旋轉立即生效
             if (refs[type].current) {
                 const element = refs[type].current;
                 const currentTransform = element.style.transform;
