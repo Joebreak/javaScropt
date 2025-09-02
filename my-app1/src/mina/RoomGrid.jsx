@@ -4,6 +4,7 @@ import "./MinaRoom.css";
 
 const rows = 8;
 const cols = 10;
+const cellSize = 40;
 
 const initGrid = Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
 
@@ -14,34 +15,71 @@ const rightColLabels = Array.from({ length: cols }, (_, i) => i + 11);
 const bottomRowLabels = Array.from({ length: cols }, (_, i) => String.fromCharCode("I".charCodeAt(0) + i));
 
 const shapeStyles = {
-    triangle: {
+    triangle1: {
         canRotate: true,
-        width: 60,
-        height: 60,
-        background: "blue",
+        width: `${cellSize * 4 + 4 * 3}px`,
+        height: `${cellSize * 2 + 4 * 1}px`,
+        background: "black",
         clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
+        useLayered: true,
+        innerLayer: {
+            background: "white",
+            offset: 0,
+            clipPath: "polygon(50% 2%, 2% 98%, 98% 98%)",
+        },
+    },
+    triangle2: {
+        canRotate: true,
+        width: `${cellSize * 4 + 4 * 3}px`,
+        height: `${cellSize * 2 + 4 * 1}px`,
+        background: "black",
+        clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
+        useLayered: true,
+        innerLayer: {
+            background: "white",
+            offset: 0,
+            clipPath: "polygon(50% 2%, 2% 98%, 98% 98%)",
+        },
     },
     rightTriangle: {
         canRotate: true,
-        width: 60,
-        height: 60,
+        width: `${cellSize * 2 + 4 * 1}px`,
+        height: `${cellSize * 2 + 4 * 1}px`,
         background: "yellow",
         clipPath: "polygon(0 0, 100% 0, 0 100%)",
     },
     parallelogram: {
         canRotate: true,
-        width: 90,
-        height: 60,
+        width: `${cellSize * 3 + 4 * 2}px`,
+        height: `${cellSize * 1 + 4 * 0}px`,
         background: "red",
         clipPath: "polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%)",
     },
     diamond: {
         canRotate: false,
-        width: 80,
-        height: 80,
-        background: "white",
+        width: `${cellSize * 2 + 4 * 1}px`,
+        height: `${cellSize * 2 + 4 * 1}px`,
+        background: "blue",
         clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
-        border: "3px solid black",
+    },
+    transparent: {
+        canRotate: true,
+        width: `${cellSize * 2 + 4 * 1}px`,
+        height: `${cellSize * 1 + 4 * 0}px`,
+        background: "black",
+        clipPath: "polygon(0% 0%, 50% 0%, 0% 100%, 50% 0%, 100% 0%, 50% 100%)",
+        useLayered: true,
+        innerLayer: {
+            background: "transparent",
+            offset: 0,
+            clipPath: "polygon(2% 2%, 48% 2%, 2% 98%, 48% 2%, 98% 2%, 48% 98%)",
+        },
+    },
+    blackRect: {
+        canRotate: true,
+        width: `${cellSize * 1 + 4 * 0}px`,
+        height: `${cellSize * 2 + 4 * 1}px`,
+        background: "black",
     },
 };
 
@@ -167,7 +205,6 @@ function MinaRoom() {
                     }
                 });
             } else {
-                // 網頁：設置 MutationObserver 來監控樣式變化
                 // 創建 MutationObserver 來監控樣式變化
                 const observer = new MutationObserver((mutations) => {
                     mutations.forEach((mutation) => {
@@ -187,7 +224,7 @@ function MinaRoom() {
                         }
                     });
                 });
-                // 開始監控
+                // // 開始監控
                 observer.observe(element, { attributes: true, attributeFilter: ['style'] });
                 // 保存 observer 引用，以便在拖曳停止時清理
                 element._rotationObserver = observer;
@@ -234,7 +271,7 @@ function MinaRoom() {
     };
 
     const handleDragStop = (type) => {
-        setIsDragging(prev => ({ ...prev, [type]: false }));
+        //setIsDragging(prev => ({ ...prev, [type]: false }));
 
         // 網頁：清理 MutationObserver
         const isTouchDevice = "ontouchstart" in window;
@@ -318,6 +355,19 @@ function MinaRoom() {
                     }}
                     data-rotation={shape.rotate}
                 >
+                    {shapeStyles[type].useLayered && (
+                        <div
+                            style={{
+                                position: "absolute",
+                                top: `${shapeStyles[type].innerLayer.offset}px`,
+                                left: `${shapeStyles[type].innerLayer.offset}px`,
+                                width: `${parseInt(shapeStyles[type].width) - shapeStyles[type].innerLayer.offset * 2}px`,
+                                height: `${parseInt(shapeStyles[type].height) - shapeStyles[type].innerLayer.offset * 2}px`,
+                                background: shapeStyles[type].innerLayer.background,
+                                clipPath: shapeStyles[type].innerLayer.clipPath || shapeStyles[type].clipPath,
+                            }}
+                        />
+                    )}
                     {shapeStyles[type].canRotate && (
                         <div
                             className="rotate-btn"
@@ -347,8 +397,8 @@ function MinaRoom() {
             <div
                 style={{
                     display: "grid",
-                    gridTemplateRows: `40px repeat(${rows}, 30px) 40px`, // 上 + 中間 + 下
-                    gridTemplateColumns: `40px repeat(${cols}, 30px) 40px`, // 左 + 中間 + 右
+                    gridTemplateRows: `${cellSize}px repeat(${rows}, ${cellSize}px) ${cellSize}px`, // 上 + 中間 + 下
+                    gridTemplateColumns: `${cellSize}px repeat(${cols}, ${cellSize}px) ${cellSize}px`, // 左 + 中間 + 右
                     gap: 4,
                     justifyContent: "center",
                     marginBottom: 40,
@@ -388,8 +438,8 @@ function MinaRoom() {
                                 style={{
                                     border: "1px solid #ccc",
                                     background: "#fff",
-                                    width: 30,
-                                    height: 30,
+                                    width: `${cellSize}px`,
+                                    height: `${cellSize}px`,
                                 }}
                             />
                         ))}
@@ -456,7 +506,14 @@ function MinaRoom() {
                             cursor: "pointer",
                         }}
                     >
-                        <div style={{ ...shapeStyles[type], transform: "scale(0.5)" }} />
+                        <div style={{
+                            ...shapeStyles[type],
+                            transform: "scale(0.5)",
+                            position: "static",
+                            cursor: "default",
+                            background: shapeStyles[type].useLayered ? shapeStyles[type].innerLayer.background : shapeStyles[type].background,
+                            border: "1px solid black"
+                        }} />
                     </button>
                 ))}
             </div>
