@@ -8,9 +8,9 @@ const cols = 10;
 const getCellSize = () => {
     if (typeof window !== 'undefined') {
         const width = window.innerWidth;
-        if (width <= 480) return 25; // 小螢幕手機
-        if (width <= 768) return 30; // 一般手機
-        return 40; // 桌面
+        if (width <= 480) return 30;
+        if (width <= 768) return 40;
+        return 60;
     }
     return 40;
 };
@@ -76,14 +76,10 @@ const shapeStyles = {
         canRotate: true,
         width: `${cellSize * 2 + 4 * 1}px`,
         height: `${cellSize * 1 + 4 * 0}px`,
-        background: "black",
-        clipPath: "polygon(0% 0%, 50% 0%, 0% 100%, 50% 0%, 100% 0%, 50% 100%)",
-        useLayered: true,
-        innerLayer: {
-            background: "transparent",
-            offset: 0,
-            clipPath: "polygon(2% 2%, 48% 2%, 2% 98%, 48% 2%, 98% 2%, 48% 98%)",
-        },
+        background: "transparent",
+        border: "3px dashed #333",
+        clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
+        useLayered: false,
     },
     blackRect: {
         canRotate: true,
@@ -109,14 +105,11 @@ function MinaRoom() {
     // 響應式調整格子大小
     useEffect(() => {
         const handleResize = () => {
-            const width = window.innerWidth;
-            let newSize = 40;
-            if (width <= 480) newSize = 25;
-            else if (width <= 768) newSize = 30;
+            const newSize = getCellSize();
             setCurrentCellSize(newSize);
         };
 
-        handleResize(); // 初始設置
+        handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
