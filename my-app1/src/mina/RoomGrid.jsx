@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import Draggable from "react-draggable";
-// CSS 樣式已內聯到組件中
+// import "./MinaRoom.css";
 
 const rows = 8;
 const cols = 10;
@@ -487,6 +487,7 @@ function MinaRoom() {
 }
 
 export default MinaRoom;
+
 
 // 內聯 CSS 樣式
 const styles = `
