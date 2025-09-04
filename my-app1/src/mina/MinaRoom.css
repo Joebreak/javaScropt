@@ -1,7 +1,7 @@
 /* MinaRoom.css */
 
-/* 手機觸控優化 */
-* {
+/* 手機觸控優化 - 只針對拖曳元素 */
+.shape, .shape-button, .rotate-btn {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -55,10 +55,12 @@
   z-index: 1000;
 }
 
-/* 確保觸控事件正常工作 */
-html, body {
-  touch-action: manipulation;
-  -webkit-overflow-scrolling: touch;
+/* 確保觸控事件正常工作 - 只針對觸控設備 */
+@media (hover: none) and (pointer: coarse) {
+  html, body {
+    touch-action: manipulation;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 /* 小螢幕手機優化 */
@@ -168,9 +170,13 @@ html, body {
 .shape {
   position: absolute;
   cursor: grab;
-  touch-action: pan-x pan-y;
-  -webkit-user-select: none;
-  user-select: none;
+}
+
+/* 觸控設備的 touch-action */
+@media (hover: none) and (pointer: coarse) {
+  .shape {
+    touch-action: pan-x pan-y;
+  }
 }
 
 .rotate-btn {
@@ -180,15 +186,15 @@ html, body {
   transform: translate(-50%, -50%);
   width: 20px;
   height: 20px;
-  background: #4f8cff;
-  color: #1f0303ff;
+  background: #4f8cff !important;
+  color: #1f0303ff !important;
   font-size: 12px;
-  display: flex;
+  display: flex !important;
   justify-content: center;
   align-items: center;
   border-radius: 50%;
   cursor: pointer;
-  z-index: 999;
+  z-index: 999 !important;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   pointer-events: auto !important;
@@ -200,7 +206,6 @@ html, body {
   -khtml-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-  
 }
 
 .delete-area {
@@ -226,13 +231,12 @@ html, body {
   cursor: pointer;
 }
 
-/* 拖曳區域優化 */
-.shape-triangle,
-.shape-rightTriangle,
-.shape-parallelogram,
-.shape-diamond {
-  touch-action: pan-x pan-y;
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
+/* 拖曳區域優化 - 只針對觸控設備 */
+@media (hover: none) and (pointer: coarse) {
+  .shape-triangle,
+  .shape-rightTriangle,
+  .shape-parallelogram,
+  .shape-diamond {
+    touch-action: pan-x pan-y;
+  }
 }

@@ -102,11 +102,9 @@ function MinaRoom() {
     const [isDragging, setIsDragging] = useState({});
     const [currentCellSize, setCurrentCellSize] = useState(cellSize);
 
-    // 響應式調整格子大小
     useEffect(() => {
         const handleResize = () => {
-            const newSize = getCellSize();
-            setCurrentCellSize(newSize);
+            setCurrentCellSize(getCellSize());
         };
 
         handleResize();
@@ -215,7 +213,6 @@ function MinaRoom() {
                     if (element && element.style && shape) {
                         const currentTransform = element.style.transform;
                         const translateMatch = currentTransform.match(/translate\([^)]+\)/);
-
                         if (translateMatch) {
                             element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
                         } else {
@@ -224,6 +221,7 @@ function MinaRoom() {
                     }
                 });
             } else {
+                console.log(`handleDragStart2: ${type} mousemove`);
                 // 創建 MutationObserver 來監控樣式變化
                 const observer = new MutationObserver((mutations) => {
                     mutations.forEach((mutation) => {
@@ -252,14 +250,15 @@ function MinaRoom() {
     };
 
     const handleDrag = (type) => {
-        // 手機：主動控制觸控拖曳過程，確保旋轉角度不丟失
         if (refs[type].current && shapes[type]) {
             const element = refs[type].current;
             const shape = shapes[type];
-
+            // 手機：主動控制觸控拖曳過程，確保旋轉角度不丟失
             if ("ontouchstart" in window) {
+                //console.log(`handleDrag1: ${type} touchmove`);
                 // 使用 requestAnimationFrame 來確保在正確的時機更新
                 requestAnimationFrame(() => {
+                    console.log(`handleDrag11: ${type} touchmove`);
                     if (element && element.style) {
                         const currentTransform = element.style.transform;
                         const translateMatch = currentTransform.match(/translate\([^)]+\)/);
@@ -272,6 +271,7 @@ function MinaRoom() {
                     }
                 });
             } else {
+                console.log(`handleDrag2: ${type} mousemove`);
                 // 使用 requestAnimationFrame 來確保在正確的時機更新
                 requestAnimationFrame(() => {
                     if (element && element.style) {
@@ -291,35 +291,32 @@ function MinaRoom() {
 
     const handleDragStop = (type) => {
         //setIsDragging(prev => ({ ...prev, [type]: false }));
-
+        console.log(`handleDragStop: ${type}`);
         // 網頁：清理 MutationObserver
-        const isTouchDevice = "ontouchstart" in window;
-        if (!isTouchDevice && refs[type].current) {
-            const element = refs[type].current;
-            if (element._rotationObserver) {
-                element._rotationObserver.disconnect();
-                delete element._rotationObserver;
-            }
-        }
 
-        // 手機：確保拖曳停止後樣式正確
-        if (isTouchDevice && refs[type].current && shapes[type]) {
-            const element = refs[type].current;
-            const shape = shapes[type];
-
-            // 確保拖曳停止後旋轉角度正確
-            requestAnimationFrame(() => {
-                if (element && element.style && shape) {
-                    const currentTransform = element.style.transform;
-                    const translateMatch = currentTransform.match(/translate\([^)]+\)/);
-
-                    if (translateMatch) {
-                        element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
-                    } else {
-                        element.style.transform = `rotate(${shape.rotate}deg)`;
+        if (refs[type].current) {
+            const isTouchDevice = "ontouchstart" in window;
+            if (isTouchDevice) {
+                const element = refs[type].current;
+                const shape = shapes[type];
+                requestAnimationFrame(() => {
+                    if (element && element.style && shape) {
+                        const currentTransform = element.style.transform;
+                        const translateMatch = currentTransform.match(/translate\([^)]+\)/);
+                        if (translateMatch) {
+                            element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
+                        } else {
+                            element.style.transform = `rotate(${shape.rotate}deg)`;
+                        }
                     }
+                });
+            } else {
+                const element = refs[type].current;
+                if (element._rotationObserver) {
+                    element._rotationObserver.disconnect();
+                    delete element._rotationObserver;
                 }
-            });
+            }
         }
     };
 
@@ -340,25 +337,19 @@ function MinaRoom() {
                     handleDragStop(type);
                     handleStop(type, e, data);
                 }}
-                // 手機和網頁使用不同的配置
                 enableUserSelectHack={isTouchDevice}
                 allowAnyClick={isTouchDevice}
                 cancel={isTouchDevice ? undefined : ".rotate-btn"}
                 // 手機上啟用觸控拖曳優化
                 touchAction={isTouchDevice ? "pan-x pan-y" : undefined}
-                // 手機上主動控制觸控處理，確保拖曳體驗一致
-                // 手機和網頁使用不同的滑鼠事件處理
                 onMouseDown={isTouchDevice ? undefined : (e) => {
-                    // 只在網頁上處理滑鼠事件
                     if (isTouchDevice) return;
 
-                    // 確保拖曳開始時保持旋轉角度
                     if (e.target === e.currentTarget || e.target.closest('.rotate-btn')) {
                         return;
                     }
                     handleDragStart(type);
                 }}
-            // 手機上主動控制觸控處理，確保拖曳體驗一致
             >
                 <div
                     key={type}
@@ -498,11 +489,11 @@ function MinaRoom() {
                 ))}
             </div>
 
-            <div style={{ 
-                display: "flex", 
+            <div style={{
+                display: "flex",
                 flexDirection: "column",
-                alignItems: "center", 
-                marginBottom: window.innerWidth <= 480 ? 5 : 10, 
+                alignItems: "center",
+                marginBottom: window.innerWidth <= 480 ? 5 : 10,
                 gap: window.innerWidth <= 480 ? 8 : 12,
             }}>
                 {/* 第一排：刪除按鈕 + 前5個形狀按鈕 */}
