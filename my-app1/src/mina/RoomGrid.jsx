@@ -221,43 +221,25 @@ function MinaRoom() {
         if (refs[type].current) {
             const element = refs[type].current;
             const shape = shapes[type];
-            if ("ontouchstart" in window) {
-                // 使用 requestAnimationFrame 確保在正確時機更新樣式
-                requestAnimationFrame(() => {
-                    if (element && element.style && shape) {
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
                         const currentTransform = element.style.transform;
-                        const translateMatch = currentTransform.match(/translate\([^)]+\)/);
-                        if (translateMatch) {
-                            element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
-                        } else {
-                            element.style.transform = `rotate(${shape.rotate}deg)`;
+                        if (!currentTransform.includes('rotate')) {
+                            const translateMatch = currentTransform.match(/translate\([^)]+\)/);
+                            if (translateMatch) {
+                                element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
+                            } else {
+                                element.style.transform = `rotate(${shape.rotate}deg)`;
+                            }
                         }
                     }
                 });
-            } else {
-                // 創建 MutationObserver 來監控樣式變化
-                const observer = new MutationObserver((mutations) => {
-                    mutations.forEach((mutation) => {
-                        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                            const currentTransform = element.style.transform;
-                            const hasRotation = currentTransform.includes('rotate');
-                            if (!hasRotation) {
-                                // 如果沒有旋轉，強制添加回來
-                                const translateMatch = currentTransform.match(/translate\([^)]+\)/);
-                                if (translateMatch) {
-                                    element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
-                                } else {
-                                    element.style.transform = `rotate(${shape.rotate}deg)`;
-                                }
-                            }
-                        }
-                    });
-                });
-                // // 開始監控
-                observer.observe(element, { attributes: true, attributeFilter: ['style'] });
-                // 保存 observer 引用，以便在拖曳停止時清理
-                element._rotationObserver = observer;
-            }
+            });
+            // 開始監控
+            observer.observe(element, { attributes: true, attributeFilter: ['style'] });
+            // 保存 observer 引用，以便在拖曳停止時清理
+            element._rotationObserver = observer;
         }
     };
 
@@ -265,59 +247,28 @@ function MinaRoom() {
         if (refs[type].current && shapes[type]) {
             const element = refs[type].current;
             const shape = shapes[type];
-            if ("ontouchstart" in window) {
-                requestAnimationFrame(() => {
-                    if (element && element.style) {
-                        const currentTransform = element.style.transform;
-                        const translateMatch = currentTransform.match(/translate\([^)]+\)/);
+            requestAnimationFrame(() => {
+                if (element && element.style) {
+                    const currentTransform = element.style.transform;
+                    const translateMatch = currentTransform.match(/translate\([^)]+\)/);
 
-                        if (translateMatch) {
-                            element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
-                        } else {
-                            element.style.transform = `rotate(${shape.rotate}deg)`;
-                        }
+                    if (translateMatch) {
+                        element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
+                    } else {
+                        element.style.transform = `rotate(${shape.rotate}deg)`;
                     }
-                });
-            } else {
-                requestAnimationFrame(() => {
-                    if (element && element.style) {
-                        const currentTransform = element.style.transform;
-                        const translateMatch = currentTransform.match(/translate\([^)]+\)/);
-
-                        if (translateMatch) {
-                            element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
-                        } else {
-                            element.style.transform = `rotate(${shape.rotate}deg)`;
-                        }
-                    }
-                });
-            }
+                }
+            });
         }
     };
 
     const handleDragStop = (type) => {
         setIsDragging(prev => ({ ...prev, [type]: false }));
         if (refs[type].current) {
-            if ("ontouchstart" in window) {
-                const element = refs[type].current;
-                const shape = shapes[type];
-                requestAnimationFrame(() => {
-                    if (element && element.style && shape) {
-                        const currentTransform = element.style.transform;
-                        const translateMatch = currentTransform.match(/translate\([^)]+\)/);
-                        if (translateMatch) {
-                            element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
-                        } else {
-                            element.style.transform = `rotate(${shape.rotate}deg)`;
-                        }
-                    }
-                });
-            } else {
-                const element = refs[type].current;
-                if (element._rotationObserver) {
-                    element._rotationObserver.disconnect();
-                    delete element._rotationObserver;
-                }
+            const element = refs[type].current;
+            if (element._rotationObserver) {
+                element._rotationObserver.disconnect();
+                delete element._rotationObserver;
             }
         }
     };
