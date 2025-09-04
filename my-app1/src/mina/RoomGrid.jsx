@@ -4,17 +4,34 @@ import "./MinaRoom.css";
 
 const rows = 8;
 const cols = 10;
-// 根據螢幕大小動態調整格子大小
-const getCellSize = () => {
+const getGridConfig = () => {
     if (typeof window !== 'undefined') {
         const width = window.innerWidth;
-        if (width <= 480) return 30;
-        if (width <= 768) return 40;
-        return 60;
+        if (width <= 480) {
+            return {
+                cellSize: 30,
+                gap: 2
+            };
+        }
+        if (width <= 768) {
+            return {
+                cellSize: 40,
+                gap: 3
+            };
+        }
+        return {
+            cellSize: 60,
+            gap: 4
+        };
     }
-    return 40;
+    return {
+        cellSize: 40,
+        gap: 3
+    };
 };
-const cellSize = getCellSize();
+
+const gridConfig = getGridConfig();
+const cellSize = gridConfig.cellSize;
 
 const initGrid = Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
 
@@ -36,8 +53,8 @@ const copy = (source, overrides = {}) => ({
 const shapeStyles = {
     triangle1: {
         canRotate: true,
-        width: `${cellSize * 4 + 4 * 3}px`,
-        height: `${cellSize * 2 + 4 * 1}px`,
+        width: `${cellSize * 4 + gridConfig.gap * 3}px`,
+        height: `${cellSize * 2 + gridConfig.gap * 1}px`,
         background: "black",
         clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
         useLayered: true,
@@ -50,29 +67,29 @@ const shapeStyles = {
     get triangle2() { return copy(this.triangle1); },
     rightTriangle: {
         canRotate: true,
-        width: `${cellSize * 2 + 4 * 1}px`,
-        height: `${cellSize * 2 + 4 * 1}px`,
+        width: `${cellSize * 2 + gridConfig.gap * 1}px`,
+        height: `${cellSize * 2 + gridConfig.gap * 1}px`,
         background: "yellow",
         clipPath: "polygon(0 0, 100% 0, 0 100%)",
     },
     parallelogram: {
         canRotate: true,
-        width: `${cellSize * 3 + 4 * 2}px`,
-        height: `${cellSize * 1 + 4 * 0}px`,
+        width: `${cellSize * 3 + gridConfig.gap * 2}px`,
+        height: `${cellSize * 1 + gridConfig.gap * 0}px`,
         background: "red",
         clipPath: "polygon(32% 0%, 0% 100%, 65% 100%, 100% 0%)",
     },
     diamond: {
         canRotate: false,
-        width: `${cellSize * 2 + 4 * 1}px`,
-        height: `${cellSize * 2 + 4 * 1}px`,
+        width: `${cellSize * 2 + gridConfig.gap * 1}px`,
+        height: `${cellSize * 2 + gridConfig.gap * 1}px`,
         background: "blue",
         clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
     },
     transparent: {
         canRotate: true,
-        width: `${cellSize * 2 + 4 * 1}px`,
-        height: `${cellSize * 1 + 4 * 0}px`,
+        width: `${cellSize * 2 + gridConfig.gap * 1}px`,
+        height: `${cellSize * 1 + gridConfig.gap * 0}px`,
         background: "transparent",
         border: "3px dashed #333",
         clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
@@ -80,8 +97,8 @@ const shapeStyles = {
     },
     blackRect: {
         canRotate: true,
-        width: `${cellSize * 1 + 4 * 0}px`,
-        height: `${cellSize * 2 + 4 * 1}px`,
+        width: `${cellSize * 1 + gridConfig.gap * 0}px`,
+        height: `${cellSize * 2 + gridConfig.gap * 1}px`,
         background: "black",
     },
 };
@@ -101,7 +118,7 @@ function MinaRoom() {
 
     useEffect(() => {
         const handleResize = () => {
-            setCurrentCellSize(getCellSize());
+            setCurrentCellSize(getGridConfig().cellSize);
         };
 
         handleResize();
@@ -406,7 +423,7 @@ function MinaRoom() {
                     display: "grid",
                     gridTemplateRows: `${currentCellSize}px repeat(${rows}, ${currentCellSize}px) ${currentCellSize}px`, // 上 + 中間 + 下
                     gridTemplateColumns: `${currentCellSize}px repeat(${cols}, ${currentCellSize}px) ${currentCellSize}px`, // 左 + 中間 + 右
-                    gap: window.innerWidth <= 480 ? 2 : 4,
+                    gap: gridConfig.gap,
                     justifyContent: "center",
                     marginBottom: window.innerWidth <= 480 ? 20 : 40,
                 }}
