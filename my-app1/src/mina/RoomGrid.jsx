@@ -24,6 +24,15 @@ const rightColLabels = Array.from({ length: cols }, (_, i) => i + 11);
 
 const bottomRowLabels = Array.from({ length: cols }, (_, i) => String.fromCharCode("I".charCodeAt(0) + i));
 
+const copy = (source, overrides = {}) => ({
+    ...source,
+    ...overrides,
+    innerLayer: source.innerLayer ? {
+        ...source.innerLayer,
+        ...overrides.innerLayer
+    } : undefined
+});
+
 const shapeStyles = {
     triangle1: {
         canRotate: true,
@@ -38,19 +47,7 @@ const shapeStyles = {
             clipPath: "polygon(50% 2%, 2% 98%, 98% 98%)",
         },
     },
-    triangle2: {
-        canRotate: true,
-        width: `${cellSize * 4 + 4 * 3}px`,
-        height: `${cellSize * 2 + 4 * 1}px`,
-        background: "black",
-        clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
-        useLayered: true,
-        innerLayer: {
-            background: "white",
-            offset: 0,
-            clipPath: "polygon(50% 2%, 2% 98%, 98% 98%)",
-        },
-    },
+    get triangle2() { return copy(this.triangle1); },
     rightTriangle: {
         canRotate: true,
         width: `${cellSize * 2 + 4 * 1}px`,
@@ -63,7 +60,7 @@ const shapeStyles = {
         width: `${cellSize * 3 + 4 * 2}px`,
         height: `${cellSize * 1 + 4 * 0}px`,
         background: "red",
-        clipPath: "polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%)",
+        clipPath: "polygon(32% 0%, 0% 100%, 65% 100%, 100% 0%)",
     },
     diamond: {
         canRotate: false,
