@@ -235,14 +235,12 @@ function MinaRoom() {
                     }
                 });
             } else {
-                console.log(`handleDragStart2: ${type} mousemove`);
                 // 創建 MutationObserver 來監控樣式變化
                 const observer = new MutationObserver((mutations) => {
                     mutations.forEach((mutation) => {
                         if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
                             const currentTransform = element.style.transform;
                             const hasRotation = currentTransform.includes('rotate');
-
                             if (!hasRotation) {
                                 // 如果沒有旋轉，強制添加回來
                                 const translateMatch = currentTransform.match(/translate\([^)]+\)/);
@@ -267,12 +265,8 @@ function MinaRoom() {
         if (refs[type].current && shapes[type]) {
             const element = refs[type].current;
             const shape = shapes[type];
-            // 手機：主動控制觸控拖曳過程，確保旋轉角度不丟失
             if ("ontouchstart" in window) {
-                //console.log(`handleDrag1: ${type} touchmove`);
-                // 使用 requestAnimationFrame 來確保在正確的時機更新
                 requestAnimationFrame(() => {
-                    console.log(`handleDrag11: ${type} touchmove`);
                     if (element && element.style) {
                         const currentTransform = element.style.transform;
                         const translateMatch = currentTransform.match(/translate\([^)]+\)/);
@@ -285,8 +279,6 @@ function MinaRoom() {
                     }
                 });
             } else {
-                console.log(`handleDrag2: ${type} mousemove`);
-                // 使用 requestAnimationFrame 來確保在正確的時機更新
                 requestAnimationFrame(() => {
                     if (element && element.style) {
                         const currentTransform = element.style.transform;
@@ -304,13 +296,9 @@ function MinaRoom() {
     };
 
     const handleDragStop = (type) => {
-        //setIsDragging(prev => ({ ...prev, [type]: false }));
-        console.log(`handleDragStop: ${type}`);
-        // 網頁：清理 MutationObserver
-
+        setIsDragging(prev => ({ ...prev, [type]: false }));
         if (refs[type].current) {
-            const isTouchDevice = "ontouchstart" in window;
-            if (isTouchDevice) {
+            if ("ontouchstart" in window) {
                 const element = refs[type].current;
                 const shape = shapes[type];
                 requestAnimationFrame(() => {
