@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import Draggable from "react-draggable";
+import FloatingShapePanel from "./FloatingShapePanel";
 import "./MinaRoom.css";
 
 const rows = 8;
@@ -121,6 +122,7 @@ function MinaRoom() {
     const [isDragging, setIsDragging] = useState({});
     const [currentCellSize, setCurrentCellSize] = useState(cellSize);
     const [showRotateButtons, setShowRotateButtons] = useState(true);
+    const [showShapeButtons, setShowShapeButtons] = useState(false);
 
     useEffect(() => {
         const handleResize = () => {
@@ -447,154 +449,99 @@ function MinaRoom() {
                 ))}
             </div>
 
+            {/* 控制按鈕 - 在表格下方 */}
             <div style={{
                 display: "flex",
-                flexDirection: "column",
+                justifyContent: "center",
                 alignItems: "center",
-                marginBottom: window.innerWidth <= 480 ? 5 : 10,
-                gap: window.innerWidth <= 480 ? 8 : 12,
+                gap: window.innerWidth <= 480 ? 5 : 10,
+                flexWrap: "wrap",
+                marginBottom: window.innerWidth <= 480 ? 10 : 20
             }}>
-                {/* 第一排：控制按鈕 */}
-                <div style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: window.innerWidth <= 480 ? 5 : 10,
-                    flexWrap: "wrap",
-                    marginBottom: 10
-                }}>
-                    {/* 刪除區域 */}
-                    <div
-                        ref={deleteRef}
-                        className="delete-area"
-                        style={{
-                            width: 40,
-                            height: 40,
-                            background: "transparent",
-                            border: "2px dashed red",
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            borderRadius: 8,
-                            zIndex: 999,
-                            fontSize: "16px",
-                            fontWeight: "bold",
-                            color: "red",
-                        }}>X</div>
-                    
-                    {/* 隱藏旋轉按鈕 */}
-                    <button
-                        onClick={() => setShowRotateButtons(false)}
-                        style={{
-                            width: 60,
-                            height: 30,
-                            background: "#ff6b6b",
-                            color: "white",
-                            border: "none",
-                            borderRadius: 4,
-                            fontSize: "12px",
-                            fontWeight: "bold",
-                            cursor: "pointer",
-                        }}
-                    >
-                        隱藏旋轉
-                    </button>
-                    
-                    {/* 顯示旋轉按鈕 */}
-                    <button
-                        onClick={() => setShowRotateButtons(true)}
-                        style={{
-                            width: 60,
-                            height: 30,
-                            background: "#51cf66",
-                            color: "white",
-                            border: "none",
-                            borderRadius: 4,
-                            fontSize: "12px",
-                            fontWeight: "bold",
-                            cursor: "pointer",
-                        }}
-                    >
-                        顯示旋轉
-                    </button>
-                </div>
-                
-                {/* 第二排：圖形按鈕 */}
-                <div style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: window.innerWidth <= 480 ? 5 : 10,
-                    flexWrap: "wrap"
-                }}>
-                    {Object.keys(shapeStyles).slice(0, 5).map((type) => (
-                        <button
-                            key={type}
-                            className="shape-button"
-                            onClick={() => addShape(type)}
-                            style={{
-                                width: 50,
-                                height: 50,
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                border: "1px solid #ccc",
-                                borderRadius: 8,
-                                background: "#f9f9f9",
-                                cursor: "pointer",
-                            }}
-                        >
-                            <div style={{
-                                ...shapeStyles[type],
-                                transform: "scale(0.5)",
-                                position: "static",
-                                cursor: "default",
-                                background: shapeStyles[type].useLayered ? shapeStyles[type].innerLayer.background : shapeStyles[type].background,
-                                border: "1px solid black"
-                            }} />
-                        </button>
-                    ))}
-                </div>
+                {/* 顯示圖形按鈕 */}
+                <button
+                    onClick={() => setShowShapeButtons(!showShapeButtons)}
+                    style={{
+                        padding: "6px 12px",
+                        background: showShapeButtons ? "#667eea" : "#6c757d",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "6px",
+                        fontSize: "11px",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                        transition: "all 0.3s ease"
+                    }}
+                >
+                    {showShapeButtons ? "隱藏圖形" : "顯示圖形"}
+                </button>
 
-                {/* 第二排：剩餘的形狀按鈕 */}
-                {Object.keys(shapeStyles).length > 5 && (
-                    <div style={{
+                {/* 刪除區域 */}
+                <div
+                    ref={deleteRef}
+                    className="delete-area"
+                    style={{
+                        width: 40,
+                        height: 40,
+                        background: "transparent",
+                        border: "2px dashed red",
                         display: "flex",
                         justifyContent: "center",
                         alignItems: "center",
-                        gap: window.innerWidth <= 480 ? 5 : 10,
-                        flexWrap: "wrap"
-                    }}>
-                        {Object.keys(shapeStyles).slice(5).map((type) => (
-                            <button
-                                key={type}
-                                className="shape-button"
-                                onClick={() => addShape(type)}
-                                style={{
-                                    width: 50,
-                                    height: 50,
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    border: "1px solid #ccc",
-                                    borderRadius: 8,
-                                    background: "#f9f9f9",
-                                    cursor: "pointer",
-                                }}
-                            >
-                                <div style={{
-                                    ...shapeStyles[type],
-                                    transform: "scale(0.5)",
-                                    position: "static",
-                                    cursor: "default",
-                                    background: shapeStyles[type].useLayered ? shapeStyles[type].innerLayer.background : shapeStyles[type].background,
-                                    border: "1px solid black"
-                                }} />
-                            </button>
-                        ))}
-                    </div>
-                )}
+                        borderRadius: 8,
+                        zIndex: 999,
+                        fontSize: "16px",
+                        fontWeight: "bold",
+                        color: "red",
+                    }}>X</div>
+
+                {/* 隱藏旋轉按鈕 */}
+                <button
+                    onClick={() => setShowRotateButtons(false)}
+                    style={{
+                        width: 60,
+                        height: 30,
+                        background: "#ff6b6b",
+                        color: "white",
+                        border: "none",
+                        borderRadius: 4,
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                    }}
+                >
+                    隱藏旋轉
+                </button>
+
+                {/* 顯示旋轉按鈕 */}
+                <button
+                    onClick={() => setShowRotateButtons(true)}
+                    style={{
+                        width: 60,
+                        height: 30,
+                        background: "#51cf66",
+                        color: "white",
+                        border: "none",
+                        borderRadius: 4,
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                    }}
+                >
+                    顯示旋轉
+                </button>
             </div>
+
+
+
+            {/* 浮動圖形按鈕面板 */}
+            <FloatingShapePanel
+                shapeStyles={shapeStyles}
+                onAddShape={addShape}
+                isVisible={showShapeButtons}
+                onToggle={() => setShowShapeButtons(false)}
+            />
             <div />
             {Object.keys(shapes).map((type) => (
                 <React.Fragment key={type}>

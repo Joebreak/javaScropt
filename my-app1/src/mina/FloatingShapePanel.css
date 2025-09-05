@@ -1,0 +1,270 @@
+/* FloatingShapePanel.css */
+
+.floating-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 280px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    transition: all 0.3s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.floating-panel.dragging {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    transform: scale(1.02);
+}
+
+.floating-panel.minimized {
+    width: 200px;
+    height: auto;
+}
+
+.floating-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+    cursor: move;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.panel-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin: 0;
+}
+
+.panel-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.control-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.control-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.close-btn:hover {
+    background: #ff4757;
+}
+
+.minimize-btn:hover {
+    background: #ffa502;
+}
+
+.floating-panel-content {
+    padding: 16px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.shape-buttons-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.shape-buttons-row:last-child {
+    margin-bottom: 0;
+}
+
+.floating-shape-button {
+    width: 60px;
+    height: 60px;
+    border: 2px solid #e1e8ed;
+    border-radius: 12px;
+    background: #f8f9fa;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.floating-shape-button:hover {
+    border-color: #667eea;
+    background: #f0f4ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.floating-shape-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2);
+}
+
+.shape-preview {
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* 手機版優化 */
+@media (max-width: 768px) {
+    .floating-panel {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 260px;
+        max-width: calc(100vw - 20px);
+    }
+
+    .floating-panel.minimized {
+        width: 180px;
+    }
+
+    .floating-panel-header {
+        padding: 10px 12px;
+    }
+
+    .panel-title {
+        font-size: 13px;
+    }
+
+    .control-btn {
+        width: 22px;
+        height: 22px;
+        font-size: 11px;
+    }
+
+    .floating-panel-content {
+        padding: 12px;
+        max-height: 300px;
+    }
+
+    .shape-buttons-grid {
+        grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+        gap: 10px;
+    }
+
+    .floating-shape-button {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+/* 小螢幕手機優化 */
+@media (max-width: 480px) {
+    .floating-panel {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 240px;
+        max-width: calc(100vw - 10px);
+    }
+
+    .floating-panel.minimized {
+        width: 160px;
+    }
+
+    .floating-panel-header {
+        padding: 8px 10px;
+    }
+
+    .panel-title {
+        font-size: 12px;
+    }
+
+    .control-btn {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+    }
+
+    .floating-panel-content {
+        padding: 10px;
+        max-height: 250px;
+    }
+
+    .shape-buttons-grid {
+        grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
+        gap: 8px;
+    }
+
+    .floating-shape-button {
+        width: 45px;
+        height: 45px;
+    }
+}
+
+/* 觸控設備優化 */
+@media (hover: none) and (pointer: coarse) {
+    .floating-panel {
+        touch-action: none;
+    }
+
+    .floating-panel-header {
+        touch-action: pan-x pan-y;
+    }
+
+    .floating-shape-button {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .control-btn {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+}
+
+/* 滾動條樣式 */
+.floating-panel-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.floating-panel-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.floating-panel-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.floating-panel-content::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
