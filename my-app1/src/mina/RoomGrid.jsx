@@ -93,6 +93,12 @@ const shapeStyles = {
         background: "transparent",
         border: "1px dashed #333",
         clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
+        useLayered: true,
+        innerLayer: {
+            background: "black",
+            offset: 0,
+            clipPath: "polygon(51% 0, 49% 0, 50% 100%, 48% 7%, 0 100%, 50% 0, 50% 1%, 96% 99%, 100% 100%, 51% 0, 51% 0, 51% 100%)",
+        },
     },
     blackRect: {
         canRotate: true,
@@ -114,6 +120,7 @@ function MinaRoom() {
     const [shapes, setShapes] = useState(getInitialShapes);
     const [isDragging, setIsDragging] = useState({});
     const [currentCellSize, setCurrentCellSize] = useState(cellSize);
+    const [showRotateButtons, setShowRotateButtons] = useState(true);
 
     useEffect(() => {
         const handleResize = () => {
@@ -312,7 +319,6 @@ function MinaRoom() {
                         ...shapeStyles[type],
                         transform: `rotate(${shape.rotate}deg)`,
                         cursor: isDragging[type] ? "grabbing" : "grab",
-                        // 強制保持旋轉
                         willChange: "transform",
                     }}
                     data-rotation={shape.rotate}
@@ -330,7 +336,7 @@ function MinaRoom() {
                             }}
                         />
                     )}
-                    {shapeStyles[type].canRotate && (
+                    {shapeStyles[type].canRotate && showRotateButtons && (
                         <div
                             className="rotate-btn"
                             // 點擊 (網頁)
@@ -448,13 +454,14 @@ function MinaRoom() {
                 marginBottom: window.innerWidth <= 480 ? 5 : 10,
                 gap: window.innerWidth <= 480 ? 8 : 12,
             }}>
-                {/* 第一排：刪除按鈕 + 前5個形狀按鈕 */}
+                {/* 第一排：控制按鈕 */}
                 <div style={{
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
                     gap: window.innerWidth <= 480 ? 5 : 10,
-                    flexWrap: "wrap"
+                    flexWrap: "wrap",
+                    marginBottom: 10
                 }}>
                     {/* 刪除區域 */}
                     <div
@@ -474,6 +481,52 @@ function MinaRoom() {
                             fontWeight: "bold",
                             color: "red",
                         }}>X</div>
+                    
+                    {/* 隱藏旋轉按鈕 */}
+                    <button
+                        onClick={() => setShowRotateButtons(false)}
+                        style={{
+                            width: 60,
+                            height: 30,
+                            background: "#ff6b6b",
+                            color: "white",
+                            border: "none",
+                            borderRadius: 4,
+                            fontSize: "12px",
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                        }}
+                    >
+                        隱藏旋轉
+                    </button>
+                    
+                    {/* 顯示旋轉按鈕 */}
+                    <button
+                        onClick={() => setShowRotateButtons(true)}
+                        style={{
+                            width: 60,
+                            height: 30,
+                            background: "#51cf66",
+                            color: "white",
+                            border: "none",
+                            borderRadius: 4,
+                            fontSize: "12px",
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                        }}
+                    >
+                        顯示旋轉
+                    </button>
+                </div>
+                
+                {/* 第二排：圖形按鈕 */}
+                <div style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: window.innerWidth <= 480 ? 5 : 10,
+                    flexWrap: "wrap"
+                }}>
                     {Object.keys(shapeStyles).slice(0, 5).map((type) => (
                         <button
                             key={type}
