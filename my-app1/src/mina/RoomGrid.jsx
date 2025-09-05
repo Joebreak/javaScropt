@@ -91,9 +91,8 @@ const shapeStyles = {
         width: `${cellSize * 2 + gridConfig.gap * 1}px`,
         height: `${cellSize * 1 + gridConfig.gap * 0}px`,
         background: "transparent",
-        border: "3px dashed #333",
+        border: "1px dashed #333",
         clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
-        useLayered: false,
     },
     blackRect: {
         canRotate: true,
