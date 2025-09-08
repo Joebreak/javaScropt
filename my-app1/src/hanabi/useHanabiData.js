@@ -1,22 +1,15 @@
 import { useState, useEffect } from 'react';
-import { getInitialGameState, fetchGameLog, addGameLogEntry, isGameEnded, getCurrentPlayer as getCurrentPlayerFromData } from './gameData';
+import { getInitialGameState, fetchGameStateFromAPI,fetchGameLog, addGameLogEntry, isGameEnded, getCurrentPlayer as getCurrentPlayerFromData } from './gameData';
 
-// 模擬從 API 獲取遊戲資料
-const fetchGameData = async (roomId) => {
-  // 這裡之後可以替換為真實的 API 呼叫
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // 模擬根據房間 ID 獲取不同的遊戲資料
-      const gameState = getInitialGameState();
-      
-      // 可以根據 roomId 調整資料
-      if (roomId === '123') {
-        // 特殊房間的資料
-        gameState.players[0].name = `玩家_${roomId}`;
-      }
-      resolve(gameState);
-    }, 1000);
-  });
+// 從 API 獲取遊戲資料
+const fetchGameData = async (roomId, playerName = null) => {
+  try {
+    const gameState = await fetchGameStateFromAPI(playerName);
+    return gameState;
+  } catch (error) {
+    console.error('獲取遊戲資料失敗:', error);
+    return getInitialGameState(playerName);
+  }
 };
 
 // 模擬更新遊戲狀態的 API
@@ -30,7 +23,7 @@ const updateGameState = async (roomId, newState) => {
   });
 };
 
-export const useHanabiData = (roomId) => {
+export const useHanabiData = (roomId, playerName = null) => {
   const [gameState, setGameState] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,12 +34,12 @@ export const useHanabiData = (roomId) => {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchGameData(roomId);
+        const data = await fetchGameData(roomId, playerName);
         setGameState(data);
       } catch (err) {
         setError(err.message);
         // 如果 API 失敗，使用預設資料
-        setGameState(getInitialGameState());
+        setGameState(getInitialGameState(playerName));
       } finally {
         setLoading(false);
       }
@@ -55,7 +48,7 @@ export const useHanabiData = (roomId) => {
     if (roomId) {
       loadGameData();
     }
-  }, [roomId]);
+  }, [roomId, playerName]);
 
   // 更新遊戲狀態
   const updateState = async (newState) => {
@@ -151,19 +144,6 @@ export const useHanabiData = (roomId) => {
     return gameState.lastRoundTriggerPlayer === playerIndex;
   };
 
-  // 測試取餘數邏輯的函數
-  const testModuloLogic = () => {
-    if (!gameState) return;
-    
-    const playerCount = gameState.players.length;
-    console.log(`=== 取餘數邏輯測試 (玩家總數: ${playerCount}) ===`);
-    
-    for (let i = -2; i <= playerCount + 2; i++) {
-      const validIndex = ((i % playerCount) + playerCount) % playerCount;
-      console.log(`輸入索引: ${i} -> 有效索引: ${validIndex} -> 玩家: ${gameState.players[validIndex]?.name || 'N/A'}`);
-    }
-  };
-
   // 獲取遊戲記錄
   const fetchGameLogData = async () => {
     try {
@@ -208,7 +188,6 @@ export const useHanabiData = (roomId) => {
     nextPlayer,
     setCurrentPlayer,
     getCurrentPlayer,
-    testModuloLogic,
     fetchGameLogData,
     addLogEntry,
     checkGameEnded,

@@ -3,16 +3,28 @@ import { useNavigate } from "react-router-dom";
 
 function App() {
   const [room, setRoom] = useState("");
+  const [playerName, setPlayerName] = useState("");
+  const [showNameInput, setShowNameInput] = useState(false);
   const navigate = useNavigate();
+  
   const handleLogin = async () => {
     if (!room.trim()) {
       alert("請輸入房間號碼");
       return;
     }
+    
     if (room.trim() === "999") {
-      navigate("/hanabi", { state: { room }, });
+      if (!showNameInput) {
+        setShowNameInput(true);
+        return;
+      }
+      if (!playerName.trim()) {
+        alert("請輸入玩家名稱");
+        return;
+      }
+      navigate("/hanabi", { state: { room, playerName } });
     } else {
-      navigate("/mina", { state: { room }, });
+      navigate("/mina", { state: { room } });
     }
   };
   return (
@@ -37,22 +49,61 @@ function App() {
         }}
       >
         <h2 style={{ color: "#1976d2", marginBottom: "24px" }}>
-          輸入房間號碼
+          {showNameInput ? "輸入玩家名稱" : "輸入房間號碼"}
         </h2>
-        <input
-          type="number"
-          placeholder="房間號碼"
-          value={room}
-          onChange={(e) => setRoom(e.target.value)}
-          style={{
-            padding: "10px",
-            fontSize: "16px",
-            border: "1px solid #ccc",
-            borderRadius: "6px",
-            marginBottom: "16px",
-            width: "220px",
-          }}
-        />
+        
+        {!showNameInput ? (
+          <input
+            type="number"
+            placeholder="房間號碼"
+            value={room}
+            onChange={(e) => setRoom(e.target.value)}
+            style={{
+              padding: "10px",
+              fontSize: "16px",
+              border: "1px solid #ccc",
+              borderRadius: "6px",
+              marginBottom: "16px",
+              width: "220px",
+            }}
+          />
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <div style={{ marginBottom: "12px", color: "#666", fontSize: "14px" }}>
+              房間號碼: {room}
+            </div>
+            <input
+              type="text"
+              placeholder="玩家名稱"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              style={{
+                padding: "10px",
+                fontSize: "16px",
+                border: "1px solid #ccc",
+                borderRadius: "6px",
+                marginBottom: "16px",
+                width: "220px",
+              }}
+            />
+            <button
+              onClick={() => setShowNameInput(false)}
+              style={{
+                padding: "8px 16px",
+                fontSize: "14px",
+                background: "#666",
+                color: "#fff",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                marginBottom: "8px",
+              }}
+            >
+              返回
+            </button>
+          </div>
+        )}
+        
         <button
           onClick={handleLogin}
           style={{
@@ -65,7 +116,7 @@ function App() {
             cursor: "pointer",
           }}
         >
-          登入
+          {showNameInput ? "開始遊戲" : "登入"}
         </button>
       </div>
     </div>

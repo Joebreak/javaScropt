@@ -218,8 +218,26 @@ body {
   justify-content: center;
 }
 
+/* 棄牌和花火區域容器 - 電腦版 */
+.game-areas {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 20px 0;
+  padding: 0 20px;
+}
+
+/* 棄牌和花火區域樣式 - 電腦版 */
+.discard, .firework-area {
+  width: 200px;
+  max-width: 200px;
+  flex-shrink: 0;
+}
+
 .player-area {
   margin: 10px;
+  position: relative;
+  z-index: 10;
 }
 
 /* 網頁版 2人遊戲佈局 */
@@ -285,6 +303,23 @@ body {
     position: static;
     min-height: auto;
     display: block;
+  }
+  
+  /* 手機版：遊戲區域樣式 */
+  .game-areas {
+    flex-direction: column;
+    gap: 10px;
+    margin: 15px 0;
+    padding: 0 10px;
+  }
+  
+  /* 手機版：重置棄牌和花火區域定位 */
+  .discard, .firework-area {
+    position: static;
+    transform: none;
+    z-index: auto;
+    width: 100%;
+    max-width: 100%;
   }
   
   /* 手機版：垂直排列，從上到下 */

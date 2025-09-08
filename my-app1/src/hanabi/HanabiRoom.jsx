@@ -8,26 +8,24 @@ import "./HanabiRoom.css";
 export default function HanabiRoom() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { room } = location.state || {};
+  const { room, playerName } = location.state || {};
   const [showTooltip, setShowTooltip] = useState(false);
   
   const { 
     gameState, 
     loading, 
     error, 
-    // updatePlayers, 
-    // updateDiscardPile, 
-    // updateFireworks,
-    // nextPlayer,
-    // setCurrentPlayer,
     getCurrentPlayer,
     checkGameEnded,
     isLastRoundTriggerPlayer,
-  } = useHanabiData(room);
+  } = useHanabiData(room, playerName);
 
   useEffect(() => {
     if (room) {
-      document.title = `花火遊戲 (房間號碼 ${room})`;
+      const title = playerName 
+        ? `花火遊戲 - ${playerName} (房間 ${room})`
+        : `花火遊戲 (房間號碼 ${room})`;
+      document.title = title;
     }
 
     const style = document.createElement('style');
@@ -37,7 +35,7 @@ export default function HanabiRoom() {
     return () => {
       document.head.removeChild(style);
     };
-  }, [room]);
+  }, [room, playerName]);
 
   if (!room) {
     navigate("/");
@@ -318,10 +316,10 @@ export default function HanabiRoom() {
           {playerCount === 3 && (
             <>
               <div id="player-top" className="player-area">
-                {renderPlayer(players[2], 2)}
+                {renderPlayer(players[1], 1)}
               </div>
               <div id="player-left" className="player-area">
-                {renderPlayer(players[1], 1)}
+                {renderPlayer(players[2], 2)}
               </div>
               <div id="player-bottom" className="player-area">
                 {renderPlayer(players[0], 0)}
@@ -346,9 +344,13 @@ export default function HanabiRoom() {
             </>
           )}
 
-          {renderDiscard()}
-          {renderFireworks()}
         </div>
+      </div>
+
+      {/* 棄牌和花火區域 */}
+      <div className="game-areas">
+        {renderDiscard()}
+        {renderFireworks()}
       </div>
 
       {/* 遊戲記錄表格 */}

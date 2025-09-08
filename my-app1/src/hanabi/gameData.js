@@ -133,17 +133,139 @@ export const initialGameLog = [
   { action: "提示數字", player: "A1" }
 ];
 
-// 預設遊戲狀態
-export const getInitialGameState = () => ({
-  players: initialPlayers,
-  discardPile: initialDiscardPile,
-  fireworks: initialFireworks,
-  currentPlayerIndex: 0, // > -1: 目前輪到的玩家索引, -1: 遊戲結束
-  gameLog: initialGameLog,
-  lastRoundTriggerPlayer: null // 最後一輪觸發條件的人
-});
+// 預設遊戲狀態（本地資料）
+export const getInitialGameState = (playerName = null) => {
+  // 根據玩家名稱設定 isSelf
+  let players = initialPlayers.map(player => ({
+    ...player,
+    isSelf: playerName ? player.name === playerName : player.isSelf
+  }));
 
-// 生成 CSS 變數字串
+  // 重新排序玩家，讓自己排在第一位，形成循環順序
+  if (playerName && players.length > 1) {
+    const selfIndex = players.findIndex(player => player.isSelf);
+    if (selfIndex > 0) {
+      // 將自己移到第一位，其他玩家按原順序跟在後面
+      const reorderedPlayers = [
+        players[selfIndex], // 自己排第一位
+        ...players.slice(selfIndex + 1), // 自己後面的玩家
+        ...players.slice(0, selfIndex)   // 自己前面的玩家
+      ];
+      players = reorderedPlayers;
+    }
+  }
+
+  return {
+    players,
+    discardPile: initialDiscardPile,
+    fireworks: initialFireworks,
+    currentPlayerIndex: 0, // > -1: 目前輪到的玩家索引, -1: 遊戲結束
+    gameLog: initialGameLog,
+    lastRoundTriggerPlayer: null // 最後一輪觸發條件的人
+  };
+};
+
+const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5IiwiZXhwIjoxNzU1OTQwMTYwfQ.yKvsvZkRtAt5UQEFdQ3h8wkFh6XG0WWaftX2O95umnk"
+
+// 從 API 獲取遊戲狀態
+export const fetchGameStateFromAPI = async (playerName = null) => {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const res = await fetch(
+      "https://voter.dev.box70000.com/api/admin/voter/visitRecord/3",
+      {
+        method: "GET",
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+        signal: controller.signal,
+      }
+    );
+    clearTimeout(timeoutId);
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    const json = await res.json();
+    let data = {};
+    try {
+      data = JSON.parse(json.data.description ?? "{}");
+    } catch {
+      data = {};
+    }
+    // 根據玩家名稱設定 isSelf
+    let players = (data.players || []).map(player => ({
+      ...player,
+      isSelf: playerName ? player.name === playerName : false
+    }));
+
+    if (playerName && players.length > 1) {
+      const selfIndex = players.findIndex(player => player.isSelf);
+      
+      if (selfIndex > 0) {
+        // 將自己移到第一位，其他玩家按原順序跟在後面
+        const reorderedPlayers = [
+          players[selfIndex],
+          ...players.slice(selfIndex + 1),
+          ...players.slice(0, selfIndex)
+        ];
+        players = reorderedPlayers;
+        
+        // 調整currentPlayerIndex，因為玩家順序改變了
+        const originalCurrentIndex = data.currentPlayerIndex ?? 0;
+        const originalCurrentPlayer = data.players[originalCurrentIndex];
+        const newCurrentIndex = players.findIndex(player => player.name === originalCurrentPlayer?.name);
+        
+        return {
+          players,
+          discardPile: data.discardPile || [],
+          fireworks: data.fireworks || {},
+          currentPlayerIndex: newCurrentIndex >= 0 ? newCurrentIndex : 0,
+          gameLog: data.gameLog || [],
+          lastRoundTriggerPlayer: data.lastRoundTriggerPlayer || null
+        };
+      } else {
+        console.log(`自己已經在第一位，不需要重新排序`);
+      }
+    }
+
+    return {
+      players,
+      discardPile: data.discardPile || [],
+      fireworks: data.fireworks || {},
+      currentPlayerIndex: data.currentPlayerIndex ?? 0,
+      gameLog: data.gameLog || [],
+      lastRoundTriggerPlayer: data.lastRoundTriggerPlayer || null
+    };
+  } catch (error) {
+    console.error('獲取遊戲狀態失敗:', error);
+    return getInitialGameState(playerName);
+  }
+};
+
+// 更新遊戲狀態到 API
+export const updateGameStateToAPI = async (roomId, gameState) => {
+  try {
+    // 這裡替換成真實的 API 調用
+    const response = await fetch(`/api/game/${roomId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(gameState)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('更新遊戲狀態失敗:', error);
+    throw error;
+  }
+};
+
 export const generateCSSVariables = () => {
   let cssVars = ':root {\n';
 
