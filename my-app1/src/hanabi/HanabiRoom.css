@@ -1,0 +1,425 @@
+/* HanabiRoom.css - 花火遊戲樣式 */
+
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: sans-serif;
+  background-color: #f0f0f0;
+}
+
+.card.known-number {
+  color: white;
+}
+
+.card.unknown-number {
+  color: black;
+}
+
+.card.known-color {
+  border-left: 3px solid black;
+  border-right: 3px solid black;
+  border-top: 3px solid black;
+  border-bottom: 3px solid black;
+}
+
+.card.unknown-color {
+  border-left: 5px dashed black;
+  border-right: 5px dashed black;
+  border-top: 5px dashed black;
+  border-bottom: 5px dashed black;
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+}
+
+.info {
+  text-align: right;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.player, .discard, .center {
+  background: #ffffff;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+/* 當前玩家的高亮樣式 */
+.player.current-player {
+  background: #ffebee;
+  border: 1px solid #f44336;
+  box-shadow: 0 0 10px rgba(244, 67, 54, 0.3);
+  transform: scale(1.02);
+  transition: all 0.3s ease;
+}
+
+.player.current-player strong {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
+.player .hand {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+
+.discard {
+  background: #ffdede;
+  border: 2px solid #f88;
+}
+
+.discard strong {
+  display: block;
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 18px;
+}
+
+.discard-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 5px;
+}
+
+.discard-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.firework-area {
+  background: #fffbe0;
+  border: 2px solid #ffcc00;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.firework-area strong {
+  display: block;
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 18px;
+}
+
+.fireworks-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.fireworks-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card {
+  width: 50px;
+  height: 70px;
+  background: white;
+  border: 2px solid #444;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: #fff;
+}
+
+.card.unknown {
+  background: #ddd;
+  color: #999;
+}
+
+/* 網頁版佈局 - 桌面和平板 */
+.center {
+  position: relative;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-area {
+  margin: 10px;
+}
+
+/* 網頁版 2人遊戲佈局 */
+#player-top {
+  margin-bottom: 20px;
+}
+
+#player-bottom {
+  margin-top: 20px;
+}
+
+/* 網頁版 3人遊戲佈局 */
+#player-left {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#player-top {
+  margin-bottom: 20px;
+}
+
+#player-bottom {
+  margin-top: 20px;
+}
+
+/* 網頁版 4人遊戲佈局 */
+#player-left {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#player-right {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#player-top {
+  margin-bottom: 20px;
+}
+
+#player-bottom {
+  margin-top: 20px;
+}
+
+/* 手機版佈局 - 完全不同的排列方式 */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+  
+  .table {
+    padding: 5px;
+    gap: 8px;
+  }
+  
+  .center {
+    position: static;
+    min-height: auto;
+    display: block;
+  }
+  
+  /* 手機版：垂直排列，從上到下 */
+  .player-area {
+    margin: 8px 0;
+    width: 100%;
+  }
+  
+  /* 手機版卡片樣式 - 觸控友好 */
+  .card {
+    width: 50px;
+    height: 70px;
+    font-size: 16px;
+    font-weight: bold;
+    border-width: 3px;
+    /* 觸控優化 */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  .player .hand {
+    gap: 6px;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    padding: 5px;
+  }
+  
+  .discard-group, .fireworks-group {
+    gap: 8px;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  
+  .discard, .firework-area {
+    margin: 8px 0;
+    padding: 10px;
+  }
+  
+  .discard strong, .firework-area strong {
+    font-size: 18px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  
+  .info {
+    font-size: 16px;
+    text-align: center;
+    padding: 10px;
+    background: #e3f2fd;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+  
+  /* 手機版：所有玩家都垂直排列 */
+  #player-top, #player-left, #player-right, #player-bottom {
+    position: static;
+    transform: none;
+    margin: 10px 0;
+  }
+  
+  /* 手機版：棄牌堆和煙火區域並排顯示 */
+  .discard, .firework-area {
+    display: inline-block;
+    width: calc(50% - 6px);
+    vertical-align: top;
+    margin: 3px;
+  }
+  
+  /* 手機版玩家標題樣式 */
+  .player strong {
+    font-size: 18px;
+    display: block;
+    text-align: center;
+    margin-bottom: 8px;
+    padding: 5px;
+    background: #f5f5f5;
+    border-radius: 5px;
+  }
+  
+  /* 手機版當前玩家高亮 */
+  .player.current-player {
+    background: #ffebee;
+    border: 1px solid #f44336;
+    box-shadow: 0 0 15px rgba(244, 67, 54, 0.4);
+    transform: scale(1.05);
+  }
+  
+  .player.current-player strong {
+    background: #f44336;
+    color: #fff;
+    font-weight: bold;
+  }
+  
+  /* 手機版：棄牌堆和煙火區域縮小 */
+  .discard, .firework-area {
+    width: 100%;
+    max-width: 100%;
+    margin: 5px auto;
+    min-height: 60px;
+    padding: 6px;
+  }
+  
+  .discard strong, .firework-area strong {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  
+  .discard-group, .fireworks-group {
+    gap: 3px;
+  }
+}
+
+/* 小螢幕手機優化 */
+@media (max-width: 480px) {
+  .table {
+    padding: 3px;
+    gap: 5px;
+  }
+  
+  /* 更小的卡片 */
+  .card {
+    width: 38px;
+    height: 53px;
+    font-size: 12px;
+  }
+  
+  .player .hand {
+    gap: 3px;
+  }
+  
+  .discard-group, .fireworks-group {
+    gap: 5px;
+  }
+  
+  .discard strong, .firework-area strong {
+    font-size: 14px;
+  }
+  
+  .info {
+    font-size: 12px;
+  }
+  
+  /* 小螢幕：棄牌堆和煙火區域改為垂直排列 */
+  .discard, .firework-area {
+    display: block;
+    width: 75%;
+    max-width: 220px;
+    margin: 4px auto;
+    min-height: 50px;
+    padding: 5px;
+  }
+  
+  .discard strong, .firework-area strong {
+    font-size: 11px;
+    margin-bottom: 3px;
+  }
+  
+  .discard-group, .fireworks-group {
+    gap: 2px;
+  }
+}
+
+/* 超小螢幕手機 (iPhone SE 等) */
+@media (max-width: 360px) {
+  .card {
+    width: 32px;
+    height: 45px;
+    font-size: 10px;
+  }
+  
+  .player .hand {
+    gap: 2px;
+  }
+  
+  .discard-group, .fireworks-group {
+    gap: 3px;
+  }
+  
+  .discard strong, .firework-area strong {
+    font-size: 12px;
+  }
+  
+  .info {
+    font-size: 11px;
+  }
+  
+  /* 超小螢幕：棄牌堆和煙火區域更小 */
+  .discard, .firework-area {
+    width: 80%;
+    max-width: 200px;
+    margin: 3px auto;
+    min-height: 45px;
+    padding: 4px;
+  }
+  
+  .discard strong, .firework-area strong {
+    font-size: 10px;
+    margin-bottom: 2px;
+  }
+  
+  .discard-group, .fireworks-group {
+    gap: 1px;
+  }
+}
