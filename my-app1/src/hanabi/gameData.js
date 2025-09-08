@@ -1,7 +1,7 @@
 // 顏色常數 - 確保一致性
 export const COLOR_KEYS = {
   RED: 'RED',
-  GREEN: 'GREEN', 
+  GREEN: 'GREEN',
   BLUE: 'BLUE',
   YELLOW: 'YELLOW',
   WHITE: 'WHITE'
@@ -12,46 +12,24 @@ export const CARD_COLORS = {
   RED: {
     name: "紅色",
     bgColor: "crimson",
-    textColor: "#fff",
-    borderColor: "#8B0000"
   },
   GREEN: {
-    name: "綠色", 
+    name: "綠色",
     bgColor: "seagreen",
-    textColor: "#fff",
-    borderColor: "#006400"
   },
   BLUE: {
     name: "藍色",
-    bgColor: "royalblue", 
-    textColor: "#fff",
-    borderColor: "#0000CD"
+    bgColor: "royalblue",
   },
   YELLOW: {
     name: "黃色",
     bgColor: "goldenrod",
-    textColor: "#fff", 
-    borderColor: "#B8860B"
   },
   WHITE: {
     name: "白色",
     bgColor: "lightgray",
     textColor: "#000",
-    borderColor: "#A9A9A9"
   },
-  // 範例：添加新顏色只需要在這裡定義
-  // PURPLE: {
-  //   name: "紫色",
-  //   bgColor: "purple",
-  //   textColor: "#fff",
-  //   borderColor: "#4B0082"
-  // },
-  // ORANGE: {
-  //   name: "橙色", 
-  //   bgColor: "orange",
-  //   textColor: "#fff",
-  //   borderColor: "#FF8C00"
-  // }
 };
 
 // 花火遊戲資料
@@ -113,7 +91,7 @@ export const initialPlayers = [{
     color: COLOR_KEYS.GREEN,
     number: 1,
     knownColor: false,
-    knownNumber: true
+    knownNumber: false
   }]
 }];
 
@@ -126,6 +104,9 @@ export const initialDiscardPile = [{
 }, {
   color: COLOR_KEYS.GREEN,
   number: 2
+}, {
+  color: COLOR_KEYS.GREEN,
+  number: 3
 }, {
   color: COLOR_KEYS.GREEN,
   number: 3
@@ -142,43 +123,37 @@ export const initialFireworks = [{
   number: 3
 }];
 
+// 初始遊戲記錄
+export const initialGameLog = [
+  { action: "遊戲開始", player: "系統" },
+  { action: "出牌", player: "A1" },
+  { action: "提示顏色", player: "A2" },
+  { action: "棄牌", player: "A1" },
+  { action: "出牌", player: "A2" },
+  { action: "提示數字", player: "A1" }
+];
+
 // 預設遊戲狀態
 export const getInitialGameState = () => ({
   players: initialPlayers,
   discardPile: initialDiscardPile,
   fireworks: initialFireworks,
-  currentPlayerIndex: 0,
-  gamePhase: 'playing' // 遊戲階段：playing, ended
+  currentPlayerIndex: 0, // > -1: 目前輪到的玩家索引, -1: 遊戲結束
+  gameLog: initialGameLog,
+  lastRoundTriggerPlayer: null // 最後一輪觸發條件的人
 });
 
 // 生成 CSS 變數字串
 export const generateCSSVariables = () => {
   let cssVars = ':root {\n';
-  
+
   Object.entries(CARD_COLORS).forEach(([colorKey, colorData]) => {
     const varName = colorKey.toLowerCase();
     cssVars += `  --card-${varName}-bg: ${colorData.bgColor};\n`;
-    cssVars += `  --card-${varName}-text: ${colorData.textColor};\n`;
-    cssVars += `  --card-${varName}-border: ${colorData.borderColor};\n`;
   });
-  
+
   cssVars += '}';
   return cssVars;
-};
-
-// 獲取顏色資料
-export const getColorData = (colorKey) => {
-  return CARD_COLORS[colorKey] || null;
-};
-
-// 獲取所有顏色列表
-export const getAllColors = () => {
-  return Object.keys(CARD_COLORS);
-};
-
-// 檢查顏色是否存在
-export const hasColor = (colorKey) => {
-  return colorKey in CARD_COLORS;
 };
 
 // 獲取預設顏色（當顏色不存在時使用）
@@ -194,33 +169,54 @@ export const getSafeColorData = (colorKey) => {
   return CARD_COLORS[colorKey] || getDefaultColor();
 };
 
-// 驗證顏色一致性 - 檢查所有使用的顏色是否都在 CARD_COLORS 中定義
-export const validateColorConsistency = () => {
-  const allUsedColors = new Set();
-  
-  // 收集所有使用的顏色
-  initialPlayers.forEach(player => {
-    player.hand.forEach(card => {
-      allUsedColors.add(card.color);
-    });
-  });
-  
-  initialDiscardPile.forEach(card => {
-    allUsedColors.add(card.color);
-  });
-  
-  initialFireworks.forEach(card => {
-    allUsedColors.add(card.color);
-  });
-  
-  // 檢查未定義的顏色
-  const undefinedColors = Array.from(allUsedColors).filter(color => !hasColor(color));
-  
-  if (undefinedColors.length > 0) {
-    console.warn('發現未定義的顏色:', undefinedColors);
-    return false;
-  }
-  
-  console.log('所有顏色都已正確定義');
-  return true;
+// 模擬 API 獲取遊戲記錄
+export const fetchGameLog = async (roomId) => {
+  // 模擬 API 延遲
+  await new Promise(resolve => setTimeout(resolve, 500));
+
+  // 這裡之後會替換成真實的 API 調用
+  return {
+    success: true,
+    data: initialGameLog,
+    message: '遊戲記錄獲取成功'
+  };
 };
+
+// 模擬 API 添加遊戲記錄
+export const addGameLogEntry = async (roomId, entry) => {
+  // 模擬 API 延遲
+  await new Promise(resolve => setTimeout(resolve, 200));
+  
+  // 這裡之後會替換成真實的 API 調用
+  const newEntry = {
+    ...entry,
+    time: new Date().toLocaleTimeString('zh-TW', { hour12: false })
+  };
+  
+  return {
+    success: true,
+    data: newEntry,
+    message: '遊戲記錄添加成功'
+  };
+};
+
+// 遊戲狀態輔助函數
+export const isGameEnded = (currentPlayerIndex) => {
+  return currentPlayerIndex === -1;
+};
+
+export const getCurrentPlayer = (players, currentPlayerIndex) => {
+  if (isGameEnded(currentPlayerIndex)) {
+    return null;
+  }
+  return players[currentPlayerIndex] || null;
+};
+
+export const endGame = () => {
+  return -1;
+};
+
+export const startGame = (playerIndex = 0) => {
+  return Math.max(0, playerIndex);
+};
+

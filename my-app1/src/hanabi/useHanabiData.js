@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getInitialGameState } from './gameData';
+import { getInitialGameState, fetchGameLog, addGameLogEntry, isGameEnded, getCurrentPlayer as getCurrentPlayerFromData } from './gameData';
 
 // 模擬從 API 獲取遊戲資料
 const fetchGameData = async (roomId) => {
@@ -97,8 +97,6 @@ export const useHanabiData = (roomId) => {
     const playerCount = gameState.players.length;
     const nextIndex = (gameState.currentPlayerIndex + 1) % playerCount;
     
-    console.log(`當前玩家索引: ${gameState.currentPlayerIndex}, 玩家總數: ${playerCount}, 下一個索引: ${nextIndex}`);
-    
     const newState = { 
       ...gameState, 
       currentPlayerIndex: nextIndex 
@@ -114,8 +112,6 @@ export const useHanabiData = (roomId) => {
     // 使用取餘數確保索引在有效範圍內
     const validIndex = ((playerIndex % playerCount) + playerCount) % playerCount;
     
-    console.log(`設定玩家索引: ${playerIndex}, 玩家總數: ${playerCount}, 有效索引: ${validIndex}`);
-    
     const newState = { 
       ...gameState, 
       currentPlayerIndex: validIndex 
@@ -123,14 +119,36 @@ export const useHanabiData = (roomId) => {
     updateState(newState);
   };
 
-  // 獲取當前玩家 - 使用取餘數確保索引有效
+  // 獲取當前玩家 - 整合遊戲狀態檢查
   const getCurrentPlayer = () => {
     if (!gameState) return null;
-    
-    const playerCount = gameState.players.length;
-    const validIndex = ((gameState.currentPlayerIndex % playerCount) + playerCount) % playerCount;
-    
-    return gameState.players[validIndex];
+    return getCurrentPlayerFromData(gameState.players, gameState.currentPlayerIndex);
+  };
+
+  // 檢查遊戲是否結束
+  const checkGameEnded = () => {
+    if (!gameState) return false;
+    return isGameEnded(gameState.currentPlayerIndex);
+  };
+
+  // 設定最後一輪觸發條件的人
+  const setLastRoundTriggerPlayer = (playerIndex) => {
+    updateState(prev => ({
+      ...prev,
+      lastRoundTriggerPlayer: playerIndex
+    }));
+  };
+
+  // 獲取最後一輪觸發條件的人
+  const getLastRoundTriggerPlayer = () => {
+    if (!gameState) return null;
+    return gameState.lastRoundTriggerPlayer;
+  };
+
+  // 檢查是否為最後一輪觸發條件的人
+  const isLastRoundTriggerPlayer = (playerIndex) => {
+    if (!gameState) return false;
+    return gameState.lastRoundTriggerPlayer === playerIndex;
   };
 
   // 測試取餘數邏輯的函數
@@ -146,6 +164,39 @@ export const useHanabiData = (roomId) => {
     }
   };
 
+  // 獲取遊戲記錄
+  const fetchGameLogData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetchGameLog(roomId);
+      if (response.success) {
+        updateState(prev => ({
+          ...prev,
+          gameLog: response.data
+        }));
+      }
+    } catch (err) {
+      setError('獲取遊戲記錄失敗: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 添加遊戲記錄
+  const addLogEntry = async (action, player) => {
+    try {
+      const response = await addGameLogEntry(roomId, { action, player });
+      if (response.success) {
+        updateState(prev => ({
+          ...prev,
+          gameLog: [...prev.gameLog, response.data]
+        }));
+      }
+    } catch (err) {
+      console.error('添加遊戲記錄失敗:', err);
+    }
+  };
+
   return {
     gameState,
     loading,
@@ -157,6 +208,12 @@ export const useHanabiData = (roomId) => {
     nextPlayer,
     setCurrentPlayer,
     getCurrentPlayer,
-    testModuloLogic
+    testModuloLogic,
+    fetchGameLogData,
+    addLogEntry,
+    checkGameEnded,
+    setLastRoundTriggerPlayer,
+    getLastRoundTriggerPlayer,
+    isLastRoundTriggerPlayer
   };
 };

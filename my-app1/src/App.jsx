@@ -9,7 +9,11 @@ function App() {
       alert("請輸入房間號碼");
       return;
     }
+    if (room.trim() === "999") {
+      navigate("/hanabi", { state: { room }, });
+    } else {
       navigate("/mina", { state: { room }, });
+    }
   };
   return (
     <div
