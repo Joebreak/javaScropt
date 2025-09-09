@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export function useRoomData() {
+export function useRoomData(intervalMs = 0) {
   const [data, setData] = useState({ list: [] });
   const [loading, setLoading] = useState(true);
   const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5IiwiZXhwIjoxNzU1OTQwMTYwfQ.yKvsvZkRtAt5UQEFdQ3h8wkFh6XG0WWaftX2O95umnk"
@@ -48,12 +48,14 @@ export function useRoomData() {
     // 立即執行一次
     fetchData();
 
-    // 設定每 10 秒執行一次
-    intervalId = setInterval(() => {
-      if (mounted) {
-        fetchData();
-      }
-    }, 10000);
+    // 根據傳入的間隔時間設定定時器
+    if (intervalMs > 0) {
+      intervalId = setInterval(() => {
+        if (mounted) {
+          fetchData();
+        }
+      }, intervalMs);
+    }
 
     return () => {
       mounted = false;
@@ -61,7 +63,7 @@ export function useRoomData() {
         clearInterval(intervalId);
       }
     };
-  }, []);
+  }, [intervalMs]);
 
   return { data, loading, refresh: fetchData };
 }
