@@ -13,7 +13,7 @@ export default function RoomList({ data }) {
           overflow: "hidden",
         }}
       >
-        <div style={{ overflowY: "auto" }}>
+        <div style={{ maxHeight: 200, overflowY: "auto" }}>
           <table style={{ borderCollapse: "collapse", width: "100%" }}>
             <thead>
               <tr>
