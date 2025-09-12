@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getApiUrl } from "../config/api";
 
 export function useRoomData(intervalMs = 0, room) {
@@ -10,7 +10,7 @@ export function useRoomData(intervalMs = 0, room) {
   const [loading, setLoading] = useState(true);
   const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5IiwiZXhwIjoxNzU1OTQwMTYwfQ.yKvsvZkRtAt5UQEFdQ3h8wkFh6XG0WWaftX2O95umnk"
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const controller = new AbortController();
@@ -62,7 +62,7 @@ export function useRoomData(intervalMs = 0, room) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [room]);
 
   useEffect(() => {
     let mounted = true;
@@ -84,7 +84,7 @@ export function useRoomData(intervalMs = 0, room) {
         clearInterval(intervalId);
       }
     };
-  }, [intervalMs]);
+  }, [intervalMs, fetchData]);
 
   return { data, loading, refresh: fetchData };
 }
