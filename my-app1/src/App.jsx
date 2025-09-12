@@ -6,23 +6,18 @@ function App() {
   const [playerName, setPlayerName] = useState("");
   const [showNameInput, setShowNameInput] = useState(false);
   const navigate = useNavigate();
-  
-  // 房間號碼格式驗證
+
   const validateRoom = (room) => {
-    // 特殊房間號碼 999 (hanabi)
     if (room === "999") {
       return { valid: true, type: "hanabi" };
     }
     if (room.length !== 5) {
       return { valid: false, error: '房間號碼錯誤' };
     }
-    // 檢查前 4 碼是否為當天日期
-    const todayStr = new Date().toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' }).replace(/\//g, '');
-    const roomDate = room.substring(0, 4);
-    if (roomDate !== todayStr) {
+    if (room.substring(0, 4) !== new Date().toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' }).replace(/\//g, '')) {
       return { valid: false, error: '房間號碼錯誤' };
     }
-      return { valid: true, type: "mina" };
+    return { valid: true, type: "mina" };
   };
 
   const handleLogin = async () => {
@@ -30,14 +25,11 @@ function App() {
       alert("請輸入房間號碼");
       return;
     }
-    
-    // 驗證房間號碼格式
     const roomValidation = validateRoom(room.trim());
     if (!roomValidation.valid) {
       alert(roomValidation.error);
       return;
     }
-    
     if (roomValidation.type === "hanabi") {
       if (!showNameInput) {
         setShowNameInput(true);
@@ -76,7 +68,7 @@ function App() {
         <h2 style={{ color: "#1976d2", marginBottom: "24px" }}>
           {showNameInput ? "輸入玩家名稱" : "輸入房間號碼"}
         </h2>
-        
+
         {!showNameInput ? (
           <input
             type="number"
@@ -128,7 +120,7 @@ function App() {
             </button>
           </div>
         )}
-        
+
         <button
           onClick={handleLogin}
           style={{
