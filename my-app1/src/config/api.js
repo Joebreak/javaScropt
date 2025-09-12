@@ -16,10 +16,10 @@ const API_CONFIG = {
 
 // 獲取完整的 API URL
 export const getApiUrl = (key, customEnv = null) => {
-  // 如果有傳入自定義環境，使用自定義環境；否則使用預設環境
-  const env = customEnv || process.env.NODE_ENV || 'dev';
-  const config = API_CONFIG[env] || API_CONFIG.dev;
-  
+  let env = customEnv || process.env.REACT_APP_ENV || 'dev';
+  // 清理隱藏字符
+  const config = API_CONFIG[env.trim()] || API_CONFIG.dev;
+
   const url = config[key];
   if (!url) {
     throw new Error(`API key "${key}" 不存在於環境 "${env}" 中`);
