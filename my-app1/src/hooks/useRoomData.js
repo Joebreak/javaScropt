@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
+import { getApiUrl } from "../config/api";
 
-export function useRoomData(intervalMs = 0) {
+export function useRoomData(intervalMs = 0, room) {
+  // 檢查 room 參數是否提供
+  if (!room) {
+    throw new Error('useRoomData: room 參數是必須的');
+  }
   const [data, setData] = useState({ list: [] });
   const [loading, setLoading] = useState(true);
   const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5IiwiZXhwIjoxNzU1OTQwMTYwfQ.yKvsvZkRtAt5UQEFdQ3h8wkFh6XG0WWaftX2O95umnk"
@@ -11,29 +16,47 @@ export function useRoomData(intervalMs = 0) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      const res = await fetch(
-        "https://voter.dev.box70000.com/api/admin/voter/visitRecord/2",
-        {
-          method: "GET",
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-          signal: controller.signal,
+      let apiUrl;
+
+      const requestOptions = {
+        method: "GET",
+        headers: {},
+        signal: controller.signal,
+      };
+      const todayStr = new Date().toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' }).replace(/\//g, '');
+      if (room === todayStr + '2') {
+        apiUrl = getApiUrl('boxUrl');
+        requestOptions.headers.authorization = `Bearer ${token}`;
+
+        const res = await fetch(apiUrl, requestOptions);
+        clearTimeout(timeoutId);
+  
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+
+        let body = {};
+        try {
+          body = JSON.parse(json.data.description ?? "{}");
+        } catch {
+          body = {};
         }
-      );
-      clearTimeout(timeoutId);
+  
+        setData({ list: body?.list ?? [] });
+      } else if (room === todayStr + '1') {
+        apiUrl = getApiUrl('cloudflare_list_url');
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-
-      let body = {};
-      try {
-        body = JSON.parse(json.data.description ?? "{}");
-      } catch {
-        body = {};
+        const res = await fetch(apiUrl, requestOptions);
+        clearTimeout(timeoutId);
+  
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+  
+        const firstData = json.data?.[0];
+        setData({ list: firstData?.list ?? [] });
+      } else {
+        throw new Error('room 參數錯誤', room);
       }
-
-      setData({ list: body?.list ?? [] });
+     
     } catch (err) {
       console.error("API 失敗：", err);
     } finally {
@@ -45,10 +68,8 @@ export function useRoomData(intervalMs = 0) {
     let mounted = true;
     let intervalId = null;
 
-    // 立即執行一次
     fetchData();
 
-    // 根據傳入的間隔時間設定定時器
     if (intervalMs > 0) {
       intervalId = setInterval(() => {
         if (mounted) {

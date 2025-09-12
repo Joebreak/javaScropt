@@ -11,14 +11,14 @@ export default function MinaRoom() {
   
   // 頻率選擇狀態
   const [refreshInterval, setRefreshInterval] = useState(0);
-  const { data, loading } = useRoomData(refreshInterval);
+  const { data, loading } = useRoomData(refreshInterval, room);
 
   useEffect(() => {
     if (room) {
       document.title = `mina (房間號碼 ${room})`;
     }
   }, [room]);
-
+  
   if (!room) {
     navigate("/");
     return null;
