@@ -23,10 +23,8 @@ jobs:
         working-directory: ./my-app1
 
       - name: Build React App
-        run: npm run build
+        run: npm run build:prd
         working-directory: ./my-app1
-        env:
-          NODE_ENV: prd
 
       - name: Create 404.html for SPA routing
         run: cp build/index.html build/404.html
