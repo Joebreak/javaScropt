@@ -11,7 +11,7 @@ function App() {
     if (room === "999") {
       return { valid: true, type: "hanabi" };
     }
-    if (room.length !== 5) {
+    if (room.length < 4) {
       return { valid: false, error: '房間號碼錯誤' };
     }
     if (room.substring(0, 4) !== new Date().toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' }).replace(/\//g, '')) {

@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from "react";
 import { getApiUrl } from "../config/api";
 
 export function useRoomData(intervalMs = 0, room) {
-  // 檢查 room 參數是否提供
   if (!room) {
     throw new Error('useRoomData: room 參數是必須的');
   }
@@ -23,8 +22,7 @@ export function useRoomData(intervalMs = 0, room) {
         headers: {},
         signal: controller.signal,
       };
-      const todayStr = new Date().toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' }).replace(/\//g, '');
-      if (room === todayStr + '2') {
+      if (room.substring(4, 5) === '9') {
         apiUrl = getApiUrl('boxUrl');
         requestOptions.headers.authorization = `Bearer ${token}`;
 
@@ -42,7 +40,7 @@ export function useRoomData(intervalMs = 0, room) {
         }
   
         setData({ list: body?.list ?? [] });
-      } else if (room === todayStr + '1') {
+      } else {
         apiUrl = getApiUrl('cloudflare_list_url');
 
         const res = await fetch(apiUrl, requestOptions);
@@ -53,8 +51,6 @@ export function useRoomData(intervalMs = 0, room) {
   
         const firstData = json.data?.[0];
         setData({ list: firstData?.list ?? [] });
-      } else {
-        throw new Error('room 參數錯誤', room);
       }
      
     } catch (err) {
