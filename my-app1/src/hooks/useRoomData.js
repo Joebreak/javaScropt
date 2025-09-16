@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { getApiUrl } from "../config/api";
 
 export function useRoomData(intervalMs = 0, room) {
@@ -7,9 +7,14 @@ export function useRoomData(intervalMs = 0, room) {
   }
   const [data, setData] = useState({ list: [] });
   const [loading, setLoading] = useState(true);
+  const isFetchingRef = useRef(false); // 使用 useRef 防止重複請求
   const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5IiwiZXhwIjoxNzU1OTQwMTYwfQ.yKvsvZkRtAt5UQEFdQ3h8wkFh6XG0WWaftX2O95umnk"
 
   const fetchData = useCallback(async () => {
+    if (isFetchingRef.current) {
+      return;
+    }
+    isFetchingRef.current = true;
     setLoading(true);
     try {
       const controller = new AbortController();
@@ -22,13 +27,14 @@ export function useRoomData(intervalMs = 0, room) {
         headers: {},
         signal: controller.signal,
       };
-      if (room.substring(4, 5) === '9') {
+      console.log(room.substring(4));
+      if (room.substring(4) === '9') {
         apiUrl = getApiUrl('boxUrl');
         requestOptions.headers.authorization = `Bearer ${token}`;
 
         const res = await fetch(apiUrl, requestOptions);
         clearTimeout(timeoutId);
-  
+
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
 
@@ -38,25 +44,48 @@ export function useRoomData(intervalMs = 0, room) {
         } catch {
           body = {};
         }
-  
+
         setData({ list: body?.list ?? [] });
+      } else if (room.substring(4) === '8') {
+        apiUrl = getApiUrl('cloudflare_room_url');
+
+        const res = await fetch(apiUrl + room.substring(0, 4), requestOptions);
+        clearTimeout(timeoutId);
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+
+        const allData = Array.isArray(json)
+          ? json.filter(item => item.data)
+            .sort((a, b) => {
+              const roundA = a.round;
+              const roundB = b.round;
+              if (roundA == null) return 1;
+              if (roundB == null) return -1;
+              return roundA - roundB;
+            })
+            .map(item => item.data)
+          : [];
+
+        setData({ list: allData });
       } else {
         apiUrl = getApiUrl('cloudflare_list_url');
 
         const res = await fetch(apiUrl, requestOptions);
         clearTimeout(timeoutId);
-  
+
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
-  
+
         const firstData = json.data?.[0];
         setData({ list: firstData?.list ?? [] });
       }
-     
+
     } catch (err) {
       console.error("API 失敗：", err);
     } finally {
       setLoading(false);
+      isFetchingRef.current = false;
     }
   }, [room]);
 

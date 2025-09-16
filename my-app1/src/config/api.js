@@ -5,12 +5,14 @@ const API_CONFIG = {
     boxUrl: 'http://192.168.0.213:20218/api/admin/voter/visitRecord/2',
     cloudflare_list_url: 'http://127.0.0.1:9080/api/d1/list',
     cloudflare_update_url: 'http://127.0.0.1:9080/api/d1/1',
+    cloudflare_room_url: 'http://127.0.0.1:9080/api/d2/room/',
   },
   // 正式環境
   prd: {
     boxUrl: 'https://voter.dev.box70000.com/api/admin/voter/visitRecord/2',
     cloudflare_list_url: 'https://web-server-api.g132565.workers.dev/api/d1/list',
     cloudflare_update_url: 'https://web-server-api.g132565.workers.dev/api/d1/1',
+    cloudflare_room_url: 'https://web-server-api.g132565.workers.dev/api/d2/room/',
   },
 };
 
