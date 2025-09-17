@@ -56,15 +56,9 @@ export function useRoomData(intervalMs = 0, room) {
         const json = await res.json();
 
         const allData = Array.isArray(json)
-          ? json.filter(item => item.data)
-            .sort((a, b) => {
-              const roundA = a.round;
-              const roundB = b.round;
-              if (roundA == null) return 1;
-              if (roundB == null) return -1;
-              return roundA - roundB;
-            })
-            .map(item => item.data)
+          ? json
+              .filter(item => item && item.data)
+              .map(item => ({ id: item.id, round: item.round, ...item.data }))
           : [];
 
         setData({ list: allData });

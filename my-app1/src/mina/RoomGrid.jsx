@@ -109,7 +109,7 @@ const shapeStyles = {
     },
 };
 
-function MinaRoom() {
+function MinaRoom({ showActionButtons = false }) {
     const getInitialShapes = () => {
         const shapes = {};
         Object.keys(shapeStyles).forEach((type) => {
@@ -169,6 +169,12 @@ function MinaRoom() {
     const removeShape = (type) => {
         setShapes((prev) => ({ ...prev, [type]: null }));
         localStorage.removeItem(type);
+    };
+    const handleRadiate = () => {
+        alert('放射');
+    };
+    const handleSpecifyPosition = () => {
+        alert('指定位置');
     };
     const deleteRef = useRef(null);
 
@@ -476,6 +482,45 @@ function MinaRoom() {
                 >
                     {showShapeButtons ? "隱藏圖形" : "顯示圖形"}
                 </button>
+
+                {showActionButtons && (
+                    <>
+                        <button
+                            onClick={handleRadiate}
+                            style={{
+                                padding: "6px 12px",
+                                background: "#17a2b8",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "6px",
+                                fontSize: "11px",
+                                fontWeight: "bold",
+                                cursor: "pointer",
+                                boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                                transition: "all 0.3s ease"
+                            }}
+                        >
+                            放射
+                        </button>
+                        <button
+                            onClick={handleSpecifyPosition}
+                            style={{
+                                padding: "6px 12px",
+                                background: "#7952b3",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "6px",
+                                fontSize: "11px",
+                                fontWeight: "bold",
+                                cursor: "pointer",
+                                boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                                transition: "all 0.3s ease"
+                            }}
+                        >
+                            指定位置
+                        </button>
+                    </>
+                )}
 
                 {/* 刪除區域 */}
                 <div

@@ -7,11 +7,13 @@ import { useRoomData } from "../hooks/useRoomData";
 export default function MinaRoom() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { room } = location.state || {};
+  const { room, rank } = location.state || {};
   
   // 頻率選擇狀態
   const [refreshInterval, setRefreshInterval] = useState(0);
   const { data, loading } = useRoomData(refreshInterval, room);
+  const lastRound = data?.list?.length ? data.list[data.list.length - 1]?.round : undefined;
+  const showActionButtons = rank && lastRound && String(lastRound) === String(rank);
 
   useEffect(() => {
     if (room) {
@@ -23,10 +25,9 @@ export default function MinaRoom() {
     navigate("/");
     return null;
   }
-
   return (
     <div style={{ padding: 0, background: "#f7f7f7" }}>
-      <RoomGrid />
+      <RoomGrid showActionButtons={!!showActionButtons} />
       
       {/* 頻率選擇器 */}
       <div style={{ 
