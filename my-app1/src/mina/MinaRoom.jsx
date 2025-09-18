@@ -8,45 +8,46 @@ export default function MinaRoom() {
   const location = useLocation();
   const navigate = useNavigate();
   const { room, rank } = location.state || {};
-  
+
   // 頻率選擇狀態
   const [refreshInterval, setRefreshInterval] = useState(0);
-  const { data, loading } = useRoomData(refreshInterval, room);
-  const lastRound = data?.list?.length ? data.list[data.list.length - 1]?.round : undefined;
-  const showActionButtons = rank && lastRound && String(lastRound) === String(rank);
+  const { data, loading, refresh } = useRoomData(refreshInterval, room);
+  const lastRound = data?.list?.length ? data.list[0]?.round : 0;
+  const remainder = data?.members ? Number(data.members) : 4;
+  const showActionButtons = rank && lastRound !== undefined && Number(rank) === ((Number(lastRound) % remainder) + 1);
 
   useEffect(() => {
     if (room) {
       document.title = `mina (房間號碼 ${room})`;
     }
   }, [room]);
-  
+
   if (!room) {
     navigate("/");
     return null;
   }
   return (
     <div style={{ padding: 0, background: "#f7f7f7" }}>
-      <RoomGrid showActionButtons={!!showActionButtons} />
-      
+      <RoomGrid showActionButtons={!!showActionButtons} gameData={{ room, lastRound, mapData: data?.mapData }} onRefresh={refresh} />
+
       {/* 頻率選擇器 */}
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "center", 
-        alignItems: "center", 
+      <div style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
         margin: "20px 0",
         gap: "15px",
         flexWrap: "wrap"
       }}>
-        <span style={{ 
-          fontSize: "16px", 
-          fontWeight: "bold", 
+        <span style={{
+          fontSize: "16px",
+          fontWeight: "bold",
           color: "#333",
           marginRight: "10px"
         }}>
           🔄 自動更新頻率:
         </span>
-        
+
         <select
           value={refreshInterval}
           onChange={(e) => setRefreshInterval(parseInt(e.target.value))}
@@ -67,7 +68,7 @@ export default function MinaRoom() {
           <option value={20000}>每20秒</option>
         </select>
       </div>
-      
+
       {loading ? <div style={{ textAlign: "center" }}>⏳ 載入中...</div> : <RoomList data={data} />}
       <button
         onClick={() => navigate("/")}

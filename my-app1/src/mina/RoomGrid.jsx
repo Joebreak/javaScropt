@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import Draggable from "react-draggable";
-import FloatingShapePanel from "./FloatingShapePanel";
+import FloatingShapePanel from "./grid/FloatingShapePanel";
+import PositionSelector from "./grid/PositionSelector";
+import RadiateSelector from "./grid/RadiateSelector";
 import "./MinaRoom.css";
 
 const rows = 8;
@@ -109,7 +111,7 @@ const shapeStyles = {
     },
 };
 
-function MinaRoom({ showActionButtons = false }) {
+function MinaRoom({ showActionButtons = false, gameData, onRefresh }) {
     const getInitialShapes = () => {
         const shapes = {};
         Object.keys(shapeStyles).forEach((type) => {
@@ -123,6 +125,8 @@ function MinaRoom({ showActionButtons = false }) {
     const [currentCellSize, setCurrentCellSize] = useState(cellSize);
     const [showRotateButtons, setShowRotateButtons] = useState(true);
     const [showShapeButtons, setShowShapeButtons] = useState(false);
+    const [showPositionSelector, setShowPositionSelector] = useState(false);
+    const [showRadiateSelector, setShowRadiateSelector] = useState(false);
 
     useEffect(() => {
         const handleResize = () => {
@@ -171,10 +175,22 @@ function MinaRoom({ showActionButtons = false }) {
         localStorage.removeItem(type);
     };
     const handleRadiate = () => {
-        alert('放射');
+        setShowRadiateSelector(true);
     };
+
     const handleSpecifyPosition = () => {
-        alert('指定位置');
+        setShowPositionSelector(true);
+    };
+
+    const handlePositionConfirm = () => {
+        if (onRefresh) {
+            onRefresh();
+        }
+        setShowPositionSelector(false);
+    };
+
+    const handleRadiateConfirm = () => {
+        setShowRadiateSelector(false);
     };
     const deleteRef = useRef(null);
 
@@ -500,7 +516,7 @@ function MinaRoom({ showActionButtons = false }) {
                                 transition: "all 0.3s ease"
                             }}
                         >
-                            放射
+                            放射超音波
                         </button>
                         <button
                             onClick={handleSpecifyPosition}
@@ -517,7 +533,7 @@ function MinaRoom({ showActionButtons = false }) {
                                 transition: "all 0.3s ease"
                             }}
                         >
-                            指定位置
+                            查詢指定位置
                         </button>
                     </>
                 )}
@@ -593,6 +609,22 @@ function MinaRoom({ showActionButtons = false }) {
                     {renderShape(type)}
                 </React.Fragment>
             ))}
+
+            {/* 位置選擇器 */}
+            <PositionSelector
+                isOpen={showPositionSelector}
+                onClose={() => setShowPositionSelector(false)}
+                onConfirm={handlePositionConfirm}
+                gameData={gameData}
+            />
+
+            {/* 放射選擇器 */}
+            <RadiateSelector
+                isOpen={showRadiateSelector}
+                onClose={() => setShowRadiateSelector(false)}
+                onConfirm={handleRadiateConfirm}
+                gameData={gameData}
+            />
         </div>
     );
 }

@@ -27,7 +27,6 @@ export function useRoomData(intervalMs = 0, room) {
         headers: {},
         signal: controller.signal,
       };
-      console.log(room.substring(4));
       if (room.substring(4) === '9') {
         apiUrl = getApiUrl('boxUrl');
         requestOptions.headers.authorization = `Bearer ${token}`;
@@ -55,13 +54,35 @@ export function useRoomData(intervalMs = 0, room) {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
 
-        const allData = Array.isArray(json)
+        const filteredList = Array.isArray(json)
           ? json
-              .filter(item => item && item.data)
-              .map(item => ({ id: item.id, round: item.round, ...item.data }))
+            .filter(item => item && item.round !== 0)
+            .map(item => ({ id: item.id, round: item.round, ...item.data}))
+            .reverse()
           : [];
-
-        setData({ list: allData });
+        const roundZeroData = Array.isArray(json)
+          ? json
+            .filter(item => item && item.list && item.round === 0)
+            .flatMap(item => {
+              const list = item.list;
+              if (Array.isArray(list)) {
+                return list.filter(listItem => listItem.NOTE3 !== null);
+              }
+              return [list];
+            })
+          : [];
+        
+        // 從原始 json 中取得 type 資訊（在 item 層級，不是 list 層級）
+        const typeItem = Array.isArray(json) 
+          ? json.find(item => item && item.type) 
+          : null;
+        const type = typeItem ? typeItem.type : null;
+        
+        setData({
+          list: filteredList,
+          mapData: roundZeroData,
+          members: type
+        });
       } else {
         apiUrl = getApiUrl('cloudflare_list_url');
 
