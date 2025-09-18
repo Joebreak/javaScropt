@@ -190,6 +190,10 @@ function MinaRoom({ showActionButtons = false, gameData, onRefresh }) {
     };
 
     const handleRadiateConfirm = () => {
+        // 呼叫刷新函數來更新底下列表
+        if (onRefresh) {
+            onRefresh();
+        }
         setShowRadiateSelector(false);
     };
     const deleteRef = useRef(null);
