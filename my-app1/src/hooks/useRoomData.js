@@ -86,7 +86,7 @@ export function useRoomData(intervalMs = 0, room) {
       } else {
         apiUrl = getApiUrl('cloudflare_list_url');
 
-        const res = await fetch(apiUrl, requestOptions);
+        const res = await fetch(apiUrl+'?id=1', requestOptions);
         clearTimeout(timeoutId);
 
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
