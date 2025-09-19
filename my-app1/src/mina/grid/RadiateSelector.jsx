@@ -14,13 +14,13 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
             side: 'top',
             entryPoint: { row: -1, col: col } // 從上方進入
         })),
-        // I~R（右側，從右往左進入）
+        // I~R（下側，從下往上進入）
         ...Array.from({ length: 10 }, (_, col) => ({
             type: 'col',
             index: col,
             label: String.fromCharCode('I'.charCodeAt(0) + col),
-            side: 'right',
-            entryPoint: { row: -1, col: col } // 從右方進入
+            side: 'bottom',
+            entryPoint: { row: 8, col: col } // 從下方進入
         })),
         // A~H（左側，從左往右進入）
         ...Array.from({ length: 8 }, (_, row) => ({
@@ -30,13 +30,13 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
             side: 'left',
             entryPoint: { row: row, col: -1 } // 從左方進入
         })),
-        // 11~18（下側，從下往上進入）
+        // 11~18（右側，從右往左進入）
         ...Array.from({ length: 8 }, (_, row) => ({
             type: 'row',
             index: row,
             label: String(11 + row),
-            side: 'bottom',
-            entryPoint: { row: row, col: -1 } // 從下方進入
+            side: 'right',
+            entryPoint: { row: row, col: 10 } // 從右方進入
         }))
     ];
 
@@ -58,34 +58,34 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
         const validColors = encounteredColors
             .map(color => getColorName(color))
             .filter(color => color !== '透明' && color !== null && color !== undefined);
-        
+
         if (validColors.length === 0) {
             return '透明';
         }
-        
+
         // 如果遇到黑色，被吸收
         if (validColors.includes('黑色')) {
             return '被吸收';
         }
-        
+
         // 檢查是否有白色
         const hasWhite = validColors.includes('白色');
         const nonWhiteColors = validColors.filter(color => color !== '白色');
-        
+
         // 如果只有白色，保持白色
         if (nonWhiteColors.length === 0) {
             return '白色';
         }
-        
+
         // 檢查是否有紅、藍、黃三種顏色（黑色）
         const uniqueColors = [...new Set(nonWhiteColors)];
         if (uniqueColors.includes('紅色') && uniqueColors.includes('藍色') && uniqueColors.includes('黃色')) {
             return '黑色';
         }
-        
+
         // 顏色混合規則（只考慮非白色顏色）
         const colorSet = new Set(uniqueColors);
-        
+
         if (colorSet.has('紅色') && colorSet.has('藍色')) {
             return hasWhite ? '淺紫' : '紫色';
         }
@@ -95,13 +95,13 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
         if (colorSet.has('藍色') && colorSet.has('黃色')) {
             return hasWhite ? '淺橙' : '橙色';
         }
-        
+
         // 如果只有一種顏色
         if (uniqueColors.length === 1) {
             const singleColor = uniqueColors[0];
             return hasWhite ? `淺${singleColor}` : singleColor;
         }
-        
+
         // 如果只有兩種顏色但不符合混合規則，返回第一種
         return hasWhite ? `淺${uniqueColors[0]}` : uniqueColors[0];
     };
@@ -118,7 +118,7 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
         let currentRow = entryPoint.row;
         let currentCol = entryPoint.col;
         let currentDirection = direction;
-        
+
         // 根據進入方向決定初始移動方向
         const getInitialDirection = (side) => {
             switch (side) {
@@ -129,9 +129,8 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                 default: return 'down';
             }
         };
-        
+
         currentDirection = getInitialDirection(selectedDirection.side);
-        
         // 移動到第一個格子
         const moveToNext = (row, col, dir) => {
             switch (dir) {
@@ -142,32 +141,34 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                 default: return { row, col };
             }
         };
-        
+
         // 檢查是否在邊界內
         const isInBounds = (row, col) => {
             return row >= 0 && row < 8 && col >= 0 && col < 10;
         };
-        
         // 開始追蹤
-        while (isInBounds(currentRow, currentCol)) {
-            // 移動到當前格子
+        while (true) {
+            // 計算下一個位置
             const nextPos = moveToNext(currentRow, currentCol, currentDirection);
+            
+            // 檢查是否在邊界內
+            if (!isInBounds(nextPos.row, nextPos.col)) break;
+            
+            // 移動到新位置
             currentRow = nextPos.row;
             currentCol = nextPos.col;
-            
-            if (!isInBounds(currentRow, currentCol)) break;
-            
+
             // 在 mapData 中尋找當前位置的資料（避免在迴圈中宣告函式）
             const cellData = getCellDataAt(currentRow, currentCol, mapData);
-            
+
             // 記錄遇到的顏色
             if (cellData && cellData.NOTE3) {
                 encounteredColors.push(cellData.NOTE3);
             }
-            
+
             // 計算當前顏色
             const currentColor = calculateFinalColor(encounteredColors);
-            
+
             // 如果被吸收，停止追蹤
             if (currentColor === '被吸收') {
                 path.push({
@@ -180,7 +181,7 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                 });
                 break;
             }
-            
+
             path.push({
                 row: currentRow,
                 col: currentCol,
@@ -189,17 +190,17 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                 color: currentColor,
                 encounteredColors: [...encounteredColors]
             });
-            
+
             // 檢查 NOTE3 是否為 null
             if (cellData && cellData.NOTE3 === null) {
                 // 繼續直線前進
                 continue;
             }
-            
+
             // 檢查 NOTE4 角度
             if (cellData && cellData.NOTE4) {
                 const angle = cellData.NOTE4;
-                
+
                 if (angle === 1) {
                     // 停下來
                     break;
@@ -248,10 +249,10 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                 break;
             }
         }
-        
+
         // 計算最終顏色
         const finalColor = calculateFinalColor(encounteredColors);
-        
+
         return {
             path: path,
             finalColor: finalColor,
@@ -273,13 +274,12 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
 
             // 執行光線追蹤
             const lightTraceResult = traceLightPath(selectedDirection.entryPoint, selectedDirection.side, mapData || []);
-            
+
             console.log('光線追蹤結果:', {
                 finalColor: lightTraceResult.finalColor,
                 pathLength: lightTraceResult.path.length,
                 lastPath: lightTraceResult.path[lightTraceResult.path.length - 1]
             });
-            
             const result = {
                 direction: selectedDirection,
                 type: selectedDirection.type,
@@ -294,7 +294,7 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
 
             // 決定 in 和 out 格式
             const inFormat = selectedDirection.label; // 直接使用選擇的標籤 (1, I, A, 11 等)
-            
+
             let outFormat = "";
             if (lightTraceResult.finalColor === '被吸收') {
                 outFormat = "";
@@ -305,29 +305,28 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                     const { row, col } = lastPath;
                     // 根據最後位置決定出口格式
                     if (row === 0) {
-                        outFormat = `Col[${col + 1}]`; // 從上方出來
+                        outFormat = String(col + 1); // 從上方出來，回復到 1~10 格式
                     } else if (row === 7) {
-                        outFormat = `Col[${col + 1}]`; // 從下方出來
+                        outFormat = String.fromCharCode('I'.charCodeAt(0) + col); // 從下方出來，回復到 I~R 格式
                     } else if (col === 0) {
-                        outFormat = `Row[${String.fromCharCode(65 + row)}]`; // 從左方出來
+                        outFormat = String.fromCharCode('A'.charCodeAt(0) + row); // 從左方出來，回復到 A~H 格式
                     } else if (col === 9) {
-                        outFormat = `Row[${String.fromCharCode(65 + row)}]`; // 從右方出來
+                        outFormat = String(11 + row); // 從右方出來，回復到 11~18 格式
                     } else {
-                        // 內部停止會反射回起始位置
-                        outFormat = inFormat; // 使用起始位置作為出口
+                        outFormat = inFormat;
                     }
                 } else {
                     // 如果沒有路徑資料，光線穿過整個網格，從對面出來
                     // 根據進入方向計算對面出口
                     const { side, index } = selectedDirection;
                     if (side === 'top') {
-                        outFormat = `Col[${index + 1}]`; // 從下方出來
+                        outFormat = String.fromCharCode('I'.charCodeAt(0) + index); // 從下方出來，回復到 I~R 格式
                     } else if (side === 'bottom') {
-                        outFormat = `Col[${index + 1}]`; // 從上方出來
+                        outFormat = String(index + 1); // 從上方出來，回復到 1~10 格式
                     } else if (side === 'left') {
-                        outFormat = `Row[${String.fromCharCode(65 + index)}]`; // 從右方出來
+                        outFormat = String(11 + index); // 從右方出來，回復到 11~18 格式
                     } else if (side === 'right') {
-                        outFormat = `Row[${String.fromCharCode(65 + index)}]`; // 從左方出來
+                        outFormat = String.fromCharCode('A'.charCodeAt(0) + index); // 從左方出來，回復到 A~H 格式
                     }
                 }
             }
@@ -351,7 +350,7 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                     },
                     body: JSON.stringify(requestBody)
                 });
-                
+
                 if (response.ok) {
                     onConfirm(result);
                 } else {
@@ -425,13 +424,13 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                     </div>
                 </div>
 
-                {/* I~R（右側，欄） */}
+                {/* I~R（下側，欄） */}
                 <div style={{ marginBottom: '16px' }}>
-                    <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px', color: '#666' }}>I~R（右側）</div>
+                    <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px', color: '#666' }}>I~R（下側）</div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '6px' }}>
                         {Array.from({ length: 10 }, (_, col) => {
-                            const option = directionOptions.find(opt => opt.side === 'right' && opt.index === col);
-                            const isSelected = selectedDirection && selectedDirection.side === 'right' && selectedDirection.index === col;
+                            const option = directionOptions.find(opt => opt.side === 'bottom' && opt.index === col);
+                            const isSelected = selectedDirection && selectedDirection.side === 'bottom' && selectedDirection.index === col;
                             return (
                                 <div
                                     key={`right-${col}`}
@@ -487,13 +486,13 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                     </div>
                 </div>
 
-                {/* 11~18（下側，列） */}
+                {/* 11~18（右側，列） */}
                 <div style={{ marginBottom: '16px' }}>
-                    <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px', color: '#666' }}>11~18（下側）</div>
+                    <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px', color: '#666' }}>11~18（右側）</div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '6px' }}>
                         {Array.from({ length: 8 }, (_, row) => {
-                            const option = directionOptions.find(opt => opt.side === 'bottom' && opt.index === row);
-                            const isSelected = selectedDirection && selectedDirection.side === 'bottom' && selectedDirection.index === row;
+                            const option = directionOptions.find(opt => opt.side === 'right' && opt.index === row);
+                            const isSelected = selectedDirection && selectedDirection.side === 'right' && selectedDirection.index === row;
                             return (
                                 <div
                                     key={`bottom-${row}`}
@@ -535,7 +534,7 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                     </button>
                     <button
                         onClick={handleConfirm}
-                    disabled={!selectedDirection}
+                        disabled={!selectedDirection}
                         style={{
                             padding: '8px 16px',
                             backgroundColor: selectedDirection ? '#28a745' : '#ccc',
