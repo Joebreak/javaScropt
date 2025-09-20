@@ -8,7 +8,6 @@ export function useRoomData(intervalMs = 0, room) {
   const [data, setData] = useState({ list: [] });
   const [loading, setLoading] = useState(true);
   const isFetchingRef = useRef(false); // 使用 useRef 防止重複請求
-  const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI5IiwiZXhwIjoxNzU1OTQwMTYwfQ.yKvsvZkRtAt5UQEFdQ3h8wkFh6XG0WWaftX2O95umnk"
 
   const fetchData = useCallback(async () => {
     if (isFetchingRef.current) {
@@ -27,74 +26,43 @@ export function useRoomData(intervalMs = 0, room) {
         headers: {},
         signal: controller.signal,
       };
-      if (room.substring(4) === '9') {
-        apiUrl = getApiUrl('boxUrl');
-        requestOptions.headers.authorization = `Bearer ${token}`;
+      apiUrl = getApiUrl('cloudflare_room_url');
 
-        const res = await fetch(apiUrl, requestOptions);
-        clearTimeout(timeoutId);
+      const res = await fetch(apiUrl + room, requestOptions);
+      clearTimeout(timeoutId);
 
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
 
-        let body = {};
-        try {
-          body = JSON.parse(json.data.description ?? "{}");
-        } catch {
-          body = {};
-        }
+      const filteredList = Array.isArray(json)
+        ? json
+          .filter(item => item && item.round !== 0)
+          .map(item => ({ id: item.id, round: item.round, ...item.data }))
+          .reverse()
+        : [];
+      const roundZeroData = Array.isArray(json)
+        ? json
+          .filter(item => item && item.list && item.round === 0)
+          .flatMap(item => {
+            const list = item.list;
+            if (Array.isArray(list)) {
+              return list.filter(listItem => listItem.NOTE3 !== null);
+            }
+            return [list];
+          })
+        : [];
 
-        setData({ list: body?.list ?? [] });
-      } else if (room.substring(4) === '8') {
-        apiUrl = getApiUrl('cloudflare_room_url');
+      // 從原始 json 中取得 type 資訊（在 item 層級，不是 list 層級）
+      const typeItem = Array.isArray(json)
+        ? json.find(item => item && item.type)
+        : null;
+      const type = typeItem ? typeItem.type : null;
 
-        const res = await fetch(apiUrl + room.substring(0, 4), requestOptions);
-        clearTimeout(timeoutId);
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-
-        const filteredList = Array.isArray(json)
-          ? json
-            .filter(item => item && item.round !== 0)
-            .map(item => ({ id: item.id, round: item.round, ...item.data}))
-            .reverse()
-          : [];
-        const roundZeroData = Array.isArray(json)
-          ? json
-            .filter(item => item && item.list && item.round === 0)
-            .flatMap(item => {
-              const list = item.list;
-              if (Array.isArray(list)) {
-                return list.filter(listItem => listItem.NOTE3 !== null);
-              }
-              return [list];
-            })
-          : [];
-        
-        // 從原始 json 中取得 type 資訊（在 item 層級，不是 list 層級）
-        const typeItem = Array.isArray(json) 
-          ? json.find(item => item && item.type) 
-          : null;
-        const type = typeItem ? typeItem.type : null;
-        
-        setData({
-          list: filteredList,
-          mapData: roundZeroData,
-          members: type
-        });
-      } else {
-        apiUrl = getApiUrl('cloudflare_list_url');
-
-        const res = await fetch(apiUrl+'?id=1', requestOptions);
-        clearTimeout(timeoutId);
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-
-        const firstData = json.data?.[0];
-        setData({ list: firstData?.list ?? [] });
-      }
+      setData({
+        list: filteredList,
+        mapData: roundZeroData,
+        members: type
+      });
 
     } catch (err) {
       console.error("API 失敗：", err);

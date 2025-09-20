@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Draggable from "react-draggable";
 import FloatingShapePanel from "./grid/FloatingShapePanel";
 import PositionSelector from "./grid/PositionSelector";
@@ -40,9 +40,9 @@ const initGrid = Array.from({ length: rows }, () => Array.from({ length: cols },
 
 const leftRowLabels = Array.from({ length: rows }, (_, i) => String.fromCharCode(65 + i));
 
-const rightColLabels = Array.from({ length: cols }, (_, i) => i + 11);
+const rightRowLabels = Array.from({ length: rows }, (_, i) => i + 11);
 
-const bottomRowLabels = Array.from({ length: cols }, (_, i) => String.fromCharCode("I".charCodeAt(0) + i));
+const bottomColLabels = Array.from({ length: cols }, (_, i) => String.fromCharCode("I".charCodeAt(0) + i));
 
 const copy = (source, overrides = {}) => ({
     ...source,
@@ -111,7 +111,22 @@ const shapeStyles = {
     },
 };
 
-function MinaRoom({ showActionButtons = false, gameData, onRefresh }) {
+function MinaRoom({ 
+  showActionButtons = false, 
+  gameData, 
+  onRefresh,
+  showShapeButtons,
+  setShowShapeButtons,
+  showRotateButtons,
+  setShowRotateButtons,
+  showPositionSelector,
+  setShowPositionSelector,
+  showRadiateSelector,
+  setShowRadiateSelector,
+  onPositionConfirm,
+  onRadiateConfirm,
+  deleteRef
+}) {
     const getInitialShapes = () => {
         const shapes = {};
         Object.keys(shapeStyles).forEach((type) => {
@@ -123,10 +138,6 @@ function MinaRoom({ showActionButtons = false, gameData, onRefresh }) {
     const [shapes, setShapes] = useState(getInitialShapes);
     const [isDragging, setIsDragging] = useState({});
     const [currentCellSize, setCurrentCellSize] = useState(cellSize);
-    const [showRotateButtons, setShowRotateButtons] = useState(true);
-    const [showShapeButtons, setShowShapeButtons] = useState(false);
-    const [showPositionSelector, setShowPositionSelector] = useState(false);
-    const [showRadiateSelector, setShowRadiateSelector] = useState(false);
 
     useEffect(() => {
         const handleResize = () => {
@@ -174,29 +185,6 @@ function MinaRoom({ showActionButtons = false, gameData, onRefresh }) {
         setShapes((prev) => ({ ...prev, [type]: null }));
         localStorage.removeItem(type);
     };
-    const handleRadiate = () => {
-        setShowRadiateSelector(true);
-    };
-
-    const handleSpecifyPosition = () => {
-        setShowPositionSelector(true);
-    };
-
-    const handlePositionConfirm = () => {
-        if (onRefresh) {
-            onRefresh();
-        }
-        setShowPositionSelector(false);
-    };
-
-    const handleRadiateConfirm = () => {
-        // 呼叫刷新函數來更新底下列表
-        if (onRefresh) {
-            onRefresh();
-        }
-        setShowRadiateSelector(false);
-    };
-    const deleteRef = useRef(null);
 
     const handleStop = (type, e, data) => {
         const { x, y } = data;
@@ -453,7 +441,7 @@ function MinaRoom({ showActionButtons = false, gameData, onRefresh }) {
                                 fontSize: "14px",
                             }}
                         >
-                            {rightColLabels[rIdx]}
+                            {rightRowLabels[rIdx]}
                         </div>
                     </React.Fragment>
                 ))}
@@ -470,133 +458,11 @@ function MinaRoom({ showActionButtons = false, gameData, onRefresh }) {
                             fontSize: "14px",
                         }}
                     >
-                        {bottomRowLabels[cIdx]}
+                        {bottomColLabels[cIdx]}
                     </div>
                 ))}
             </div>
 
-            {/* 控制按鈕 - 在表格下方 */}
-            <div style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: window.innerWidth <= 480 ? 5 : 10,
-                flexWrap: "wrap",
-                marginBottom: window.innerWidth <= 480 ? 10 : 20
-            }}>
-                {/* 顯示圖形按鈕 */}
-                <button
-                    onClick={() => setShowShapeButtons(!showShapeButtons)}
-                    style={{
-                        padding: "6px 12px",
-                        background: showShapeButtons ? "#667eea" : "#6c757d",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "6px",
-                        fontSize: "11px",
-                        fontWeight: "bold",
-                        cursor: "pointer",
-                        boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-                        transition: "all 0.3s ease"
-                    }}
-                >
-                    {showShapeButtons ? "隱藏圖形" : "顯示圖形"}
-                </button>
-
-                {showActionButtons && (
-                    <>
-                        <button
-                            onClick={handleRadiate}
-                            style={{
-                                padding: "6px 12px",
-                                background: "#17a2b8",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "6px",
-                                fontSize: "11px",
-                                fontWeight: "bold",
-                                cursor: "pointer",
-                                boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-                                transition: "all 0.3s ease"
-                            }}
-                        >
-                            放射超音波
-                        </button>
-                        <button
-                            onClick={handleSpecifyPosition}
-                            style={{
-                                padding: "6px 12px",
-                                background: "#7952b3",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "6px",
-                                fontSize: "11px",
-                                fontWeight: "bold",
-                                cursor: "pointer",
-                                boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-                                transition: "all 0.3s ease"
-                            }}
-                        >
-                            查詢指定位置
-                        </button>
-                    </>
-                )}
-
-                {/* 刪除區域 */}
-                <div
-                    ref={deleteRef}
-                    className="delete-area"
-                    style={{
-                        width: 40,
-                        height: 40,
-                        background: "transparent",
-                        border: "2px dashed red",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        borderRadius: 8,
-                        zIndex: 999,
-                        fontSize: "16px",
-                        fontWeight: "bold",
-                        color: "red",
-                    }}>X</div>
-
-                {/* 隱藏旋轉按鈕 */}
-                <button
-                    onClick={() => setShowRotateButtons(false)}
-                    style={{
-                        width: 60,
-                        height: 30,
-                        background: "#ff6b6b",
-                        color: "white",
-                        border: "none",
-                        borderRadius: 4,
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        cursor: "pointer",
-                    }}
-                >
-                    隱藏旋轉
-                </button>
-
-                {/* 顯示旋轉按鈕 */}
-                <button
-                    onClick={() => setShowRotateButtons(true)}
-                    style={{
-                        width: 60,
-                        height: 30,
-                        background: "#51cf66",
-                        color: "white",
-                        border: "none",
-                        borderRadius: 4,
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        cursor: "pointer",
-                    }}
-                >
-                    顯示旋轉
-                </button>
-            </div>
 
 
 
@@ -618,7 +484,7 @@ function MinaRoom({ showActionButtons = false, gameData, onRefresh }) {
             <PositionSelector
                 isOpen={showPositionSelector}
                 onClose={() => setShowPositionSelector(false)}
-                onConfirm={handlePositionConfirm}
+                onConfirm={onPositionConfirm}
                 gameData={gameData}
             />
 
@@ -626,7 +492,7 @@ function MinaRoom({ showActionButtons = false, gameData, onRefresh }) {
             <RadiateSelector
                 isOpen={showRadiateSelector}
                 onClose={() => setShowRadiateSelector(false)}
-                onConfirm={handleRadiateConfirm}
+                onConfirm={onRadiateConfirm}
                 gameData={gameData}
             />
         </div>

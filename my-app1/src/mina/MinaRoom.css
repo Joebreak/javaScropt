@@ -73,15 +73,16 @@
     text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.9) !important;
   }
   
-  /* 刪除按鈕 - 適中尺寸但明顯 */
+  /* 刪除按鈕 - 與隱藏旋轉按鈕一致 */
   .delete-area {
-    width: 35px !important;
-    height: 35px !important;
-    font-size: 16px !important;
+    width: 60px !important;
+    height: 30px !important;
+    font-size: 12px !important;
     font-weight: bold !important;
-    background: rgba(255, 0, 0, 0.2) !important;
-    border-width: 2px !important;
-    color: #d00 !important;
+    background: transparent !important;
+    border: 1px solid #ff6b6b !important;
+    color: #ff6b6b !important;
+    border-radius: 4px !important;
   }
   
   /* 形狀按鈕 - 適中尺寸 */
@@ -147,13 +148,14 @@
   
   /* 手機版刪除按鈕優化 */
   .delete-area {
-    width: 45px !important;
-    height: 45px !important;
-    font-size: 18px !important;
+    width: 60px !important;
+    height: 30px !important;
+    font-size: 12px !important;
     font-weight: bold !important;
-    background: rgba(255, 0, 0, 0.1) !important;
-    border-width: 2px !important;
-    box-shadow: 0 2px 4px rgba(255, 0, 0, 0.3) !important;
+    background: transparent !important;
+    border: 1px solid #ff6b6b !important;
+    color: #ff6b6b !important;
+    border-radius: 4px !important;
   }
   
   /* 手機版形狀按鈕優化 */
@@ -231,14 +233,25 @@
 }
 
 .delete-area {
-  width: 40px;
-  height: 40px;
-  border: 2px dashed red;
+  width: 60px;
+  height: 30px;
+  background: transparent;
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
   z-index: 999;
+  transition: all 0.2s ease;
+}
+
+.delete-area:hover {
+  background: rgba(255, 107, 107, 0.1);
+  transform: scale(1.05);
 }
 
 .shape-button {

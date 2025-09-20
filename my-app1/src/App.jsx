@@ -3,9 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 function App() {
   const [room, setRoom] = useState("");
-  const [playerName, setPlayerName] = useState("");
-  const [mode, setMode] = useState("room"); // room | hanabi | mina-extra
-  const [rank, setRank] = useState("");
+  const [rank, setRank] = useState("1");
   const navigate = useNavigate();
 
   // 共用樣式
@@ -42,27 +40,15 @@ function App() {
     borderRadius: "6px",
     cursor: "pointer",
   };
-  const buttonSecondaryStyle = {
-    padding: "8px 16px",
-    fontSize: "14px",
-    background: "#666",
-    color: "#fff",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    marginBottom: "8px",
-  };
-  const labelStyle = { marginBottom: "12px", color: "#666", fontSize: "14px" };
 
   const validateRoom = (room) => {
+    if (room.length !== 5) {
+      return { valid: false, error: '房間號碼錯誤' };
+    }
     if (room === "999") {
       return { valid: true, type: "hanabi" };
     }
-    if (room.substring(0, 4) !== new Date().toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' }).replace(/\//g, '')) {
-      return { valid: false, error: '房間號碼錯誤' };
-    }
-    const requiresExtra = room.charAt(4) === '8';
-    return { valid: true, type: "mina", requiresExtra };
+    return { valid: true, type: "mina" };
   };
 
   const handleLogin = async () => {
@@ -76,29 +62,9 @@ function App() {
       return;
     }
     if (roomValidation.type === "hanabi") {
-      if (mode !== "hanabi") {
-        setMode("hanabi");
-        return;
-      }
-      if (!playerName.trim()) {
-        alert("請輸入玩家名稱");
-        return;
-      }
-      navigate("/hanabi", { state: { room, playerName } });
+      navigate("/hanabi", { state: { room, rank } });
     } else {
-      if (roomValidation.requiresExtra) {
-        if (mode !== "mina-extra") {
-          setMode("mina-extra");
-          return;
-        }
-        if (!rank.trim()) {
-          alert("請輸入順位");
-          return;
-        }
-        navigate("/mina", { state: { room, rank } });
-      } else {
-        navigate("/mina", { state: { room } });
-      }
+      navigate("/mina", { state: { room, rank } });
     }
   };
   return (
@@ -109,72 +75,34 @@ function App() {
         style={cardStyle}
       >
         <h2 style={{ color: "#1976d2", marginBottom: "24px" }}>
-          {mode === "hanabi"
-            ? "輸入玩家名稱"
-            : mode === "mina-extra"
-            ? "輸入 順位"
-            : "輸入房間號碼"}
+          遊戲登入
         </h2>
 
-        {mode === "room" ? (
-          <input
-            type="number"
-            placeholder="房間號碼"
-            value={room}
-            onChange={(e) => setRoom(e.target.value)}
-            style={inputStyle}
-          />
-        ) : mode === "hanabi" ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <div style={labelStyle}>
-              房間號碼: {room}
-            </div>
-            <input
-              type="text"
-              placeholder="玩家名稱"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              style={inputStyle}
-            />
-            <button
-              onClick={() => setMode("room")}
-              style={buttonSecondaryStyle}
-            >
-              返回
-            </button>
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <div style={labelStyle}>
-              房間號碼: {room}
-            </div>
-            <select
-              value={rank}
-              onChange={(e) => setRank(e.target.value)}
-              style={inputStyle}
-            >
-              <option value="">選擇順位 (1-6)</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-            </select>
-            <button
-              onClick={() => setMode("room")}
-              style={buttonSecondaryStyle}
-            >
-              返回
-            </button>
-          </div>
-        )}
+        <input
+          type="number"
+          placeholder="房間號碼 (5位數)"
+          value={room}
+          onChange={(e) => setRoom(e.target.value)}
+          style={inputStyle}
+        />
+        <select
+          value={rank}
+          onChange={(e) => setRank(e.target.value)}
+          style={inputStyle}
+        >
+          <option value="1">順位 1</option>
+          <option value="2">順位 2</option>
+          <option value="3">順位 3</option>
+          <option value="4">順位 4</option>
+          <option value="5">順位 5</option>
+          <option value="6">順位 6</option>
+        </select>
 
         <button
           onClick={handleLogin}
           style={buttonPrimaryStyle}
         >
-          {mode === "room" ? "登入" : "開始遊戲"}
+          開始遊戲
         </button>
       </div>
     </div>
