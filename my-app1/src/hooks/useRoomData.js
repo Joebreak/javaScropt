@@ -45,18 +45,17 @@ export function useRoomData(intervalMs = 0, room) {
           .filter(item => item && item.list && item.round === 0)
           .flatMap(item => {
             const list = item.list;
-            if (Array.isArray(list)) {
-              return list.filter(listItem => listItem.NOTE3 !== null);
-            }
-            return [list];
+            // if (Array.isArray(list)) {
+            //   return list.filter(listItem => listItem.NOTE3 !== null);
+            // }
+            return list;
           })
         : [];
-
-      // 從原始 json 中取得 type 資訊（在 item 層級，不是 list 層級）
-      const typeItem = Array.isArray(json)
-        ? json.find(item => item && item.type)
-        : null;
-      const type = typeItem ? typeItem.type : null;
+         const type = Array.isArray(json)
+         ? json
+           .filter(item => item && item.data && item.data.NOTE6 !== undefined && item.round === 0)
+           .map(item => item.data.NOTE6)[0] || null
+         : null;
 
       setData({
         list: filteredList,

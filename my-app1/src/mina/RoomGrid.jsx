@@ -462,10 +462,6 @@ function MinaRoom({
                     </div>
                 ))}
             </div>
-
-
-
-
             {/* 浮動圖形按鈕面板 */}
             <FloatingShapePanel
                 shapeStyles={shapeStyles}

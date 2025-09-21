@@ -3,7 +3,6 @@ import { getApiUrl } from '../../config/api';
 
 const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
     const [selectedDirection, setSelectedDirection] = useState(null);
-
     // 定義四列選項及其對應的進入座標
     const directionOptions = [
         // 1~10（上側，從上往下進入）
@@ -107,16 +106,15 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
     };
 
     // 取得某座標的地圖資料（避免在迴圈中宣告函式）
-    const getCellDataAt = (row, col, map) => {
-        return map.find(item => item && item.NOTE1 === col && item.NOTE2 === row) || null;
+    const getCellDataAt = (point, map) => {
+        return map.find(item => item && item.NOTE1 === point.col && item.NOTE2 === point.row) || null;
     };
 
     // 光線追蹤函數
     const traceLightPath = (entryPoint, direction, mapData) => {
         const path = [];
         const encounteredColors = []; // 記錄所有遇到的顏色
-        let currentRow = entryPoint.row;
-        let currentCol = entryPoint.col;
+        let currentPoint = entryPoint;
         let currentDirection = direction;
 
         // 根據進入方向決定初始移動方向
@@ -129,38 +127,43 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                 default: return 'down';
             }
         };
-
         currentDirection = getInitialDirection(selectedDirection.side);
         // 移動到第一個格子
-        const moveToNext = (row, col, dir) => {
+        const moveToNext = (point, dir) => {
             switch (dir) {
-                case 'down': return { row: row + 1, col };
-                case 'up': return { row: row - 1, col };
-                case 'right': return { row, col: col + 1 };
-                case 'left': return { row, col: col - 1 };
-                default: return { row, col };
+                case 'down': return { row: point.row + 1, col: point.col };
+                case 'up': return { row: point.row - 1, col: point.col };
+                case 'right': return { row: point.row, col: point.col + 1 };
+                case 'left': return { row: point.row, col: point.col - 1 };
+                default: return { row: point.row, col: point.col };
             }
         };
-
+        console.log(currentPoint);
         // 檢查是否在邊界內
-        const isInBounds = (row, col) => {
-            return row >= 0 && row < 8 && col >= 0 && col < 10;
+        const isInBounds = (point) => {
+            return point.row >= 0 && point.row < 8 && point.col >= 0 && point.col < 10;
         };
+
+        let returnedToStart = false;
+        
         // 開始追蹤
         while (true) {
             // 計算下一個位置
-            const nextPos = moveToNext(currentRow, currentCol, currentDirection);
-            
+            const nextPos = moveToNext(currentPoint, currentDirection);
+
             // 檢查是否在邊界內
-            if (!isInBounds(nextPos.row, nextPos.col)) break;
-            
+            if (!isInBounds(nextPos)) {
+                // 超過邊界，保持當前位置
+                break;
+            }
+
             // 移動到新位置
-            currentRow = nextPos.row;
-            currentCol = nextPos.col;
-
+            currentPoint = nextPos;
+            // console.log('當前位置:', currentPoint);
+            // console.log('當前方向:', currentDirection);
             // 在 mapData 中尋找當前位置的資料（避免在迴圈中宣告函式）
-            const cellData = getCellDataAt(currentRow, currentCol, mapData);
-
+            const cellData = getCellDataAt(currentPoint, mapData);
+            // console.log('地圖資料地圖資料:', cellData);
             // 記錄遇到的顏色
             if (cellData && cellData.NOTE3) {
                 encounteredColors.push(cellData.NOTE3);
@@ -172,8 +175,8 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
             // 如果被吸收，停止追蹤
             if (currentColor === '被吸收') {
                 path.push({
-                    row: currentRow,
-                    col: currentCol,
+                    row: currentPoint.row,
+                    col: currentPoint.col,
                     note3: cellData ? cellData.NOTE3 : null,
                     note4: cellData ? cellData.NOTE4 : null,
                     color: '被吸收',
@@ -183,70 +186,67 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
             }
 
             path.push({
-                row: currentRow,
-                col: currentCol,
+                row: currentPoint.row,
+                col: currentPoint.col,
                 note3: cellData ? cellData.NOTE3 : null,
                 note4: cellData ? cellData.NOTE4 : null,
                 color: currentColor,
                 encounteredColors: [...encounteredColors]
             });
 
-            // 檢查 NOTE3 是否為 null
-            if (cellData && cellData.NOTE3 === null) {
-                // 繼續直線前進
+            // 檢查 cellData 是否存在或 NOTE3 是否為 null
+            if (!cellData || cellData.NOTE3 === null) {
                 continue;
             }
 
             // 檢查 NOTE4 角度
-            if (cellData && cellData.NOTE4) {
+            if (cellData.NOTE4 && cellData.NOTE4 > 0) {
                 const angle = cellData.NOTE4;
 
                 if (angle === 1) {
-                    // 停下來
+                    returnedToStart = true;
                     break;
                 } else if (angle === 2) {
                     // 從左邊到上面 或 從上面到左邊
-                    if (currentDirection === 'left') {
+                    if (currentDirection === 'right') {
                         currentDirection = 'up';
-                    } else if (currentDirection === 'up') {
+                    } else if (currentDirection === 'down') {
                         currentDirection = 'left';
                     } else {
-                        break; // 其他方向停下來
+                        returnedToStart = true;
+                        break;
                     }
                 } else if (angle === 3) {
                     // 從右邊到上面 或 從上面到右邊
-                    if (currentDirection === 'right') {
+                    if (currentDirection === 'left') {
                         currentDirection = 'up';
-                    } else if (currentDirection === 'up') {
+                    } else if (currentDirection === 'down') {
                         currentDirection = 'right';
                     } else {
-                        break; // 其他方向停下來
+                        returnedToStart = true;
+                        break;
                     }
                 } else if (angle === 4) {
                     // 從左邊到下面 或 從下面到左邊
-                    if (currentDirection === 'left') {
+                    if (currentDirection === 'right') {
                         currentDirection = 'down';
-                    } else if (currentDirection === 'down') {
+                    } else if (currentDirection === 'up') {
                         currentDirection = 'left';
                     } else {
-                        break; // 其他方向停下來
+                        returnedToStart = true;
+                        break;
                     }
                 } else if (angle === 5) {
                     // 從右邊到下面 或 從下面到右邊
-                    if (currentDirection === 'right') {
+                    if (currentDirection === 'left') {
                         currentDirection = 'down';
-                    } else if (currentDirection === 'down') {
+                    } else if (currentDirection === 'up') {
                         currentDirection = 'right';
                     } else {
-                        break; // 其他方向停下來
+                        returnedToStart = true;
+                        break;
                     }
-                } else {
-                    // 其他角度停下來
-                    break;
                 }
-            } else {
-                // 沒有 NOTE4 資料，停下來
-                break;
             }
         }
 
@@ -256,7 +256,8 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
         return {
             path: path,
             finalColor: finalColor,
-            encounteredColors: encounteredColors
+            encounteredColors: encounteredColors,
+            returnedToStart: returnedToStart
         };
     };
 
@@ -274,12 +275,6 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
 
             // 執行光線追蹤
             const lightTraceResult = traceLightPath(selectedDirection.entryPoint, selectedDirection.side, mapData || []);
-
-            console.log('光線追蹤結果:', {
-                finalColor: lightTraceResult.finalColor,
-                pathLength: lightTraceResult.path.length,
-                lastPath: lightTraceResult.path[lightTraceResult.path.length - 1]
-            });
             const result = {
                 direction: selectedDirection,
                 type: selectedDirection.type,
@@ -291,56 +286,50 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                 finalColor: lightTraceResult.finalColor,
                 encounteredColors: lightTraceResult.encounteredColors
             };
-
+            console.log('光線追蹤結果:', result);
             // 決定 in 和 out 格式
-            const inFormat = selectedDirection.label; // 直接使用選擇的標籤 (1, I, A, 11 等)
+            const inFormat = selectedDirection.label;
 
             let outFormat = "";
             if (lightTraceResult.finalColor === '被吸收') {
                 outFormat = "";
             } else {
-                // 如果沒有被吸收，計算出口位置
-                const lastPath = lightTraceResult.path[lightTraceResult.path.length - 1];
-                if (lastPath) {
-                    const { row, col } = lastPath;
-                    // 根據最後位置決定出口格式
-                    if (row === 0) {
-                        outFormat = String(col + 1); // 從上方出來，回復到 1~10 格式
-                    } else if (row === 7) {
-                        outFormat = String.fromCharCode('I'.charCodeAt(0) + col); // 從下方出來，回復到 I~R 格式
-                    } else if (col === 0) {
-                        outFormat = String.fromCharCode('A'.charCodeAt(0) + row); // 從左方出來，回復到 A~H 格式
-                    } else if (col === 9) {
-                        outFormat = String(11 + row); // 從右方出來，回復到 11~18 格式
-                    } else {
-                        outFormat = inFormat;
-                    }
+                if (lightTraceResult.returnedToStart) {
+                    // 如果光線回到了起點，使用進入點作為出口
+                    outFormat = inFormat;
                 } else {
-                    // 如果沒有路徑資料，光線穿過整個網格，從對面出來
-                    // 根據進入方向計算對面出口
-                    const { side, index } = selectedDirection;
-                    if (side === 'top') {
-                        outFormat = String.fromCharCode('I'.charCodeAt(0) + index); // 從下方出來，回復到 I~R 格式
-                    } else if (side === 'bottom') {
-                        outFormat = String(index + 1); // 從上方出來，回復到 1~10 格式
-                    } else if (side === 'left') {
-                        outFormat = String(11 + index); // 從右方出來，回復到 11~18 格式
-                    } else if (side === 'right') {
-                        outFormat = String.fromCharCode('A'.charCodeAt(0) + index); // 從左方出來，回復到 A~H 格式
+                    // 光線正常離開網格，計算出口位置
+                    const lastPath = lightTraceResult.path[lightTraceResult.path.length - 1];
+                    if (lastPath) {
+                        const { row, col } = lastPath;
+                        
+                        // 根據最後位置決定出口格式
+                        if (row === 0) {
+                            outFormat = String(col + 1); // 從上方出來，回復到 1~10 格式
+                        } else if (row === 7) {
+                            outFormat = String.fromCharCode('I'.charCodeAt(0) + col); // 從下方出來，回復到 I~R 格式
+                        } else if (col === 0) {
+                            outFormat = String.fromCharCode('A'.charCodeAt(0) + row); // 從左方出來，回復到 A~H 格式
+                        } else if (col === 9) {
+                            outFormat = String(11 + row); // 從右方出來，回復到 11~18 格式
+                        } else {
+                            outFormat = inFormat;
+                        }
+                    } else {
+                        console.log('最後位置不存在');
+                        outFormat = inFormat;
                     }
                 }
             }
-
             const requestBody = {
-                room: room.substring(0, 4),
+                room: room,
                 round: lastRound + 1,
                 data: {
-                    color: lightTraceResult.finalColor, // 直接使用最終顏色（包含"被吸收"）
-                    in: inFormat, // 進入標籤
-                    out: outFormat // 出口位置，被吸收時為空字串
+                    color: lightTraceResult.finalColor,
+                    in: inFormat,
+                    out: outFormat
                 }
             };
-            console.log(requestBody.data);
             try {
                 const apiUrl = getApiUrl('cloudflare_room_url');
                 const response = await fetch(apiUrl + requestBody.room, {

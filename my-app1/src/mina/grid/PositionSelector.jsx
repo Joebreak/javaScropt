@@ -46,7 +46,7 @@ const PositionSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                 }
             };
             const requestBody = {
-                room: room.substring(0, 4),
+                room: room,
                 round: lastRound + 1,
                 data: {
                     color: getColor(foundData ? foundData.NOTE3 : null),
