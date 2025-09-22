@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import RoomGrid from "./RoomGrid";
 import RoomList from "./RoomList";
 import { useRoomData } from "../hooks/useRoomData";
+import ShapeValidator from "./grid/ShapeValidator";
 
 export default function MinaRoom() {
   const location = useLocation();
@@ -20,6 +21,7 @@ export default function MinaRoom() {
   const [showRotateButtons, setShowRotateButtons] = useState(true);
   const [showPositionSelector, setShowPositionSelector] = useState(false);
   const [showRadiateSelector, setShowRadiateSelector] = useState(false);
+  const [showShapeValidator, setShowShapeValidator] = useState(false);
   const deleteRef = useRef(null);
 
   // 處理函數
@@ -43,6 +45,17 @@ export default function MinaRoom() {
       refresh();
     }
     setShowRadiateSelector(false);
+  };
+
+  const handleShapeValidation = () => {
+    setShowShapeValidator(true);
+  };
+
+  const handleShapeValidatorConfirm = () => {
+    if (refresh) {
+      refresh();
+    }
+    setShowShapeValidator(false);
   };
 
   useEffect(() => {
@@ -162,6 +175,27 @@ export default function MinaRoom() {
             查詢指定位置
           </button>
         )}
+
+        {/* 圖形驗證按鈕 */}
+        {showActionButtons && (
+          <button
+            onClick={handleShapeValidation}
+            style={{
+              padding: "8px 16px",
+              background: "#e74c3c",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              fontSize: "14px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+              transition: "all 0.3s ease"
+            }}
+          >
+            圖形驗證
+          </button>
+        )}
       </div>
 
       {/* 第二排按鈕：X 隱藏選轉、顯示選轉 */}
@@ -234,6 +268,14 @@ export default function MinaRoom() {
       >
         返回首頁
       </button>
+
+      {/* 圖形驗證彈窗 */}
+      <ShapeValidator
+        isOpen={showShapeValidator}
+        onClose={() => setShowShapeValidator(false)}
+        onConfirm={handleShapeValidatorConfirm}
+        gameData={{ room, lastRound, mapData: data?.mapData }}
+      />
     </div>
   );
 }
