@@ -42,25 +42,12 @@ export function useRoomData(intervalMs = 0, room) {
         : [];
       const roundZeroData = Array.isArray(json)
         ? json
-          .filter(item => item && item.list && item.round === 0)
-          .flatMap(item => {
-            const list = item.list;
-            // if (Array.isArray(list)) {
-            //   return list.filter(listItem => listItem.NOTE3 !== null);
-            // }
-            return list;
-          })
-        : [];
-         const type = Array.isArray(json)
-         ? json
-           .filter(item => item && item.data && item.data.NOTE6 !== undefined && item.round === 0)
-           .map(item => item.data.NOTE6)[0] || null
-         : null;
-
+          .filter(item => item && item.list && item.round === 0)[0] || null
+        : null;
       setData({
         list: filteredList,
-        mapData: roundZeroData,
-        members: type
+        mapData: roundZeroData?.list || [],
+        members: roundZeroData?.data?.NOTE6 || null
       });
 
     } catch (err) {

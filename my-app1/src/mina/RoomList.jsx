@@ -26,7 +26,7 @@ export default function RoomList({ data }) {
             <tbody>
               {data.list.map((item, idx) => (
                 <tr key={idx}>
-                  <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center", fontWeight: "bold", color: "#666" }}>{data.list.length - idx}</td>
+                  <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center", fontWeight: "bold", color: "#666" }}>{item.round}</td>
                   <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center" }}>{item.in}</td>
                   <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center" }}>{item.out}</td>
                   <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center" }}>{item.color}</td>
