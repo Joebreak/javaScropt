@@ -27,9 +27,13 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
     // 組合選項狀態
     const [selectedColor, setSelectedColor] = useState(null);
     const [selectedShape, setSelectedShape] = useState(null);
+    
+    // 驗證結果狀態
+    const [validationResult, setValidationResult] = useState(null);
+    const [showSuccessConfirm, setShowSuccessConfirm] = useState(false);
 
     // 從 localStorage 讀取保存的網格
-    const loadGridFromStorage = () => {
+    const loadGridFromStorage = React.useCallback(() => {
         try {
             const key = `shapeValidator_${gameData?.room}`;
             console.log('嘗試讀取 localStorage，鍵值:', key);
@@ -45,10 +49,10 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
         } catch (error) {
             console.error('讀取保存的網格失敗:', error);
         }
-    };
+    }, [gameData?.room]);
 
     // 保存網格到 localStorage
-    const saveGridToStorage = () => {
+    const saveGridToStorage = React.useCallback(() => {
         try {
             const key = `shapeValidator_${gameData?.room}`;
             const gridData = JSON.stringify(grid);
@@ -59,7 +63,7 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
         } catch (error) {
             console.error('保存網格失敗:', error);
         }
-    };
+    }, [gameData?.room, grid]);
 
     const handleColorSelect = (colorId) => {
         console.log('選擇顏色:', colorId);
@@ -123,14 +127,46 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
         if (isOpen) {
             loadGridFromStorage();
         }
-    }, [isOpen]);
+    }, [isOpen, loadGridFromStorage]);
 
     // 當網格改變時，保存到 localStorage（但不包括初始載入時）
     React.useEffect(() => {
         if (isOpen) {
             saveGridToStorage();
         }
-    }, [grid]);
+    }, [grid, isOpen, saveGridToStorage]);
+
+    // 將 NOTE3 和 NOTE4 轉換為形狀 ID
+    const getExpectedShapeId = (note3, note4) => {
+        if (!note3 || !note4) return null;
+        
+        // NOTE3 是顏色，NOTE4 是形狀
+        const colorId = note3;
+        let shapeId;
+        
+        // 根據 NOTE4 決定形狀
+        switch (note4) {
+            case 1: // 實心
+                shapeId = 'SQUARE';
+                break;
+            case 2: // 左上
+                shapeId = 'TRIANGLE_UP_LEFT';
+                break;
+            case 3: // 右上
+                shapeId = 'TRIANGLE_UP_RIGHT';
+                break;
+            case 4: // 左下
+                shapeId = 'TRIANGLE_DOWN_LEFT';
+                break;
+            case 5: // 右下
+                shapeId = 'TRIANGLE_DOWN_RIGHT';
+                break;
+            default:
+                return null;
+        }
+        
+        return `${colorId}_${shapeId}`;
+    };
 
     // 驗證擺放是否正確
     const validatePlacement = () => {
@@ -139,11 +175,7 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
             return { isValid: false, message: '沒有地圖資料' };
         }
 
-        let correctCount = 0;
-        let totalPlaced = 0;
-        const errors = [];
-
-        // 檢查每個格子
+        // 檢查每個格子，發現錯誤立即返回
         for (let row = 0; row < 8; row++) {
             for (let col = 0; col < 10; col++) {
                 const userShape = grid[row][col];
@@ -152,43 +184,29 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                 );
 
                 if (userShape) {
-                    totalPlaced++;
-                    const expectedShape = mapData ? mapData.NOTE3 : null;
+                    const expectedShapeId = mapData ? getExpectedShapeId(mapData.NOTE3, mapData.NOTE4) : null;
                     
-                    if (userShape === expectedShape) {
-                        correctCount++;
-                    } else {
-                        errors.push({
-                            row,
-                            col,
-                            userShape,
-                            expectedShape,
-                            message: `位置 (${row}, ${col}): 您放置了 ${shapeTypes.find(s => s.id === userShape)?.name || userShape}，但應該是 ${shapeTypes.find(s => s.id === expectedShape)?.name || expectedShape || '空'}`
-                        });
+                    if (userShape.id !== expectedShapeId) {
+                        console.log(`驗證失敗 - 位置 (${row}, ${col}): 放置了 ${userShape.name}，但應該是 ${expectedShapeId || '空'}`);
+                        return {
+                            isValid: false,
+                            message: '擺放有誤，請重新檢查'
+                        };
                     }
-                } else if (mapData && mapData.NOTE3) {
+                } else if (mapData && mapData.NOTE3 && mapData.NOTE4) {
                     // 使用者沒有放置，但地圖上應該有
-                    errors.push({
-                        row,
-                        col,
-                        userShape: null,
-                        expectedShape: mapData.NOTE3,
-                        message: `位置 (${row}, ${col}): 您沒有放置，但應該是 ${shapeTypes.find(s => s.id === mapData.NOTE3)?.name || mapData.NOTE3}`
-                    });
+                    const expectedShapeId = getExpectedShapeId(mapData.NOTE3, mapData.NOTE4);
+                    console.log(`驗證失敗 - 位置 (${row}, ${col}): 沒有放置，但應該是 ${expectedShapeId}`);
+                    return {
+                        isValid: false,
+                        message: '擺放有誤，請重新檢查'
+                    };
                 }
             }
         }
-
-        const accuracy = totalPlaced > 0 ? (correctCount / totalPlaced) * 100 : 0;
-        const isValid = errors.length === 0;
-
         return {
-            isValid,
-            accuracy,
-            correctCount,
-            totalPlaced,
-            errors,
-            message: isValid ? '擺放完全正確！' : `準確率: ${accuracy.toFixed(1)}% (${correctCount}/${totalPlaced})`
+            isValid: true,
+            message: '擺放完全正確！'
         };
     };
 
@@ -199,7 +217,7 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
         saveGridToStorage();
         
         // 解構 gameData
-        const { room, lastRound, mapData } = gameData;
+        const { room, lastRound } = gameData;
 
         // 檢查 lastRound 是否存在
         if (!lastRound && lastRound !== 0) {
@@ -210,24 +228,26 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
 
         // 驗證擺放
         const validation = validatePlacement();
-        console.log('驗證結果:', validation);
+        setValidationResult(validation);
 
         const result = {
             grid: grid,
-            validation: validation,
+            validation: {
+                isValid: validation.isValid,
+                message: validation.message
+            },
             timestamp: new Date().toISOString()
         };
-
+        console.log('result:', validation);
         const requestBody = {
             room: room,
             round: lastRound + 1,
             data: {
-                type: 'shape_validation',
-                grid: grid,
-                validation: validation
+                in: '提交答案',
+                out: '',
+                color: validation.isValid ? '獲勝' : '失敗了'
             }
         };
-
         try {
             const apiUrl = getApiUrl('cloudflare_room_url');
             const response = await fetch(apiUrl + requestBody.room, {
@@ -239,15 +259,38 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
             });
 
             if (response.ok) {
-                onConfirm(result);
+                if (validation.isValid) {
+                    // 成功：停在當前畫面，顯示確認按鈕
+                    setShowSuccessConfirm(true);
+                } else {
+                    // 失敗：直接離開
+                    onConfirm(result);
+                }
             } else {
                 console.error('API 呼叫失敗:', response.status, response.statusText);
+                // API 失敗也直接離開
+                onConfirm(result);
             }
         } catch (error) {
             console.error('API 呼叫錯誤:', error);
+            // API 錯誤也直接離開
+            onConfirm(result);
         }
         
         setIsValidating(false);
+    };
+
+    const handleSuccessConfirm = () => {
+        // 成功確認後離開
+        const result = {
+            grid: grid,
+            validation: {
+                isValid: validationResult.isValid,
+                message: validationResult.message
+            },
+            timestamp: new Date().toISOString()
+        };
+        onConfirm(result);
     };
 
     const handleCancel = () => {
@@ -574,35 +617,77 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                     </button>
                 </div>
 
+                {/* 驗證結果顯示 */}
+                {validationResult && (
+                    <div style={{ 
+                        marginBottom: '20px', 
+                        padding: '15px', 
+                        backgroundColor: validationResult.isValid ? '#d4edda' : '#f8d7da',
+                        border: `1px solid ${validationResult.isValid ? '#c3e6cb' : '#f5c6cb'}`,
+                        borderRadius: '4px',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{ 
+                            fontSize: '16px', 
+                            fontWeight: 'bold',
+                            color: validationResult.isValid ? '#155724' : '#721c24'
+                        }}>
+                            {validationResult.message}
+                        </div>
+                    </div>
+                )}
+
                 {/* 按鈕 */}
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                    <button
-                        onClick={handleCancel}
-                        style={{
-                            padding: '8px 16px',
-                            backgroundColor: '#6c757d',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        取消
-                    </button>
-                    <button
-                        onClick={handleConfirm}
-                        disabled={isValidating}
-                        style={{
-                            padding: '8px 16px',
-                            backgroundColor: isValidating ? '#ccc' : '#28a745',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: isValidating ? 'not-allowed' : 'pointer'
-                        }}
-                    >
-                        {isValidating ? '驗證中...' : '確認驗證'}
-                    </button>
+                    {showSuccessConfirm ? (
+                        // 成功時顯示確認按鈕
+                        <button
+                            onClick={handleSuccessConfirm}
+                            style={{
+                                padding: '8px 16px',
+                                backgroundColor: '#28a745',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '16px',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            確認完成
+                        </button>
+                    ) : (
+                        // 一般狀態顯示取消和驗證按鈕
+                        <>
+                            <button
+                                onClick={handleCancel}
+                                style={{
+                                    padding: '8px 16px',
+                                    backgroundColor: '#6c757d',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                取消
+                            </button>
+                            <button
+                                onClick={handleConfirm}
+                                disabled={isValidating}
+                                style={{
+                                    padding: '8px 16px',
+                                    backgroundColor: isValidating ? '#ccc' : '#28a745',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: isValidating ? 'not-allowed' : 'pointer'
+                                }}
+                            >
+                                {isValidating ? '驗證中...' : '確認驗證'}
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
