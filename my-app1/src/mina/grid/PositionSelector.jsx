@@ -51,7 +51,7 @@ const PositionSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                 data: {
                     color: getColor(foundData ? foundData.NOTE3 : null),
                     in: "查看位置",
-                    out: `Point[x=${col + 1},y=${row + 1}]`
+                    out: `${String.fromCharCode(65 + row)}${col + 1}`
                 }
             };
             try {
@@ -153,7 +153,7 @@ const PositionSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                                     }
                                 }}
                             >
-                                {row + 1}-{col + 1}
+                                {String.fromCharCode(65 + row)}{col + 1}
                             </div>
                         ))
                     )}
