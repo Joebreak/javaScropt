@@ -6,28 +6,28 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
     const [isValidating, setIsValidating] = useState(false);
 
     // 定義顏色選項
-    const colorTypes = [
+    const colorTypes = React.useMemo(() => [
         { id: 'TYPE1', name: '白色', color: '#ffffff', borderColor: '#ddd' },
         { id: 'TYPE2', name: '紅色', color: '#ff6b6b', borderColor: '#e74c3c' },
         { id: 'TYPE3', name: '藍色', color: '#3F48CC', borderColor: '#3498db' },
         { id: 'TYPE4', name: '黃色', color: '#feca57', borderColor: '#f39c12' },
         { id: 'TYPE5', name: '黑色', color: '#2c3e50', borderColor: '#000000' },
         { id: 'TRANSPARENT', name: '透明', color: 'transparent', borderColor: '#ccc' }
-    ];
+    ], []);
 
     // 定義形狀選項
-    const shapeTypes = [
+    const shapeTypes = React.useMemo(() => [
         { id: 'SQUARE', name: '實心', shape: 'square' },
         { id: 'TRIANGLE_UP_LEFT', name: '左上', shape: 'triangle', rotation: 0, type: 'up-left' },
         { id: 'TRIANGLE_UP_RIGHT', name: '右上', shape: 'triangle', rotation: 0, type: 'up-right' },
         { id: 'TRIANGLE_DOWN_LEFT', name: '左下', shape: 'triangle', rotation: 0, type: 'down-left' },
         { id: 'TRIANGLE_DOWN_RIGHT', name: '右下', shape: 'triangle', rotation: 0, type: 'down-right' }
-    ];
+    ], []);
 
     // 組合選項狀態
     const [selectedColor, setSelectedColor] = useState(null);
     const [selectedShape, setSelectedShape] = useState(null);
-    
+
     // 驗證結果狀態
     const [validationResult, setValidationResult] = useState(null);
     const [showSuccessConfirm, setShowSuccessConfirm] = useState(false);
@@ -36,84 +36,150 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
     const loadGridFromStorage = React.useCallback(() => {
         try {
             const key = `shapeValidator_${gameData?.room}`;
-            console.log('嘗試讀取 localStorage，鍵值:', key);
             const saved = localStorage.getItem(key);
-            console.log('讀取到的資料:', saved);
             if (saved) {
                 const parsedGrid = JSON.parse(saved);
-                setGrid(parsedGrid);
-                console.log('從 localStorage 恢復網格成功');
-            } else {
-                console.log('沒有找到保存的網格資料');
+
+                // 清理無效的數據
+                const cleanedGrid = parsedGrid.map(row =>
+                    row.map(cell => {
+                        if (!cell) return null;
+
+                        // 處理新格式 {color: selectedColor, shape: selectedShape}
+                        if (typeof cell === 'object' && cell.color && cell.shape) {
+                            const color = colorTypes.find(c => c.id === cell.color);
+                            const shape = shapeTypes.find(s => s.id === cell.shape);
+
+                            if (!color || !shape) {
+                                return null;
+                            }
+                            return cell;
+                        }
+
+                        // 如果是舊的對象格式，轉換為新格式
+                        if (typeof cell === 'object' && cell.id) {
+                            // 嘗試從舊格式解析
+                            const parts = cell.id.split('_');
+                            if (parts.length >= 2) {
+                                const colorId = parts[0];
+                                const shapeId = parts.slice(1).join('_');
+                                const color = colorTypes.find(c => c.id === colorId);
+                                const shape = shapeTypes.find(s => s.id === shapeId);
+
+                                if (color && shape) {
+                                    return { color: colorId, shape: shapeId };
+                                }
+                            }
+                            return null;
+                        }
+
+                        // 處理舊格式字符串 TYPE3_TRIANGLE_UP_LEFT
+                        if (typeof cell === 'string' && cell.includes('_')) {
+                            const parts = cell.split('_');
+                            const colorId = parts[0];
+                            const shapeId = parts.slice(1).join('_');
+                            const color = colorTypes.find(c => c.id === colorId);
+                            const shape = shapeTypes.find(s => s.id === shapeId);
+
+                            if (!color || !shape) {
+                                return null;
+                            }
+                            return { color: colorId, shape: shapeId };
+                        }
+                        return null;
+                    })
+                );
+
+                setGrid(cleanedGrid);
             }
         } catch (error) {
             console.error('讀取保存的網格失敗:', error);
         }
-    }, [gameData?.room]);
+    }, [gameData?.room, colorTypes, shapeTypes]);
 
     // 保存網格到 localStorage
     const saveGridToStorage = React.useCallback(() => {
         try {
             const key = `shapeValidator_${gameData?.room}`;
             const gridData = JSON.stringify(grid);
-            console.log('保存網格到 localStorage，鍵值:', key);
-            console.log('網格資料:', gridData);
             localStorage.setItem(key, gridData);
-            console.log('網格已保存到 localStorage 成功');
         } catch (error) {
             console.error('保存網格失敗:', error);
         }
     }, [gameData?.room, grid]);
 
     const handleColorSelect = (colorId) => {
-        console.log('選擇顏色:', colorId);
         setSelectedColor(colorId);
     };
 
     const handleShapeSelect = (shapeId) => {
-        console.log('選擇形狀:', shapeId);
         setSelectedShape(shapeId);
     };
 
-    // 獲取當前組合的完整選項
+    // 獲取當前組合的 ID
     const getCurrentSelection = () => {
         if (!selectedColor || !selectedShape) return null;
-        
-        const color = colorTypes.find(c => c.id === selectedColor);
-        const shape = shapeTypes.find(s => s.id === selectedShape);
-        
-        return {
-            id: `${selectedColor}_${selectedShape}`,
-            color: color,
-            shape: shape,
-            name: `${color.name}${shape.name}`
-        };
+        return { color: selectedColor, shape: selectedShape };
+    };
+
+    // 根據 ID 獲取顏色和形狀信息
+    const getShapeInfo = (shapeId) => {
+        if (!shapeId) return null;
+
+        // 處理新格式 {color: selectedColor, shape: selectedShape}
+        if (typeof shapeId === 'object' && shapeId.color && shapeId.shape) {
+            const color = colorTypes.find(c => c.id === shapeId.color);
+            const shape = shapeTypes.find(s => s.id === shapeId.shape);
+
+            if (!color || !shape) {
+                console.warn('找不到對應的顏色或形狀:', { colorId: shapeId.color, shapeId: shapeId.shape, color, shape });
+                return null;
+            }
+
+            return { color, shape, id: `${shapeId.color}_${shapeId.shape}` };
+        }
+
+        // 處理舊格式的數據遷移
+        if (typeof shapeId === 'object' && shapeId.id) {
+            // 如果是舊的對象格式，直接返回
+            return shapeId;
+        }
+
+        // 處理舊格式 TYPE3_TRIANGLE_UP_LEFT
+        if (typeof shapeId === 'string' && shapeId.includes('_')) {
+            const parts = shapeId.split('_');
+            const colorId = parts[0];
+            const shapeIdPart = parts.slice(1).join('_');
+            const color = colorTypes.find(c => c.id === colorId);
+            const shape = shapeTypes.find(s => s.id === shapeIdPart);
+
+            if (!color || !shape) {
+                console.warn('找不到對應的顏色或形狀:', { colorId, shapeIdPart, color, shape, originalShapeId: shapeId });
+                return null;
+            }
+
+            return { color, shape, id: shapeId };
+        }
+
+        console.warn('無法解析的形狀 ID 格式:', shapeId);
+        return null;
     };
 
     const handleCellClick = (row, col) => {
         const currentSelection = getCurrentSelection();
-        console.log('點擊格子:', row, col, '選中的組合:', currentSelection);
-        
+
         setGrid(prev => {
             const newGrid = prev.map(row => [...row]); // 深拷貝
             const currentCell = newGrid[row][col];
-            
-            console.log('當前格子內容:', currentCell);
-            
+
             // 如果格子有圖形，移除它（單個清除功能）
             if (currentCell !== null) {
                 newGrid[row][col] = null;
-                console.log('移除圖形:', currentCell);
-            } 
+            }
             // 如果格子是空的且有選中組合，放置選中的圖形
             else if (currentSelection) {
                 newGrid[row][col] = currentSelection;
-                console.log('放置圖形:', currentSelection);
-            } else {
-                console.log('沒有選中完整的顏色和形狀組合，無法放置');
             }
-            
-            console.log('更新後的格子內容:', newGrid[row][col]);
             return newGrid;
         });
     };
@@ -139,11 +205,11 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
     // 將 NOTE3 和 NOTE4 轉換為形狀 ID
     const getExpectedShapeId = (note3, note4) => {
         if (!note3 || !note4) return null;
-        
+
         // NOTE3 是顏色，NOTE4 是形狀
         const colorId = note3;
         let shapeId;
-        
+
         // 根據 NOTE4 決定形狀
         switch (note4) {
             case 1: // 實心
@@ -164,7 +230,7 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
             default:
                 return null;
         }
-        
+
         return `${colorId}_${shapeId}`;
     };
 
@@ -179,15 +245,15 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
         for (let row = 0; row < 8; row++) {
             for (let col = 0; col < 10; col++) {
                 const userShape = grid[row][col];
-                const mapData = gameData.mapData.find(item => 
+                const mapData = gameData.mapData.find(item =>
                     item && item.NOTE1 === col && item.NOTE2 === row
                 );
 
                 if (userShape) {
                     const expectedShapeId = mapData ? getExpectedShapeId(mapData.NOTE3, mapData.NOTE4) : null;
-                    
-                    if (userShape.id !== expectedShapeId) {
-                        console.log(`驗證失敗 - 位置 (${row}, ${col}): 放置了 ${userShape.name}，但應該是 ${expectedShapeId || '空'}`);
+
+                    if (userShape !== expectedShapeId) {
+                        console.log(`驗證失敗 - 位置 (${row}, ${col}): 放置了 ${userShape}，但應該是 ${expectedShapeId || '空'}`);
                         return {
                             isValid: false,
                             message: '擺放有誤，請重新檢查'
@@ -212,10 +278,10 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
 
     const handleConfirm = async () => {
         setIsValidating(true);
-        
+
         // 先保存當前網格
         saveGridToStorage();
-        
+
         // 解構 gameData
         const { room, lastRound } = gameData;
 
@@ -276,7 +342,7 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
             // API 錯誤也直接離開
             onConfirm(result);
         }
-        
+
         setIsValidating(false);
     };
 
@@ -432,9 +498,9 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                                     }}>
                                         {shape.shape === 'triangle' ? (
                                             shape.type === 'up-left' ? '◢' :
-                                            shape.type === 'up-right' ? '◣' :
-                                            shape.type === 'down-left' ? '◥' :
-                                            '◤'
+                                                shape.type === 'up-right' ? '◣' :
+                                                    shape.type === 'down-left' ? '◥' :
+                                                        '◤'
                                         ) : '■'}
                                     </div>
                                     <span style={{
@@ -455,9 +521,9 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                     <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px', color: '#666', textAlign: 'center' }}>
                         點擊格子放置圖形，點擊已放置的圖形可清除 (10×8 網格)
                     </div>
-                    
+
                     {/* 網格容器 */}
-                    <div style={{ 
+                    <div style={{
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'flex-start',
@@ -465,7 +531,7 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                         margin: '0 auto'
                     }}>
                         {/* 左側行標籤 (A-H) */}
-                        <div style={{ 
+                        <div style={{
                             display: 'flex',
                             flexDirection: 'column',
                             marginRight: '2px',
@@ -491,7 +557,7 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                         {/* 網格主體 */}
                         <div>
                             {/* 上方列標籤 (1-10) */}
-                            <div style={{ 
+                            <div style={{
                                 display: 'flex',
                                 marginBottom: '2px'
                             }}>
@@ -513,7 +579,7 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                             </div>
 
                             {/* 網格 */}
-                            <div style={{ 
+                            <div style={{
                                 display: 'flex',
                                 flexDirection: 'column'
                             }}>
@@ -523,7 +589,7 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                                         marginBottom: rowIndex < 7 ? '2px' : '0px'
                                     }}>
                                         {row.map((cell, colIndex) => {
-                                            const cellData = cell;
+                                            const cellData = getShapeInfo(cell);
                                             return (
                                                 <div
                                                     key={`${rowIndex}-${colIndex}`}
@@ -545,48 +611,48 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                                                         position: 'relative'
                                                     }}
                                                 >
-                                                    {cellData && (
+                                                    {cellData && cellData.shape && (
                                                         <div style={{
                                                             transform: cellData.shape.rotation ? `rotate(${cellData.shape.rotation}deg)` : 'none',
                                                             transition: 'transform 0.2s ease',
                                                             position: 'relative'
                                                         }}>
-                                                        {cellData.shape.shape === 'triangle' ? (
-                                                            cellData.color.id === 'TRANSPARENT' ? (
-                                                                <div style={{
-                                                                    width: '20px',
-                                                                    height: '20px',
-                                                                    border: '2px solid #999',
-                                                                    clipPath: cellData.shape.type === 'up-left' ? 'polygon(100% 0%, 100% 100%, 0% 100%)' :
-                                                                              cellData.shape.type === 'up-right' ? 'polygon(0% 0%, 0% 100%, 100% 100%)' :
-                                                                              cellData.shape.type === 'down-left' ? 'polygon(100% 0%, 100% 100%, 0% 0%)' :
-                                                                              'polygon(0% 0%, 100% 0%, 0% 100%)',
-                                                                    backgroundColor: 'transparent'
-                                                                }}></div>
+                                                            {cellData.shape.shape === 'triangle' ? (
+                                                                cellData.color.id === 'TRANSPARENT' ? (
+                                                                    <div style={{
+                                                                        width: '20px',
+                                                                        height: '20px',
+                                                                        border: '2px solid #999',
+                                                                        clipPath: cellData.shape.type === 'up-left' ? 'polygon(100% 0%, 100% 100%, 0% 100%)' :
+                                                                            cellData.shape.type === 'up-right' ? 'polygon(0% 0%, 0% 100%, 100% 100%)' :
+                                                                                cellData.shape.type === 'down-left' ? 'polygon(100% 0%, 100% 100%, 0% 0%)' :
+                                                                                    'polygon(0% 0%, 100% 0%, 0% 100%)',
+                                                                        backgroundColor: 'transparent'
+                                                                    }}></div>
+                                                                ) : (
+                                                                    <span style={{ fontSize: '40px' }}>
+                                                                        {cellData.shape.type === 'up-left' ? '◢' :
+                                                                            cellData.shape.type === 'up-right' ? '◣' :
+                                                                                cellData.shape.type === 'down-left' ? '◥' :
+                                                                                    '◤'}
+                                                                    </span>
+                                                                )
                                                             ) : (
-                                                                <span style={{ fontSize: '40px' }}>
-                                                                    {cellData.shape.type === 'up-left' ? '◢' :
-                                                                     cellData.shape.type === 'up-right' ? '◣' :
-                                                                     cellData.shape.type === 'down-left' ? '◥' :
-                                                                     '◤'}
-                                                                </span>
-                                                            )
-                                                        ) : (
-                                                            cellData.color.id === 'TRANSPARENT' ? (
-                                                                <div style={{
-                                                                    width: '20px',
-                                                                    height: '20px',
-                                                                    border: '2px solid #999',
-                                                                    backgroundColor: 'transparent'
-                                                                }}></div>
-                                                            ) : (
-                                                                <span style={{ 
-                                                                    fontSize: '50px',
-                                                                    position: 'relative',
-                                                                    top: '-8px'
-                                                                }}>■</span>
-                                                            )
-                                                        )}
+                                                                cellData.color.id === 'TRANSPARENT' ? (
+                                                                    <div style={{
+                                                                        width: '20px',
+                                                                        height: '20px',
+                                                                        border: '2px solid #999',
+                                                                        backgroundColor: 'transparent'
+                                                                    }}></div>
+                                                                ) : (
+                                                                    <span style={{
+                                                                        fontSize: '50px',
+                                                                        position: 'relative',
+                                                                        top: '-8px'
+                                                                    }}>■</span>
+                                                                )
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>
@@ -619,16 +685,16 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
 
                 {/* 驗證結果顯示 */}
                 {validationResult && (
-                    <div style={{ 
-                        marginBottom: '20px', 
-                        padding: '15px', 
+                    <div style={{
+                        marginBottom: '20px',
+                        padding: '15px',
                         backgroundColor: validationResult.isValid ? '#d4edda' : '#f8d7da',
                         border: `1px solid ${validationResult.isValid ? '#c3e6cb' : '#f5c6cb'}`,
                         borderRadius: '4px',
                         textAlign: 'center'
                     }}>
-                        <div style={{ 
-                            fontSize: '16px', 
+                        <div style={{
+                            fontSize: '16px',
                             fontWeight: 'bold',
                             color: validationResult.isValid ? '#155724' : '#721c24'
                         }}>
