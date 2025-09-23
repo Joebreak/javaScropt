@@ -9,7 +9,7 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
     const colorTypes = [
         { id: 'TYPE1', name: '白色', color: '#ffffff', borderColor: '#ddd' },
         { id: 'TYPE2', name: '紅色', color: '#ff6b6b', borderColor: '#e74c3c' },
-        { id: 'TYPE3', name: '藍色', color: '#4ecdc4', borderColor: '#3498db' },
+        { id: 'TYPE3', name: '藍色', color: '#3F48CC', borderColor: '#3498db' },
         { id: 'TYPE4', name: '黃色', color: '#feca57', borderColor: '#f39c12' },
         { id: 'TYPE5', name: '黑色', color: '#2c3e50', borderColor: '#000000' },
         { id: 'TRANSPARENT', name: '透明', color: 'transparent', borderColor: '#ccc' }
@@ -296,9 +296,9 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                                     onClick={() => handleColorSelect(color.id)}
                                     style={{
                                         padding: '6px 10px',
-                                        border: `2px solid ${isSelected ? color.borderColor : '#ccc'}`,
+                                        border: `2px solid ${isSelected ? '#4f8cff' : '#ccc'}`,
                                         borderRadius: '6px',
-                                        backgroundColor: isSelected ? color.color : '#f8f9fa',
+                                        backgroundColor: '#f8f9fa',
                                         cursor: 'pointer',
                                         transition: 'all 0.2s ease',
                                         userSelect: 'none',
@@ -338,7 +338,7 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                                     <span style={{
                                         fontSize: '9px',
                                         fontWeight: 'bold',
-                                        color: isSelected ? color.borderColor : '#333'
+                                        color: isSelected ? '#4f8cff' : '#333'
                                     }}>
                                         {color.name}
                                     </span>
@@ -364,7 +364,7 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                                         padding: '6px 10px',
                                         border: `2px solid ${isSelected ? '#4f8cff' : '#ccc'}`,
                                         borderRadius: '6px',
-                                        backgroundColor: isSelected ? '#e3f2fd' : '#f8f9fa',
+                                        backgroundColor: '#f8f9fa',
                                         cursor: 'pointer',
                                         transition: 'all 0.2s ease',
                                         userSelect: 'none',
@@ -388,16 +388,16 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                                         color: 'white'
                                     }}>
                                         {shape.shape === 'triangle' ? (
-                                            shape.type === 'up-left' ? '◤' :
-                                            shape.type === 'up-right' ? '◥' :
-                                            shape.type === 'down-left' ? '◣' :
-                                            '◢'
+                                            shape.type === 'up-left' ? '◢' :
+                                            shape.type === 'up-right' ? '◣' :
+                                            shape.type === 'down-left' ? '◥' :
+                                            '◤'
                                         ) : '■'}
                                     </div>
                                     <span style={{
                                         fontSize: '9px',
                                         fontWeight: 'bold',
-                                        color: isSelected ? '#1976d2' : '#333'
+                                        color: isSelected ? '#4f8cff' : '#333'
                                     }}>
                                         {shape.name}
                                     </span>
@@ -411,11 +411,6 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                 <div style={{ marginBottom: '20px' }}>
                     <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px', color: '#666', textAlign: 'center' }}>
                         點擊格子放置圖形，點擊已放置的圖形可清除 (10×8 網格)
-                        {getCurrentSelection() && (
-                            <div style={{ fontSize: '12px', color: '#28a745', marginTop: '4px' }}>
-                                已選擇: {getCurrentSelection().name}
-                            </div>
-                        )}
                     </div>
                     
                     {/* 網格容器 */}
@@ -519,18 +514,18 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                                                                     width: '20px',
                                                                     height: '20px',
                                                                     border: '2px solid #999',
-                                                                    clipPath: cellData.shape.type === 'up-left' ? 'polygon(0% 0%, 0% 100%, 100% 100%)' :
-                                                                              cellData.shape.type === 'up-right' ? 'polygon(100% 0%, 100% 100%, 0% 100%)' :
-                                                                              cellData.shape.type === 'down-left' ? 'polygon(0% 0%, 100% 0%, 0% 100%)' :
-                                                                              'polygon(100% 0%, 100% 100%, 0% 0%)',
+                                                                    clipPath: cellData.shape.type === 'up-left' ? 'polygon(100% 0%, 100% 100%, 0% 100%)' :
+                                                                              cellData.shape.type === 'up-right' ? 'polygon(0% 0%, 0% 100%, 100% 100%)' :
+                                                                              cellData.shape.type === 'down-left' ? 'polygon(100% 0%, 100% 100%, 0% 0%)' :
+                                                                              'polygon(0% 0%, 100% 0%, 0% 100%)',
                                                                     backgroundColor: 'transparent'
                                                                 }}></div>
                                                             ) : (
                                                                 <span style={{ fontSize: '40px' }}>
-                                                                    {cellData.shape.type === 'up-left' ? '◤' :
-                                                                     cellData.shape.type === 'up-right' ? '◥' :
-                                                                     cellData.shape.type === 'down-left' ? '◣' :
-                                                                     '◢'}
+                                                                    {cellData.shape.type === 'up-left' ? '◢' :
+                                                                     cellData.shape.type === 'up-right' ? '◣' :
+                                                                     cellData.shape.type === 'down-left' ? '◥' :
+                                                                     '◤'}
                                                                 </span>
                                                             )
                                                         ) : (
