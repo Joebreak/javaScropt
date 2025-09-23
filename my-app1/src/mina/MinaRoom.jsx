@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import RoomGrid from "./RoomGrid";
 import RoomList from "./RoomList";
-import { useRoomData } from "../hooks/useRoomData";
+import { useRoomData } from "./useRoomData";
 import ShapeValidator from "./grid/ShapeValidator";
 
 export default function MinaRoom() {
