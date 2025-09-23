@@ -59,6 +59,60 @@ export default function MinaRoom() {
     setShowShapeValidator(false);
   };
 
+  // 查看所有快取
+  const viewAllCache = () => {
+    try {
+      const keys = Object.keys(localStorage);
+      let cacheInfo = '=== localStorage 快取內容 ===\n\n';
+      
+      if (keys.length === 0) {
+        cacheInfo += '沒有找到任何快取資料\n';
+      } else {
+        keys.forEach((key, index) => {
+          const value = localStorage.getItem(key);
+          cacheInfo += `${index + 1}. Key: "${key}"\n`;
+          cacheInfo += `   值: ${value.length > 100 ? value.substring(0, 100) + '...' : value}\n`;
+          cacheInfo += `   長度: ${value.length} 字元\n\n`;
+        });
+      }
+      
+      cacheInfo += `\n總共 ${keys.length} 個快取項目`;
+      
+      // 在控制台顯示詳細資訊
+      console.log('=== localStorage 詳細內容 ===');
+      keys.forEach(key => {
+        console.log(`Key: ${key}`);
+        console.log(`Value:`, localStorage.getItem(key));
+        console.log('---');
+      });
+      
+      alert(cacheInfo);
+    } catch (error) {
+      console.error('查看快取失敗:', error);
+      alert('查看快取失敗');
+    }
+  };
+
+  // 清除拖曳圖形
+  const clearShapes = () => {
+    try {
+      // 清除所有拖曳圖形的位置快取
+      const shapeTypes = [
+        'triangle1', 'triangle2', 'rightTriangle', 'parallelogram', 'diamond', 'transparent', 'blackRect',
+        // 可能的舊格式
+        'triangle', 'square', 'circle', 'rect', 'shape1', 'shape2', 'shape3', 'shape4', 'shape5'
+      ];
+      shapeTypes.forEach(type => {
+        localStorage.removeItem(type);
+      });
+      
+      alert('拖曳圖形已清除！請重新整理頁面以套用變更。');
+    } catch (error) {
+      console.error('清除圖形失敗:', error);
+      alert('清除圖形失敗');
+    }
+  };
+
   // 從 localStorage 讀取網格數據
   const loadRoomGridData = () => {
     try {
@@ -133,6 +187,25 @@ export default function MinaRoom() {
           🔄
         </button>
 
+        {/* 清除圖形按鈕 */}
+        <button
+          onClick={clearShapes}
+          style={{
+            padding: "8px 16px",
+            background: "#dc3545",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            fontSize: "14px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+            transition: "all 0.3s ease"
+          }}
+        >
+          ❌
+        </button>
+
         {/* 顯示/隱藏圖形按鈕 */}
         <button
           onClick={() => setShowShapeSelector(!showShapeSelector)}
@@ -150,6 +223,25 @@ export default function MinaRoom() {
           }}
         >
           {showShapeSelector ? "隱藏圖形" : "顯示圖形"}
+        </button>
+
+        {/* 查看快取按鈕 */}
+        <button
+          onClick={viewAllCache}
+          style={{
+            padding: "8px 16px",
+            background: "#17a2b8",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            fontSize: "14px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+            transition: "all 0.3s ease"
+          }}
+        >
+          👁️ 查看快取
         </button>
 
       </div>
