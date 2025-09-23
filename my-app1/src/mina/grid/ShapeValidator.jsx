@@ -4,6 +4,46 @@ import { getApiUrl } from '../../config/api';
 const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
     const [grid, setGrid] = useState(Array(8).fill().map(() => Array(10).fill(null)));
     const [isValidating, setIsValidating] = useState(false);
+    
+    // 響應式網格配置
+    const getGridConfig = () => {
+        if (typeof window !== 'undefined') {
+            const width = window.innerWidth;
+            if (width <= 480) {
+                return {
+                    cellSize: 35,
+                    gap: 2
+                };
+            }
+            if (width <= 768) {
+                return {
+                    cellSize: 45,
+                    gap: 2
+                };
+            }
+            return {
+                cellSize: 40,
+                gap: 2
+            };
+        }
+        return {
+            cellSize: 50,
+            gap: 2
+        };
+    };
+    
+    const [gridConfig, setGridConfig] = useState(getGridConfig());
+    
+    // 監聽視窗大小變化
+    React.useEffect(() => {
+        const handleResize = () => {
+            setGridConfig(getGridConfig());
+        };
+        
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // 定義顏色選項
     const colorTypes = React.useMemo(() => [
@@ -14,6 +54,10 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
         { id: 'TYPE5', name: '黑色', color: '#2c3e50', borderColor: '#000000' },
         { id: 'TRANSPARENT', name: '透明', color: 'transparent', borderColor: '#ccc' }
     ], []);
+    
+    // 將顏色分為兩組：第一排和第二排
+    const firstRowColors = colorTypes.slice(0, 4); // 白色、紅色、藍色、黃色
+    const secondRowColors = colorTypes.slice(4);   // 黑色、透明
 
     // 定義形狀選項
     const shapeTypes = React.useMemo(() => [
@@ -23,6 +67,10 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
         { id: 'TRIANGLE_DOWN_LEFT', name: '左下', shape: 'triangle', rotation: 0, type: 'down-left' },
         { id: 'TRIANGLE_DOWN_RIGHT', name: '右下', shape: 'triangle', rotation: 0, type: 'down-right' }
     ], []);
+    
+    // 將形狀分為兩組：實心和三角形
+    const squareShape = shapeTypes.slice(0, 1); // 實心
+    const triangleShapes = shapeTypes.slice(1); // 左上、右上、左下、右下
 
     // 組合選項狀態
     const [selectedColor, setSelectedColor] = useState(null);
@@ -382,12 +430,13 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
         }}>
             <div style={{
                 backgroundColor: 'white',
-                padding: '20px',
+                padding: window.innerWidth <= 480 ? '10px' : '40px',
                 borderRadius: '8px',
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
                 maxWidth: '95vw',
                 maxHeight: '90vh',
-                overflow: 'auto'
+                overflow: 'auto',
+                width: '100%'
             }}>
                 <h3 style={{ margin: '0 0 20px 0', textAlign: 'center' }}>圖形擺放驗證</h3>
 
@@ -396,8 +445,71 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                     <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px', color: '#666', textAlign: 'center' }}>
                         選擇顏色：
                     </div>
-                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                        {colorTypes.map(color => {
+                    
+                    {/* 第一排：白色、紅色、藍色、黃色 */}
+                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '8px' }}>
+                        {firstRowColors.map(color => {
+                            const isSelected = selectedColor === color.id;
+                            return (
+                                <div
+                                    key={color.id}
+                                    onClick={() => handleColorSelect(color.id)}
+                                    style={{
+                                        padding: '6px 10px',
+                                        border: `2px solid ${isSelected ? '#4f8cff' : '#ccc'}`,
+                                        borderRadius: '6px',
+                                        backgroundColor: '#f8f9fa',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        userSelect: 'none',
+                                        minWidth: '45px',
+                                        textAlign: 'center'
+                                    }}
+                                >
+                                    <div style={{
+                                        width: '20px',
+                                        height: '20px',
+                                        backgroundColor: color.color,
+                                        border: color.id === 'TRANSPARENT' ? '2px dashed #999' : `1px solid ${color.borderColor}`,
+                                        borderRadius: '3px',
+                                        margin: '0 auto 4px auto',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '10px',
+                                        fontWeight: 'bold',
+                                        color: color.borderColor,
+                                        position: 'relative'
+                                    }}>
+                                        {color.id === 'TRANSPARENT' ? (
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: '50%',
+                                                left: '50%',
+                                                transform: 'translate(-50%, -50%)',
+                                                width: '12px',
+                                                height: '12px',
+                                                border: '1px solid #999',
+                                                borderRadius: '50%',
+                                                backgroundColor: 'transparent'
+                                            }}></div>
+                                        ) : '■'}
+                                    </div>
+                                    <span style={{
+                                        fontSize: '9px',
+                                        fontWeight: 'bold',
+                                        color: isSelected ? '#4f8cff' : '#333'
+                                    }}>
+                                        {color.name}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    
+                    {/* 第二排：黑色、透明 */}
+                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                        {secondRowColors.map(color => {
                             const isSelected = selectedColor === color.id;
                             return (
                                 <div
@@ -462,57 +574,154 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                     <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px', color: '#666', textAlign: 'center' }}>
                         選擇形狀：
                     </div>
-                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                        {shapeTypes.map(shape => {
-                            const isSelected = selectedShape === shape.id;
-                            return (
-                                <div
-                                    key={shape.id}
-                                    onClick={() => handleShapeSelect(shape.id)}
-                                    style={{
-                                        padding: '6px 10px',
-                                        border: `2px solid ${isSelected ? '#4f8cff' : '#ccc'}`,
-                                        borderRadius: '6px',
-                                        backgroundColor: '#f8f9fa',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease',
-                                        userSelect: 'none',
-                                        minWidth: '45px',
-                                        textAlign: 'center'
-                                    }}
-                                >
-                                    <div style={{
-                                        width: '20px',
-                                        height: '20px',
-                                        backgroundColor: '#4f8cff',
-                                        border: '1px solid #1976d2',
-                                        borderRadius: shape.shape === 'triangle' ? '0' : '3px',
-                                        margin: '0 auto 4px auto',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        transform: shape.rotation ? `rotate(${shape.rotation}deg)` : 'none',
-                                        fontSize: shape.shape === 'square' ? '14px' : '10px',
-                                        fontWeight: 'bold',
-                                        color: 'white'
-                                    }}>
-                                        {shape.shape === 'triangle' ? (
-                                            shape.type === 'up-left' ? '◢' :
-                                                shape.type === 'up-right' ? '◣' :
-                                                    shape.type === 'down-left' ? '◥' :
-                                                        '◤'
-                                        ) : '■'}
+                    
+                    <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', alignItems: 'flex-start' }}>
+                        {/* 左邊：實心 */}
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                            {squareShape.map(shape => {
+                                const isSelected = selectedShape === shape.id;
+                                return (
+                                    <div
+                                        key={shape.id}
+                                        onClick={() => handleShapeSelect(shape.id)}
+                                        style={{
+                                            padding: '6px 10px',
+                                            border: `2px solid ${isSelected ? '#4f8cff' : '#ccc'}`,
+                                            borderRadius: '6px',
+                                            backgroundColor: '#f8f9fa',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                            userSelect: 'none',
+                                            minWidth: '45px',
+                                            textAlign: 'center'
+                                        }}
+                                    >
+                                        <div style={{
+                                            width: '20px',
+                                            height: '20px',
+                                            backgroundColor: '#4f8cff',
+                                            border: '1px solid #1976d2',
+                                            borderRadius: '3px',
+                                            margin: '0 auto 4px auto',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '14px',
+                                            fontWeight: 'bold',
+                                            color: 'white'
+                                        }}>
+                                            ■
+                                        </div>
+                                        <span style={{
+                                            fontSize: '9px',
+                                            fontWeight: 'bold',
+                                            color: isSelected ? '#4f8cff' : '#333'
+                                        }}>
+                                            {shape.name}
+                                        </span>
                                     </div>
-                                    <span style={{
-                                        fontSize: '9px',
-                                        fontWeight: 'bold',
-                                        color: isSelected ? '#4f8cff' : '#333'
-                                    }}>
-                                        {shape.name}
-                                    </span>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
+                        
+                        {/* 右邊：2×2 三角形網格 */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {/* 上排：左上、右上 */}
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                                {triangleShapes.slice(0, 2).map(shape => {
+                                    const isSelected = selectedShape === shape.id;
+                                    return (
+                                        <div
+                                            key={shape.id}
+                                            onClick={() => handleShapeSelect(shape.id)}
+                                            style={{
+                                                padding: '6px 10px',
+                                                border: `2px solid ${isSelected ? '#4f8cff' : '#ccc'}`,
+                                                borderRadius: '6px',
+                                                backgroundColor: '#f8f9fa',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s ease',
+                                                userSelect: 'none',
+                                                minWidth: '45px',
+                                                textAlign: 'center'
+                                            }}
+                                        >
+                                            <div style={{
+                                                width: '20px',
+                                                height: '20px',
+                                                backgroundColor: '#4f8cff',
+                                                border: '1px solid #1976d2',
+                                                borderRadius: '0',
+                                                margin: '0 auto 4px auto',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '10px',
+                                                fontWeight: 'bold',
+                                                color: 'white'
+                                            }}>
+                                                {shape.type === 'up-left' ? '◢' : '◣'}
+                                            </div>
+                                            <span style={{
+                                                fontSize: '9px',
+                                                fontWeight: 'bold',
+                                                color: isSelected ? '#4f8cff' : '#333'
+                                            }}>
+                                                {shape.name}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            
+                            {/* 下排：左下、右下 */}
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                                {triangleShapes.slice(2, 4).map(shape => {
+                                    const isSelected = selectedShape === shape.id;
+                                    return (
+                                        <div
+                                            key={shape.id}
+                                            onClick={() => handleShapeSelect(shape.id)}
+                                            style={{
+                                                padding: '6px 10px',
+                                                border: `2px solid ${isSelected ? '#4f8cff' : '#ccc'}`,
+                                                borderRadius: '6px',
+                                                backgroundColor: '#f8f9fa',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s ease',
+                                                userSelect: 'none',
+                                                minWidth: '45px',
+                                                textAlign: 'center'
+                                            }}
+                                        >
+                                            <div style={{
+                                                width: '20px',
+                                                height: '20px',
+                                                backgroundColor: '#4f8cff',
+                                                border: '1px solid #1976d2',
+                                                borderRadius: '0',
+                                                margin: '0 auto 4px auto',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '10px',
+                                                fontWeight: 'bold',
+                                                color: 'white'
+                                            }}>
+                                                {shape.type === 'down-left' ? '◥' : '◤'}
+                                            </div>
+                                            <span style={{
+                                                fontSize: '9px',
+                                                fontWeight: 'bold',
+                                                color: isSelected ? '#4f8cff' : '#333'
+                                            }}>
+                                                {shape.name}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -522,26 +731,41 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                         點擊格子放置圖形，點擊已放置的圖形可清除 (10×8 網格)
                     </div>
 
-                    {/* 網格容器 */}
+                    {/* 網格容器 - 使用 CSS Grid 布局 */}
                     <div style={{
-                        display: 'flex',
+                        display: 'grid',
+                        gridTemplateRows: `${gridConfig.cellSize}px repeat(8, ${gridConfig.cellSize}px)`, // 列標籤 + 8行格子
+                        gridTemplateColumns: `${gridConfig.cellSize}px repeat(10, ${gridConfig.cellSize}px)`, // 行標籤 + 10列格子
+                        gap: `${gridConfig.gap}px`,
+                        width: 'fit-content',
+                        margin: '0 auto',
                         justifyContent: 'center',
-                        alignItems: 'flex-start',
-                        maxWidth: '500px',
-                        margin: '0 auto'
+                        overflow: 'auto',
+                        padding: window.innerWidth <= 480 ? '1px 1px' : '10px', // 手機：減少左邊距
+                        minWidth: 'fit-content'
                     }}>
-                        {/* 左側行標籤 (A-H) */}
-                        <div style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            marginRight: '2px',
-                            marginTop: '22px'
-                        }}>
-                            {Array.from({ length: 8 }, (_, rowIndex) => (
-                                <div key={`row-${rowIndex}`} style={{
-                                    width: '40px',
-                                    height: '40px',
-                                    marginBottom: rowIndex < 7 ? '2px' : '0px',
+                        {/* 左上角空白 */}
+                        <div></div>
+                        
+                        {/* 上方列標籤 (1-10) */}
+                        {Array.from({ length: 10 }, (_, colIndex) => (
+                            <div key={`col-${colIndex}`} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '12px',
+                                fontWeight: 'bold',
+                                color: '#666'
+                            }}>
+                                {colIndex + 1}
+                            </div>
+                        ))}
+
+                        {/* 行標籤 + 網格 */}
+                        {grid.map((row, rowIndex) => (
+                            <React.Fragment key={`row-${rowIndex}`}>
+                                {/* 左側行標籤 (A-H) */}
+                                <div style={{
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -551,117 +775,77 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData }) => {
                                 }}>
                                     {String.fromCharCode(65 + rowIndex)}
                                 </div>
-                            ))}
-                        </div>
-
-                        {/* 網格主體 */}
-                        <div>
-                            {/* 上方列標籤 (1-10) */}
-                            <div style={{
-                                display: 'flex',
-                                marginBottom: '2px'
-                            }}>
-                                {Array.from({ length: 10 }, (_, colIndex) => (
-                                    <div key={`col-${colIndex}`} style={{
-                                        width: '40px',
-                                        height: '22px',
-                                        marginRight: colIndex < 9 ? '2px' : '0px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '12px',
-                                        fontWeight: 'bold',
-                                        color: '#666'
-                                    }}>
-                                        {colIndex + 1}
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* 網格 */}
-                            <div style={{
-                                display: 'flex',
-                                flexDirection: 'column'
-                            }}>
-                                {grid.map((row, rowIndex) => (
-                                    <div key={`row-${rowIndex}`} style={{
-                                        display: 'flex',
-                                        marginBottom: rowIndex < 7 ? '2px' : '0px'
-                                    }}>
-                                        {row.map((cell, colIndex) => {
-                                            const cellData = getShapeInfo(cell);
-                                            return (
-                                                <div
-                                                    key={`${rowIndex}-${colIndex}`}
-                                                    onClick={() => handleCellClick(rowIndex, colIndex)}
-                                                    style={{
-                                                        width: '40px',
-                                                        height: '40px',
-                                                        marginRight: colIndex < 9 ? '2px' : '0px',
-                                                        border: cellData && cellData.color.id === 'TRANSPARENT' ? '2px dashed #999' : '1px solid #ccc',
-                                                        backgroundColor: cellData ? cellData.color.color : '#f8f9fa',
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        fontSize: '16px',
-                                                        fontWeight: 'bold',
-                                                        color: cellData ? cellData.color.borderColor : '#999',
-                                                        transition: 'all 0.2s ease',
-                                                        position: 'relative'
-                                                    }}
-                                                >
-                                                    {cellData && cellData.shape && (
-                                                        <div style={{
-                                                            transform: cellData.shape.rotation ? `rotate(${cellData.shape.rotation}deg)` : 'none',
-                                                            transition: 'transform 0.2s ease',
-                                                            position: 'relative'
-                                                        }}>
-                                                            {cellData.shape.shape === 'triangle' ? (
-                                                                cellData.color.id === 'TRANSPARENT' ? (
-                                                                    <div style={{
-                                                                        width: '20px',
-                                                                        height: '20px',
-                                                                        border: '2px solid #999',
-                                                                        clipPath: cellData.shape.type === 'up-left' ? 'polygon(100% 0%, 100% 100%, 0% 100%)' :
-                                                                            cellData.shape.type === 'up-right' ? 'polygon(0% 0%, 0% 100%, 100% 100%)' :
-                                                                                cellData.shape.type === 'down-left' ? 'polygon(100% 0%, 100% 100%, 0% 0%)' :
-                                                                                    'polygon(0% 0%, 100% 0%, 0% 100%)',
-                                                                        backgroundColor: 'transparent'
-                                                                    }}></div>
-                                                                ) : (
-                                                                    <span style={{ fontSize: '40px' }}>
-                                                                        {cellData.shape.type === 'up-left' ? '◢' :
-                                                                            cellData.shape.type === 'up-right' ? '◣' :
-                                                                                cellData.shape.type === 'down-left' ? '◥' :
-                                                                                    '◤'}
-                                                                    </span>
-                                                                )
-                                                            ) : (
-                                                                cellData.color.id === 'TRANSPARENT' ? (
-                                                                    <div style={{
-                                                                        width: '20px',
-                                                                        height: '20px',
-                                                                        border: '2px solid #999',
-                                                                        backgroundColor: 'transparent'
-                                                                    }}></div>
-                                                                ) : (
-                                                                    <span style={{
-                                                                        fontSize: '50px',
-                                                                        position: 'relative',
-                                                                        top: '-8px'
-                                                                    }}>■</span>
-                                                                )
-                                                            )}
-                                                        </div>
+                                
+                                {/* 網格格子 */}
+                                {row.map((cell, colIndex) => {
+                                    const cellData = getShapeInfo(cell);
+                                    return (
+                                        <div
+                                            key={`${rowIndex}-${colIndex}`}
+                                            onClick={() => handleCellClick(rowIndex, colIndex)}
+                                            style={{
+                                                border: cellData && cellData.color.id === 'TRANSPARENT' ? '2px dashed #999' : '1px solid #ccc',
+                                                backgroundColor: cellData ? cellData.color.color : '#f8f9fa',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '16px',
+                                                fontWeight: 'bold',
+                                                color: cellData ? cellData.color.borderColor : '#999',
+                                                transition: 'all 0.2s ease',
+                                                position: 'relative'
+                                            }}
+                                        >
+                                            {cellData && cellData.shape && (
+                                                <div style={{
+                                                    transform: cellData.shape.rotation ? `rotate(${cellData.shape.rotation}deg)` : 'none',
+                                                    transition: 'transform 0.2s ease',
+                                                    position: 'relative'
+                                                }}>
+                                                    {cellData.shape.shape === 'triangle' ? (
+                                                        cellData.color.id === 'TRANSPARENT' ? (
+                                                            <div style={{
+                                                                width: '20px',
+                                                                height: '20px',
+                                                                border: '2px solid #999',
+                                                                clipPath: cellData.shape.type === 'up-left' ? 'polygon(100% 0%, 100% 100%, 0% 100%)' :
+                                                                    cellData.shape.type === 'up-right' ? 'polygon(0% 0%, 0% 100%, 100% 100%)' :
+                                                                        cellData.shape.type === 'down-left' ? 'polygon(100% 0%, 100% 100%, 0% 0%)' :
+                                                                            'polygon(0% 0%, 100% 0%, 0% 100%)',
+                                                                backgroundColor: 'transparent'
+                                                            }}></div>
+                                                        ) : (
+                                                            <span style={{ fontSize: '40px' }}>
+                                                                {cellData.shape.type === 'up-left' ? '◢' :
+                                                                    cellData.shape.type === 'up-right' ? '◣' :
+                                                                        cellData.shape.type === 'down-left' ? '◥' :
+                                                                            '◤'}
+                                                            </span>
+                                                        )
+                                                    ) : (
+                                                        cellData.color.id === 'TRANSPARENT' ? (
+                                                            <div style={{
+                                                                width: '20px',
+                                                                height: '20px',
+                                                                border: '2px solid #999',
+                                                                backgroundColor: 'transparent'
+                                                            }}></div>
+                                                        ) : (
+                                                            <span style={{
+                                                                fontSize: '50px',
+                                                                position: 'relative',
+                                                                top: '-8px'
+                                                            }}>■</span>
+                                                        )
                                                     )}
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </React.Fragment>
+                        ))}
                     </div>
                 </div>
 
