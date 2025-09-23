@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import RoomGrid from "./RoomGrid";
 import RoomList from "./RoomList";
@@ -18,11 +18,11 @@ export default function MinaRoom() {
 
   // 圖形控制狀態
   const [showShapeButtons, setShowShapeButtons] = useState(false);
-  const [showRotateButtons, setShowRotateButtons] = useState(true);
+  const [showShapeSelector, setShowShapeSelector] = useState(false);
   const [showPositionSelector, setShowPositionSelector] = useState(false);
   const [showRadiateSelector, setShowRadiateSelector] = useState(false);
   const [showShapeValidator, setShowShapeValidator] = useState(false);
-  const deleteRef = useRef(null);
+  const [roomGridData, setRoomGridData] = useState(null);
 
   // 處理函數
   const handleRadiate = () => {
@@ -48,6 +48,7 @@ export default function MinaRoom() {
   };
 
   const handleShapeValidation = () => {
+    loadRoomGridData(); // 載入最新的網格數據
     setShowShapeValidator(true);
   };
 
@@ -56,6 +57,24 @@ export default function MinaRoom() {
       refresh();
     }
     setShowShapeValidator(false);
+  };
+
+  // 從 localStorage 讀取網格數據
+  const loadRoomGridData = () => {
+    try {
+      const key = `roomGrid_${room || 'default'}`;
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const parsedGrid = JSON.parse(saved);
+        setRoomGridData(parsedGrid);
+        console.log('已載入房間網格數據:', parsedGrid);
+      } else {
+        setRoomGridData(null);
+      }
+    } catch (error) {
+      console.error('載入房間網格數據失敗:', error);
+      setRoomGridData(null);
+    }
   };
 
   useEffect(() => {
@@ -70,29 +89,28 @@ export default function MinaRoom() {
   }
   return (
     <div style={{ padding: 0, background: "#f7f7f7" }}>
-      <RoomGrid 
-        showActionButtons={!!showActionButtons} 
-        gameData={{ room, lastRound, mapData: data?.mapData }} 
+      <RoomGrid
+        showActionButtons={!!showActionButtons}
+        gameData={{ room, lastRound, mapData: data?.mapData }}
         onRefresh={refresh}
         showShapeButtons={showShapeButtons}
         setShowShapeButtons={setShowShapeButtons}
-        showRotateButtons={showRotateButtons}
-        setShowRotateButtons={setShowRotateButtons}
+        showShapeSelector={showShapeSelector}
+        setShowShapeSelector={setShowShapeSelector}
         showPositionSelector={showPositionSelector}
         setShowPositionSelector={setShowPositionSelector}
         showRadiateSelector={showRadiateSelector}
         setShowRadiateSelector={setShowRadiateSelector}
         onPositionConfirm={handlePositionConfirm}
         onRadiateConfirm={handleRadiateConfirm}
-        deleteRef={deleteRef}
       />
 
-      {/* 第一排按鈕：🔄 重新整理、顯示圖形、放射超音波、查詢指定位置 */}
+      {/* 第一排按鈕：重新整理 + 顯示圖形 + 隱藏圖形 */}
       <div style={{
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        margin: "20px 0",
+        margin: "20px 0 10px 0",
         gap: "10px",
         flexWrap: "wrap"
       }}>
@@ -112,15 +130,15 @@ export default function MinaRoom() {
             transition: "all 0.3s ease"
           }}
         >
-          🔄 
+          🔄
         </button>
 
-        {/* 顯示圖形按鈕 */}
+        {/* 顯示/隱藏圖形按鈕 */}
         <button
-          onClick={() => setShowShapeButtons(!showShapeButtons)}
+          onClick={() => setShowShapeSelector(!showShapeSelector)}
           style={{
             padding: "8px 16px",
-            background: showShapeButtons ? "#667eea" : "#6c757d",
+            background: showShapeSelector ? "#6c757d" : "#007bff",
             color: "white",
             border: "none",
             borderRadius: "6px",
@@ -131,11 +149,22 @@ export default function MinaRoom() {
             transition: "all 0.3s ease"
           }}
         >
-          {showShapeButtons ? "隱藏圖形" : "顯示圖形"}
+          {showShapeSelector ? "隱藏圖形" : "顯示圖形"}
         </button>
 
-        {/* 放射超音波按鈕 */}
-        {showActionButtons && (
+      </div>
+
+      {/* 第二排按鈕：放射超音波、查詢指定位置、圖形驗證 */}
+      {showActionButtons && (
+        <div style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          margin: "10px 0 20px 0",
+          gap: "10px",
+          flexWrap: "wrap"
+        }}>
+          {/* 放射超音波按鈕 */}
           <button
             onClick={handleRadiate}
             style={{
@@ -153,10 +182,8 @@ export default function MinaRoom() {
           >
             放射超音波
           </button>
-        )}
 
-        {/* 查詢指定位置按鈕 */}
-        {showActionButtons && (
+          {/* 查詢指定位置按鈕 */}
           <button
             onClick={handleSpecifyPosition}
             style={{
@@ -174,10 +201,8 @@ export default function MinaRoom() {
           >
             查詢指定位置
           </button>
-        )}
 
-        {/* 圖形驗證按鈕 */}
-        {showActionButtons && (
+          {/* 圖形驗證按鈕 */}
           <button
             onClick={handleShapeValidation}
             style={{
@@ -195,60 +220,8 @@ export default function MinaRoom() {
           >
             圖形驗證
           </button>
-        )}
-      </div>
-
-      {/* 第二排按鈕：X 隱藏選轉、顯示選轉 */}
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        margin: "10px 0 20px 0",
-        gap: "10px",
-        flexWrap: "wrap"
-      }}>
-        <div
-          ref={deleteRef}
-          className="delete-area"
-        >X</div>
-
-        <button
-          onClick={() => setShowRotateButtons(false)}
-          style={{
-            padding: "6px 12px",
-            background: "#ff6b6b",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            fontSize: "12px",
-            fontWeight: "bold",
-            cursor: "pointer",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-            transition: "all 0.3s ease"
-          }}
-        >
-          隱藏旋轉
-        </button>
-
-        <button
-          onClick={() => setShowRotateButtons(true)}
-          style={{
-            padding: "6px 12px",
-            background: "#51cf66",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            fontSize: "12px",
-            fontWeight: "bold",
-            cursor: "pointer",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-            transition: "all 0.3s ease"
-          }}
-        >
-          顯示旋轉
-        </button>
-      </div>
-
+        </div>
+      )}
 
       {/* 列表 */}
       {loading ? <div style={{ textAlign: "center" }}>⏳ 載入中...</div> : <RoomList data={data} />}
@@ -275,6 +248,7 @@ export default function MinaRoom() {
         onClose={() => setShowShapeValidator(false)}
         onConfirm={handleShapeValidatorConfirm}
         gameData={{ room, lastRound, mapData: data?.mapData }}
+        roomGridData={roomGridData}
       />
     </div>
   );
