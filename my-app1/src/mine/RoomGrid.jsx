@@ -3,7 +3,7 @@ import Draggable from "react-draggable";
 import FloatingShapePanel from "./grid/FloatingShapePanel";
 import PositionSelector from "./grid/PositionSelector";
 import RadiateSelector from "./grid/RadiateSelector";
-import "./MinaRoom.css";
+import "./MineRoom.css";
 
 const rows = 8;
 const cols = 10;

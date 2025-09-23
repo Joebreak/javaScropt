@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getApiUrl } from "./config/api";
 
 function App() {
   const [room, setRoom] = useState("");
@@ -45,10 +46,7 @@ function App() {
     if (room.length !== 5) {
       return { valid: false, error: '房間號碼錯誤' };
     }
-    if (room === "999") {
-      return { valid: true, type: "hanabi" };
-    }
-    return { valid: true, type: "mina" };
+    return { valid: true };
   };
 
   const handleLogin = async () => {
@@ -61,10 +59,35 @@ function App() {
       alert(roomValidation.error);
       return;
     }
-    if (roomValidation.type === "hanabi") {
-      navigate("/hanabi", { state: { room, rank } });
-    } else {
-      navigate("/mina", { state: { room, rank } });
+    // 呼叫 all_room 取得 type 再決定導向
+    try {
+      const apiUrl = getApiUrl('cloudflare_all_room_url');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const res = await fetch(apiUrl, { method: 'GET', signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const rooms = await res.json();
+      if (!Array.isArray(rooms) || rooms.length === 0) {
+        alert('還沒建立房間');
+        return;
+      }
+      const found = Array.isArray(rooms)
+        ? rooms.find((item) => String(item?.room) === String(room))
+        : null;
+      if (!found) {
+        alert('還沒建立房間');
+        return;
+      }
+      const type = String(found?.type || '').trim();
+      if (!type) {
+        alert('還沒建立房間');
+        return;
+      }
+      navigate(`/${type}` , { state: { room, rank } });
+    } catch (error) {
+      console.error('取得房間清單失敗：', error);
+      alert('取得房間清單失敗，請稍後再試');
     }
   };
   return (

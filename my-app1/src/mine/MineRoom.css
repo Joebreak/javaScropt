@@ -1,5 +1,3 @@
-/* MinaRoom.css */
-
 /* 手機觸控優化 - 只針對拖曳元素 */
 .shape, .shape-button, .rotate-btn {
   -webkit-touch-callout: none;
