@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Draggable from "react-draggable";
-import FloatingShapePanel from "./grid/FloatingShapePanel";
 import PositionSelector from "./grid/PositionSelector";
 import RadiateSelector from "./grid/RadiateSelector";
 import "./MineRoom.css";
@@ -33,8 +31,6 @@ const getGridConfig = () => {
     };
 };
 
-const gridConfig = getGridConfig();
-const cellSize = gridConfig.cellSize;
 
 const initGrid = Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
 
@@ -63,79 +59,9 @@ const shapeTypes = [
     { id: 'TRIANGLE_DOWN_RIGHT', name: '右下', shape: 'triangle', rotation: 0, type: 'down-right' }
 ];
 
-const copy = (source, overrides = {}) => ({
-    ...source,
-    ...overrides,
-    innerLayer: source.innerLayer ? {
-        ...source.innerLayer,
-        ...overrides.innerLayer
-    } : undefined
-});
-
-const shapeStyles = {
-    triangle1: {
-        canRotate: true,
-        width: `${cellSize * 4 + gridConfig.gap * 3}px`,
-        height: `${cellSize * 2 + gridConfig.gap * 1}px`,
-        background: "black",
-        clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
-        useLayered: true,
-        innerLayer: {
-            background: "white",
-            offset: 0,
-            clipPath: "polygon(50% 2%, 2% 98%, 98% 98%)",
-        },
-    },
-    get triangle2() { return copy(this.triangle1); },
-    rightTriangle: {
-        canRotate: true,
-        width: `${cellSize * 2 + gridConfig.gap * 1}px`,
-        height: `${cellSize * 2 + gridConfig.gap * 1}px`,
-        background: "yellow",
-        clipPath: "polygon(0 0, 100% 0, 0 100%)",
-    },
-    parallelogram: {
-        canRotate: true,
-        width: `${cellSize * 3 + gridConfig.gap * 2}px`,
-        height: `${cellSize * 1 + gridConfig.gap * 0}px`,
-        background: "red",
-        clipPath: "polygon(32% 0%, 0% 100%, 65% 100%, 100% 0%)",
-    },
-    diamond: {
-        canRotate: false,
-        width: `${cellSize * 2 + gridConfig.gap * 1}px`,
-        height: `${cellSize * 2 + gridConfig.gap * 1}px`,
-        background: "blue",
-        clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
-    },
-    transparent: {
-        canRotate: true,
-        width: `${cellSize * 2 + gridConfig.gap * 1}px`,
-        height: `${cellSize * 1 + gridConfig.gap * 0}px`,
-        background: "transparent",
-        border: "1px dashed #333",
-        clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
-        useLayered: true,
-        innerLayer: {
-            background: "black",
-            offset: 0,
-            clipPath: "polygon(51% 0, 49% 0, 50% 100%, 48% 7%, 0 100%, 50% 0, 50% 1%, 96% 99%, 100% 100%, 51% 0, 51% 0, 51% 100%)",
-        },
-    },
-    blackRect: {
-        canRotate: true,
-        width: `${cellSize * 1 + gridConfig.gap * 0}px`,
-        height: `${cellSize * 2 + gridConfig.gap * 1}px`,
-        background: "black",
-    },
-};
 
 function MinaRoom({ 
-  showActionButtons = false, 
   gameData, 
-  onRefresh,
-  showShapeButtons,
-  setShowShapeButtons,
   showShapeSelector = false,
   setShowShapeSelector = null,
   showPositionSelector,
@@ -143,21 +69,9 @@ function MinaRoom({
   showRadiateSelector,
   setShowRadiateSelector,
   onPositionConfirm,
-  onRadiateConfirm,
-  showShapeValidator = false,
-  setShowShapeValidator = null
+  onRadiateConfirm
 }) {
-    const getInitialShapes = () => {
-        const shapes = {};
-        Object.keys(shapeStyles).forEach((type) => {
-            const saved = localStorage.getItem(type);
-            shapes[type] = saved ? JSON.parse(saved) : null;
-        });
-        return shapes;
-    };
-    const [shapes, setShapes] = useState(getInitialShapes);
-    const [isDragging, setIsDragging] = useState({});
-    const [currentCellSize, setCurrentCellSize] = useState(cellSize);
+    const [currentCellSize, setCurrentCellSize] = useState(getGridConfig().cellSize);
     
     // 網格狀態（用於形狀驗證）
     const [grid, setGrid] = useState(Array(8).fill().map(() => Array(10).fill(null)));
@@ -176,13 +90,6 @@ function MinaRoom({
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    const refs = React.useMemo(() => {
-        const obj = {};
-        Object.keys(shapeStyles).forEach((type) => {
-            obj[type] = React.createRef();
-        });
-        return obj;
-    }, []);
 
     // 從 localStorage 讀取網格
     const loadGridFromStorage = React.useCallback(() => {
@@ -211,97 +118,6 @@ function MinaRoom({
         }
     }, [gameData?.room, loadGridFromStorage]);
 
-    // 監控旋轉狀態變化，強制更新 DOM（只在拖曳停止後）
-    useEffect(() => {
-        Object.keys(shapes).forEach((type) => {
-            if (shapes[type] && refs[type].current && !isDragging[type]) {
-                const element = refs[type].current;
-                const shape = shapes[type];
-                const currentTransform = element.style.transform;
-                const translateMatch = currentTransform.match(/translate\([^)]+\)/);
-
-                if (translateMatch) {
-                    element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
-                } else {
-                    element.style.transform = `rotate(${shape.rotate}deg)`;
-                }
-            }
-        });
-    }, [shapes, isDragging, refs]);
-
-    const addShape = (type) => {
-        const initPos = { x: 0, y: -150, rotate: 0 };
-        setShapes((prev) => ({ ...prev, [type]: initPos }));
-        localStorage.setItem(type, JSON.stringify(initPos));
-    };
-
-
-    const handleStop = (type, e, data) => {
-        const { x, y } = data;
-        setShapes((prev) => {
-            const updated = { ...prev, [type]: { ...prev[type], x, y } };
-            localStorage.setItem(type, JSON.stringify(updated[type]));
-            return updated;
-        });
-    };
-
-
-    const handleDragStart = (type) => {
-        setIsDragging(prev => ({ ...prev, [type]: true }));
-        if (refs[type].current) {
-            const element = refs[type].current;
-            const shape = shapes[type];
-            const observer = new MutationObserver((mutations) => {
-                mutations.forEach((mutation) => {
-                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                        const currentTransform = element.style.transform;
-                        if (!currentTransform.includes('rotate')) {
-                            const translateMatch = currentTransform.match(/translate\([^)]+\)/);
-                            if (translateMatch) {
-                                element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
-                            } else {
-                                element.style.transform = `rotate(${shape.rotate}deg)`;
-                            }
-                        }
-                    }
-                });
-            });
-            // 開始監控
-            observer.observe(element, { attributes: true, attributeFilter: ['style'] });
-            // 保存 observer 引用，以便在拖曳停止時清理
-            element._rotationObserver = observer;
-        }
-    };
-
-    const handleDrag = (type) => {
-        if (refs[type].current && shapes[type]) {
-            const element = refs[type].current;
-            const shape = shapes[type];
-            requestAnimationFrame(() => {
-                if (element && element.style) {
-                    const currentTransform = element.style.transform;
-                    const translateMatch = currentTransform.match(/translate\([^)]+\)/);
-
-                    if (translateMatch) {
-                        element.style.transform = `${translateMatch[0]} rotate(${shape.rotate}deg)`;
-                    } else {
-                        element.style.transform = `rotate(${shape.rotate}deg)`;
-                    }
-                }
-            });
-        }
-    };
-
-    const handleDragStop = (type) => {
-        setIsDragging(prev => ({ ...prev, [type]: false }));
-        if (refs[type].current) {
-            const element = refs[type].current;
-            if (element._rotationObserver) {
-                element._rotationObserver.disconnect();
-                delete element._rotationObserver;
-            }
-        }
-    };
 
     // 顏色和形狀選擇處理
     const handleColorSelect = (colorId) => {
@@ -379,67 +195,6 @@ function MinaRoom({
         console.log('網格已清空並保存');
     };
 
-    const renderShape = (type) => {
-        const shape = shapes[type];
-        if (!shape) return null;
-
-        // 檢測是否為觸控設備
-        const isTouchDevice = "ontouchstart" in window;
-
-        return (
-            <Draggable
-                nodeRef={refs[type]}
-                position={{ x: shape.x, y: shape.y }}
-                onStart={() => handleDragStart(type)}
-                onDrag={() => handleDrag(type)}
-                onStop={(e, data) => {
-                    handleDragStop(type);
-                    handleStop(type, e, data);
-                }}
-                enableUserSelectHack={isTouchDevice}
-                allowAnyClick={isTouchDevice}
-                cancel={isTouchDevice ? undefined : ".rotate-btn"}
-                // 手機上啟用觸控拖曳優化
-                touchAction={isTouchDevice ? "pan-x pan-y" : undefined}
-                onMouseDown={isTouchDevice ? undefined : (e) => {
-                    if (isTouchDevice) return;
-
-                    if (e.target === e.currentTarget || e.target.closest('.rotate-btn')) {
-                        return;
-                    }
-                    handleDragStart(type);
-                }}
-            >
-                <div
-                    key={type}
-                    ref={refs[type]}
-                    className={`${isDragging[type] ? 'shape-dragging' : ''} shape-${type}`}
-                    style={{
-                        position: "absolute",
-                        ...shapeStyles[type],
-                        transform: `rotate(${shape.rotate}deg)`,
-                        cursor: isDragging[type] ? "grabbing" : "grab",
-                        willChange: "transform",
-                    }}
-                    data-rotation={shape.rotate}
-                >
-                    {shapeStyles[type].useLayered && (
-                        <div
-                            style={{
-                                position: "absolute",
-                                top: `${shapeStyles[type].innerLayer.offset}px`,
-                                left: `${shapeStyles[type].innerLayer.offset}px`,
-                                width: `${parseInt(shapeStyles[type].width) - shapeStyles[type].innerLayer.offset * 2}px`,
-                                height: `${parseInt(shapeStyles[type].height) - shapeStyles[type].innerLayer.offset * 2}px`,
-                                background: shapeStyles[type].innerLayer.background,
-                                clipPath: shapeStyles[type].innerLayer.clipPath || shapeStyles[type].clipPath,
-                            }}
-                        />
-                    )}
-                </div>
-            </Draggable>
-        );
-    };
 
     return (
         <div style={{ padding: 0, position: "relative", background: "#f7f7f7" }}>
@@ -448,7 +203,7 @@ function MinaRoom({
                     display: "grid",
                     gridTemplateRows: `${currentCellSize}px repeat(${rows}, ${currentCellSize}px) ${currentCellSize}px`, // 上 + 中間 + 下
                     gridTemplateColumns: `${currentCellSize}px repeat(${cols}, ${currentCellSize}px) ${currentCellSize}px`, // 左 + 中間 + 右
-                    gap: gridConfig.gap,
+                    gap: getGridConfig().gap,
                     justifyContent: "center",
                     marginBottom: window.innerWidth <= 480 ? 20 : 40,
                 }}
@@ -585,19 +340,6 @@ function MinaRoom({
                     </div>
                 ))}
             </div>
-            {/* 浮動圖形按鈕面板 */}
-            <FloatingShapePanel
-                shapeStyles={shapeStyles}
-                onAddShape={addShape}
-                isVisible={showShapeButtons}
-                onToggle={() => setShowShapeButtons(false)}
-            />
-            <div />
-            {Object.keys(shapes).map((type) => (
-                <React.Fragment key={type}>
-                    {renderShape(type)}
-                </React.Fragment>
-            ))}
 
             {/* 當前選擇顯示 */}
             <div style={{
