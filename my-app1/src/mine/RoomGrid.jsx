@@ -45,7 +45,7 @@ const colorTypes = [
     { id: 'TYPE1', name: '白色', color: '#ffffff', borderColor: '#ddd' },
     { id: 'TYPE2', name: '紅色', color: '#ff6b6b', borderColor: '#e74c3c' },
     { id: 'TYPE3', name: '藍色', color: '#3F48CC', borderColor: '#3498db' },
-    { id: 'TYPE4', name: '黃色', color: '#feca57', borderColor: '#f39c12' },
+    { id: 'TYPE4', name: '黃色', color: '#feca57', borderColor: '#FFF200' },
     { id: 'TYPE5', name: '黑色', color: '#2c3e50', borderColor: '#000000' },
     { id: 'TRANSPARENT', name: '透明', color: 'transparent', borderColor: '#ccc' }
 ];
@@ -248,7 +248,7 @@ function MinaRoom({
                                     onClick={() => handleCellClick(rIdx, cIdx)}
                                     style={{
                                         border: cellData && cellData.color.id === 'TRANSPARENT' ? '2px dashed #999' : '1px solid #ccc',
-                                        background: cellData ? cellData.color.color : '#fff',
+                                        background: '#fff',
                                         width: `${currentCellSize}px`,
                                         height: `${currentCellSize}px`,
                                         cursor: 'pointer',
