@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import DigitCodeGrid from "./DigitCodeGrid";
 import DigitCodeList from "./DigitCodeList";
 import { useDigitCodeData } from "./useDigitCodeData";
+import Question2Modal from "./Question2Modal";
 
 export default function DigitCodeRoom() {
   const location = useLocation();
@@ -18,14 +19,18 @@ export default function DigitCodeRoom() {
   // 用戶選擇記錄 - 使用 localStorage 持久化
   const [userSelections, setUserSelections] = useState(() => {
     const saved = localStorage.getItem(`digitCode_selections_${room}`);
-    return saved ? JSON.parse(saved) : [];
+    return saved ? JSON.parse(saved) : {};
   });
+
+  // 問題2彈跳視窗狀態
+  const [showQuestion2Modal, setShowQuestion2Modal] = useState(false);
 
   // 從 API 數據獲取遊戲狀態
   const gameData = {
     room: room || 'default',
     players: data?.members || 2,
     currentRound: data?.list?.length ? data.list[0]?.round + 1 : 1,
+    answerData: data?.mapData || null, // 添加答案數據 (mapData 包含遊戲答案)
   };
 
   // 處理用戶選擇記錄
@@ -33,6 +38,16 @@ export default function DigitCodeRoom() {
     setUserSelections(selections);
     // 保存到 localStorage
     localStorage.setItem(`digitCode_selections_${room}`, JSON.stringify(selections));
+  };
+
+  // 處理問題2提交
+  const handleQuestion2Submit = (questionData) => {
+    console.log('問題2提交結果:', questionData);
+    
+    // 如果標記需要更新畫面，則重新獲取數據
+    if (questionData.needsRefresh) {
+      refresh();
+    }
   };
 
   useEffect(() => {
@@ -113,7 +128,7 @@ export default function DigitCodeRoom() {
             </button>
             
             <button
-              onClick={() => {/* TODO: 處理問題2 */}}
+              onClick={() => setShowQuestion2Modal(true)}
               style={{
                 padding: "12px 20px",
                 fontSize: "16px",
@@ -224,6 +239,14 @@ export default function DigitCodeRoom() {
           返回首頁
         </button>
       </div>
+
+      {/* 問題2彈跳視窗 */}
+      <Question2Modal
+        isOpen={showQuestion2Modal}
+        onClose={() => setShowQuestion2Modal(false)}
+        onSubmit={handleQuestion2Submit}
+        gameData={gameData}
+      />
     </div>
   );
 }
