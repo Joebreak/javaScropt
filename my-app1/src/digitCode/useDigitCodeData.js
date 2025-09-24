@@ -37,73 +37,26 @@ export function useDigitCodeData(intervalMs = 0, room) {
 
       // 處理 DigitCode 專用的資料格式
       const filteredList = Array.isArray(json)
-        ? json
-          .filter(item => item && item.round !== 0)
-          .map(item => ({
-            id: item.id,
-            round: item.round,
-            player: item.data?.player || 1,
-            type: item.data?.type || 'question', // 'question' 或 'answer'
-            questionType: item.data?.questionType,
-            questionData: item.data?.questionData,
-            answer: item.data?.answer,
-            isCorrect: item.data?.isCorrect,
-            timestamp: item.data?.timestamp || new Date().toISOString(),
-            ...item.data
-          }))
-          .reverse()
-        : [];
+      ? json
+        .filter(item => item && item.round !== 0)
+        .map(item => ({ id: item.id, round: item.round, ...item.data }))
+        .reverse()
+      : [];
 
       // 獲取遊戲設定資料 (round 0)
-      const gameSetupData = Array.isArray(json)
+      const roundZeroData = Array.isArray(json)
         ? json
           .filter(item => item && item.round === 0)[0] || null
         : null;
 
       setData({
         list: filteredList,
-        gameSetup: gameSetupData?.data || {},
-        members: gameSetupData?.data?.members || 2,
-        gameStatus: gameSetupData?.data?.gameStatus || 'active',
-        currentPlayer: gameSetupData?.data?.currentPlayer || 1,
-        gamePhase: gameSetupData?.data?.gamePhase || 'setup',
-        myCode: gameSetupData?.data?.myCode || []
+        mapData: roundZeroData?.list || [],
+        members: roundZeroData?.data?.NOTE2 || null
       });
 
     } catch (err) {
       console.error("DigitCode API 失敗：", err);
-      // 如果 API 失敗，使用模擬資料
-      setData({
-        list: [
-          {
-            id: 1,
-            round: 1,
-            in: 'question',
-            out: 1,
-            color: 'blue'
-          },
-          {
-            id: 2,
-            round: 2,
-            in: 'answer',
-            out: 2,
-            color: 'green'
-          },
-          {
-            id: 3,
-            round: 3,
-            in: 'question',
-            out: 3,
-            color: 'red'
-          }
-        ],
-        gameSetup: {},
-        members: 2,
-        gameStatus: 'active',
-        currentPlayer: 1,
-        gamePhase: 'playing',
-        myCode: [1, 2, 3, 4, 5, 6] // 模擬 API 提供的代碼
-      });
     } finally {
       setLoading(false);
       isFetchingRef.current = false;
