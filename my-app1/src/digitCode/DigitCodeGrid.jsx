@@ -248,9 +248,12 @@ export default function DigitCodeGrid({
   const renderClickableDigitDisplay = () => {
     // 尺寸設定 - 加大尺寸方便用戶操作
     const sizeConfig = {
-      large: { width: 60, height: 100, strokeWidth: 5 }
+      large: { width: 60, height: 100, strokeWidth: 5 },
+      mobile: { width: 48, height: 80, strokeWidth: 4 }
     };
-    const config = sizeConfig.large;
+
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const config = isMobile ? sizeConfig.mobile : sizeConfig.large;
 
     // SVG 路徑定義
     const segmentPaths = {
@@ -275,7 +278,7 @@ export default function DigitCodeGrid({
     };
 
     // 單個數位段顯示器
-    const SingleDigitDisplay = ({ digitIndex, label }) => {
+    const SingleDigitDisplay = ({ digitIndex, label, isMobileView }) => {
       // 獲取段狀態的函數
       const getSegmentState = (segment) => {
         return selectedSegments[`${segment}${digitIndex}`] || 0;
@@ -395,79 +398,148 @@ export default function DigitCodeGrid({
             />
           </svg>
 
-          {/* 右側 0~9 標記 (兩排直排：偶數/奇數) */}
-          <div style={{
-            position: "absolute",
-            left: config.width + 8,
-            top: 0,
-            display: "flex",
-            flexDirection: "row",
-            gap: 6,
-            zIndex: 15
-          }}>
-            {/* 偶數直排 0,2,4,6,8 */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              {[0,2,4,6,8].map((n) => {
-                const st = getNumState(n);
-                return (
-                  <button
-                    key={`col-even-${n}`}
-                    onClick={() => handleNumClick(n)}
-                    title={`${n}：${st === -1 ? '排除' : '未排除'}`}
-                    style={{
-                      width: 22,
-                      height: 18,
-                      borderRadius: 4,
-                      border: st === -1 ? "1px solid #e74c3c" : "1px solid #cfd4da",
-                      background: st === -1 ? "#fdecea" : "#f8f9fa",
-                      color: st === -1 ? "#e74c3c" : "#495057",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      lineHeight: "16px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      cursor: "pointer",
-                      padding: 0
-                    }}
-                  >
-                    {st === -1 ? 'X' : n}
-                  </button>
-                );
-              })}
+          {/* 0~9 標記 - 桌面在右側兩列直排，手機改在下方兩列直排 */}
+          {isMobileView ? (
+            <div style={{
+              marginTop: 6,
+              display: "flex",
+              flexDirection: "row",
+              gap: 6,
+              zIndex: 15
+            }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {[0,2,4,6,8].map((n) => {
+                  const st = getNumState(n);
+                  return (
+                    <button
+                      key={`m-col-even-${n}`}
+                      onClick={() => handleNumClick(n)}
+                      title={`${n}：${st === -1 ? '排除' : '未排除'}`}
+                      style={{
+                        width: 22,
+                        height: 18,
+                        borderRadius: 4,
+                        border: st === -1 ? "1px solid #e74c3c" : "1px solid #cfd4da",
+                        background: st === -1 ? "#fdecea" : "#f8f9fa",
+                        color: st === -1 ? "#e74c3c" : "#495057",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        lineHeight: "16px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        padding: 0
+                      }}
+                    >
+                      {st === -1 ? 'X' : n}
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {[1,3,5,7,9].map((n) => {
+                  const st = getNumState(n);
+                  return (
+                    <button
+                      key={`m-col-odd-${n}`}
+                      onClick={() => handleNumClick(n)}
+                      title={`${n}：${st === -1 ? '排除' : '未排除'}`}
+                      style={{
+                        width: 22,
+                        height: 18,
+                        borderRadius: 4,
+                        border: st === -1 ? "1px solid #e74c3c" : "1px solid #cfd4da",
+                        background: st === -1 ? "#fdecea" : "#f8f9fa",
+                        color: st === -1 ? "#e74c3c" : "#495057",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        lineHeight: "16px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        padding: 0
+                      }}
+                    >
+                      {st === -1 ? 'X' : n}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            {/* 奇數直排 1,3,5,7,9 */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              {[1,3,5,7,9].map((n) => {
-                const st = getNumState(n);
-                return (
-                  <button
-                    key={`col-odd-${n}`}
-                    onClick={() => handleNumClick(n)}
-                    title={`${n}：${st === -1 ? '排除' : '未排除'}`}
-                    style={{
-                      width: 22,
-                      height: 18,
-                      borderRadius: 4,
-                      border: st === -1 ? "1px solid #e74c3c" : "1px solid #cfd4da",
-                      background: st === -1 ? "#fdecea" : "#f8f9fa",
-                      color: st === -1 ? "#e74c3c" : "#495057",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      lineHeight: "16px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      cursor: "pointer",
-                      padding: 0
-                    }}
-                  >
-                    {st === -1 ? 'X' : n}
-                  </button>
-                );
-              })}
+          ) : (
+            <div style={{
+              position: "absolute",
+              left: config.width + 8,
+              top: 0,
+              display: "flex",
+              flexDirection: "row",
+              gap: 6,
+              zIndex: 15
+            }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {[0,2,4,6,8].map((n) => {
+                  const st = getNumState(n);
+                  return (
+                    <button
+                      key={`col-even-${n}`}
+                      onClick={() => handleNumClick(n)}
+                      title={`${n}：${st === -1 ? '排除' : '未排除'}`}
+                      style={{
+                        width: 22,
+                        height: 18,
+                        borderRadius: 4,
+                        border: st === -1 ? "1px solid #e74c3c" : "1px solid #cfd4da",
+                        background: st === -1 ? "#fdecea" : "#f8f9fa",
+                        color: st === -1 ? "#e74c3c" : "#495057",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        lineHeight: "16px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        padding: 0
+                      }}
+                    >
+                      {st === -1 ? 'X' : n}
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {[1,3,5,7,9].map((n) => {
+                  const st = getNumState(n);
+                  return (
+                    <button
+                      key={`col-odd-${n}`}
+                      onClick={() => handleNumClick(n)}
+                      title={`${n}：${st === -1 ? '排除' : '未排除'}`}
+                      style={{
+                        width: 22,
+                        height: 18,
+                        borderRadius: 4,
+                        border: st === -1 ? "1px solid #e74c3c" : "1px solid #cfd4da",
+                        background: st === -1 ? "#fdecea" : "#f8f9fa",
+                        color: st === -1 ? "#e74c3c" : "#495057",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        lineHeight: "16px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        padding: 0
+                      }}
+                    >
+                      {st === -1 ? 'X' : n}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* 可點擊的透明區域 */}
           {Object.entries(segmentClickAreas).map(([segment, area]) => (
@@ -499,51 +571,72 @@ export default function DigitCodeGrid({
         gap: "10px",
         margin: "20px 0"
       }}>
-        {/* 3×2 網格排列 - TUV / WXY */}
+        {/* 3×2 或 2×3 網格排列 - TUV / WXY */}
         <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
           gridTemplateRows: "repeat(2, 1fr)",
-          columnGap: 24,
-          rowGap: 16,
+          columnGap: isMobile ? 16 : 24,
+          rowGap: isMobile ? 12 : 16,
           padding: "10px",
           position: "relative"
         }}>
           {/* 上方的行標記 A~I - 對齊到網格 */}
           <div style={{
             position: "absolute",
-            top: "-25px",
-            left: "10px",
-            right: "10px",
+            top: isMobile ? "-8px" : "-6px",
+            left: isMobile ? "10px" : "20px",
+            right: isMobile ? "10px" : "0px",
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "10px",
-            fontSize: "10px",
+            gap: isMobile ? "8px" : "10px",
+            fontSize: isMobile ? "9px" : "10px",
             color: "#666",
             fontWeight: "bold"
           }}>
-            <span style={{ textAlign: "center" }}>A B C</span>
-            <span style={{ textAlign: "center" }}>D E F</span>
-            <span style={{ textAlign: "center" }}>G H I</span>
+            <span style={{ textAlign: isMobile ? "center" : "left", wordSpacing: isMobile ? "12px" : "16px" }}>A B C</span>
+            <span style={{ textAlign: isMobile ? "center" : "left", wordSpacing: isMobile ? "12px" : "16px" }}>D E F</span>
+            <span style={{ textAlign: isMobile ? "center" : "left", wordSpacing: isMobile ? "12px" : "16px" }}>G H I</span>
           </div>
           
-          {/* 左側的列標記 J~S - 對齊到網格 */}
+          {/* 左側的列標記 J~S - 分成上下兩組對齊兩排 */}
+          {/* 上排對應 J~N */}
           <div style={{
             position: "absolute",
             left: "-25px",
-            top: "10px", // 對齊到網格上邊距
-            bottom: "10px", // 對齡到網格下邊距
-            display: "grid",
-            gridTemplateRows: "repeat(2, 1fr)",
-            gap: "10px",
+            top: "10px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
             fontSize: "10px",
             color: "#666",
             fontWeight: "bold"
           }}>
-            {["J", "K", "L", "M", "N", "O", "P", "Q", "R", "S"].map((col, i) => (
-              <span key={i} style={{ 
-                display: "flex", 
-                alignItems: "center", 
+            {["J", "K", "L", "M", "N"].map((col, i) => (
+              <span key={i} style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "100%"
+              }}>{col}</span>
+            ))}
+          </div>
+          {/* 下排對應 O~S */}
+          <div style={{
+            position: "absolute",
+            left: "-25px",
+            top: "calc(50% + 10px)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
+            fontSize: "10px",
+            color: "#666",
+            fontWeight: "bold"
+          }}>
+            {["O", "P", "Q", "R", "S"].map((col, i) => (
+              <span key={i} style={{
+                display: "flex",
+                alignItems: "center",
                 justifyContent: "center",
                 height: "100%"
               }}>{col}</span>
@@ -558,8 +651,8 @@ export default function DigitCodeGrid({
             { index: 4, label: "X" },
             { index: 5, label: "Y" }
           ].map(({ index, label }) => (
-            <div key={index} style={{ textAlign: "center", position: "relative", paddingRight: 60 }}>
-              <SingleDigitDisplay digitIndex={index} label={label} />
+            <div key={index} style={{ textAlign: "center", position: "relative", paddingRight: isMobile ? 0 : 60 }}>
+              <SingleDigitDisplay digitIndex={index} label={label} isMobileView={isMobile} />
             </div>
           ))}
         </div>
