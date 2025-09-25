@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { getApiUrl } from '../../config/api';
 
 const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = null }) => {
-    // 使用 RoomGrid 的資料
-    const [grid] = useState(roomGridData || Array(8).fill().map(() => Array(10).fill(null)));
+    // 直接使用 roomGridData，如果沒有則使用空網格
+    const grid = roomGridData || Array(8).fill().map(() => Array(10).fill(null));
     const [isValidating, setIsValidating] = useState(false);
 
     // 驗證結果狀態
@@ -48,6 +48,18 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
         return null;
     };
 
+    // 將形狀 ID 轉換為角度（參考 RadiateSelector 的角度系統）
+    const getAngleFromShape = (shapeId) => {
+        switch (shapeId) {
+            case 'TRIANGLE_UP_LEFT': return 2;
+            case 'TRIANGLE_UP_RIGHT': return 3;
+            case 'TRIANGLE_DOWN_LEFT': return 4;
+            case 'TRIANGLE_DOWN_RIGHT': return 5;
+            case 'SQUARE': return 1;
+            default: return null;
+        }
+    };
+
     // 驗證網格
     const validateGrid = async () => {
         if (!gameData) {
@@ -55,38 +67,143 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
             return;
         }
 
+        console.log('roomGridData:', roomGridData);
+        console.log('gameData.mapData:', gameData.mapData);
+
         setIsValidating(true);
         setValidationResult(null);
 
         try {
             // 將網格數據轉換為 API 格式
-            const gridData = grid.map((row, rowIndex) => 
-                row.map((cell, colIndex) => {
+            const currentMapData = [];
+            let hasShapes = false;
+            
+            grid.forEach((row, rowIndex) => {
+                row.forEach((cell, colIndex) => {
                     const shapeInfo = getShapeInfo(cell);
-                    if (!shapeInfo) return null;
+                    if (shapeInfo) {
+                        hasShapes = true;
+                        currentMapData.push({
+                            NOTE1: colIndex, // 列
+                            NOTE2: rowIndex, // 行
+                            NOTE3: shapeInfo.color.id, // 顏色
+                            NOTE4: getAngleFromShape(shapeInfo.shape.id)
+                        });
+                    }
+                });
+            });
+            console.log('currentMapData:', currentMapData);
+            // 檢查是否有形狀
+            if (!hasShapes) {
+                setValidationResult({
+                    success: false,
+                    message: '驗證失敗',
+                    details: '網格中沒有放置任何形狀'
+                });
+                return;
+            }
 
-                    return {
-                        row: rowIndex,
-                        col: colIndex,
-                        color: shapeInfo.color.id,
-                        shape: shapeInfo.shape.id
-                    };
-                }).filter(cell => cell !== null)
-            ).flat();
+            // 比較當前網格數據與遊戲數據是否匹配
+            const expectedMapData = gameData.mapData || [];
+            let validationResult = null;
 
-            const requestData = {
+            // 檢查每個預期的位置 - 遇到第一個不匹配就記錄並停止檢查
+            for (const expectedItem of expectedMapData) {
+                if (expectedItem && expectedItem.NOTE1 !== undefined && expectedItem.NOTE2 !== undefined) {
+                    const currentItem = currentMapData.find(item => 
+                        item.NOTE1 === expectedItem.NOTE1 && item.NOTE2 === expectedItem.NOTE2
+                    );
+                    
+                    // 如果期望的 NOTE3 是 null，表示該位置應該沒有形狀
+                    if (expectedItem.NOTE3 === null) {
+                        if (currentItem) {
+                            validationResult = {
+                                success: false,
+                                message: '驗證失敗',
+                                details: `位置 (${expectedItem.NOTE1}, ${expectedItem.NOTE2}) 應該沒有形狀，但實際有 ${currentItem.NOTE3}`,
+                                data: { currentMapData, expectedMapData }
+                            };
+                            break;
+                        }
+                        // 如果期望是 null 且實際也沒有，則正確，繼續檢查下一個
+                    } else {
+                        // 如果期望的 NOTE3 不是 null，表示該位置應該有形狀
+                        if (!currentItem) {
+                            validationResult = {
+                                success: false,
+                                message: '驗證失敗',
+                                details: `位置 (${expectedItem.NOTE1}, ${expectedItem.NOTE2}) 缺少形狀`,
+                                data: { currentMapData, expectedMapData }
+                            };
+                            break;
+                        } else if (currentItem.NOTE3 !== expectedItem.NOTE3) {
+                            validationResult = {
+                                success: false,
+                                message: '驗證失敗',
+                                details: `位置 (${expectedItem.NOTE1}, ${expectedItem.NOTE2}) 顏色不匹配: 期望 ${expectedItem.NOTE3}, 實際 ${currentItem.NOTE3}`,
+                                data: { currentMapData, expectedMapData }
+                            };
+                            break;
+                        } else if (currentItem.NOTE4 !== expectedItem.NOTE4) {
+                            validationResult = {
+                                success: false,
+                                message: '驗證失敗',
+                                details: `位置 (${expectedItem.NOTE1}, ${expectedItem.NOTE2}) 角度不匹配: 期望 ${expectedItem.NOTE4}, 實際 ${currentItem.NOTE4}`,
+                                data: { currentMapData, expectedMapData }
+                            };
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 如果前面的檢查都通過，檢查是否有額外的形狀
+            if (!validationResult) {
+                for (const currentItem of currentMapData) {
+                    const expectedItem = expectedMapData.find(item => 
+                        item && item.NOTE1 === currentItem.NOTE1 && item.NOTE2 === currentItem.NOTE2
+                    );
+                    // 如果沒有找到對應的預期項目，或者預期項目的 NOTE3 是 null（表示應該沒有形狀）
+                    if (!expectedItem || expectedItem.NOTE3 === null) {
+                        validationResult = {
+                            success: false,
+                            message: '驗證失敗',
+                            details: `位置 (${currentItem.NOTE1}, ${currentItem.NOTE2}) 有多餘的形狀`,
+                            data: { currentMapData, expectedMapData }
+                        };
+                        break;
+                    }
+                }
+            }
+
+            // 如果所有檢查都通過，設置成功結果
+            if (!validationResult) {
+                validationResult = {
+                    success: true,
+                    message: '驗證成功！',
+                    details: '網格配置與預期完全匹配',
+                    data: { currentMapData, expectedMapData }
+                };
+            }
+
+            // 準備 API 請求數據
+            const requestBody = {
                 room: gameData.room,
-                grid: gridData
+                round: gameData.lastRound + 1,
+                data: {
+                    color: validationResult.success ? '驗證成功' : '驗證失敗',
+                    in: '提交答案',
+                }
             };
 
-            console.log('發送驗證請求:', requestData);
-
-            const response = await fetch(`${getApiUrl()}/api/validate-shapes`, {
+            // 發送 API 請求
+            const apiUrl = getApiUrl('cloudflare_room_url');
+            const response = await fetch(apiUrl + requestBody.room, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(requestData)
+                body: JSON.stringify(requestBody)
             });
 
             if (!response.ok) {
@@ -94,15 +211,19 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
             }
 
             const result = await response.json();
-            console.log('驗證結果:', result);
 
-            setValidationResult(result);
+            // 設置最終驗證結果
+            setValidationResult({
+                ...validationResult,
+                apiResponse: result
+            });
 
         } catch (error) {
             console.error('驗證失敗:', error);
             setValidationResult({
                 success: false,
-                message: `驗證失敗: ${error.message}`
+                message: `驗證失敗: ${error.message}`,
+                details: '請檢查數據格式或稍後再試'
             });
         } finally {
             setIsValidating(false);
