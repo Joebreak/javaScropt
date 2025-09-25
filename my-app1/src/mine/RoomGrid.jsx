@@ -203,11 +203,9 @@ function MinaRoom({
             if (currentCell !== null) {
                 // 移除圖形
                 newGrid[row][col] = null;
-                console.log(`移除圖形: 位置 (${row}, ${col})`);
             } else if (currentSelection) {
                 // 放置圖形
                 newGrid[row][col] = currentSelection;
-                console.log(`放置圖形: 位置 (${row}, ${col}), 顏色: ${currentSelection.color}, 形狀: ${currentSelection.shape}`);
             }
 
             // 保存到 localStorage
@@ -221,7 +219,6 @@ function MinaRoom({
         const emptyGrid = Array(8).fill().map(() => Array(10).fill(null));
         setGrid(emptyGrid);
         saveGridToStorage(emptyGrid);
-        console.log('網格已清空並保存');
     };
 
 

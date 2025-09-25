@@ -68,7 +68,6 @@ export default function MinaRoom() {
       if (saved) {
         const parsedGrid = JSON.parse(saved);
         setRoomGridData(parsedGrid);
-        console.log('已載入房間網格數據:', parsedGrid);
       } else {
         setRoomGridData(null);
       }
