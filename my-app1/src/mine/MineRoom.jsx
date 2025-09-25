@@ -108,17 +108,6 @@ export default function MinaRoom() {
         list={data?.list || []}
       />
 
-      {/* 尺寸顯示 */}
-      <div style={{
-        textAlign: "center",
-        margin: "10px 0 5px 0",
-        fontSize: "12px",
-        color: "#666",
-        fontWeight: "bold"
-      }}>
-        目前尺寸: {window.innerWidth}px × {window.innerHeight}px 
-      </div>
-
       {/* 第一排按鈕：重新整理 + 顯示圖形 + 隱藏圖形 */}
       <div style={{
         display: "flex",
