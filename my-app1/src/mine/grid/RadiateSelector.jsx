@@ -112,10 +112,10 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
             return hasWhite ? '淺紫' : '紫色';
         }
         if (colorSet.has('紅色') && colorSet.has('黃色')) {
-            return hasWhite ? '淺綠' : '綠色';
+            return hasWhite ? '淺橙' : '橙色';
         }
         if (colorSet.has('藍色') && colorSet.has('黃色')) {
-            return hasWhite ? '淺橙' : '橙色';
+            return hasWhite ? '淺綠' : '綠色';
         }
 
         // 如果只有一種顏色
@@ -309,7 +309,6 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
                 finalColor: lightTraceResult.finalColor,
                 encounteredColors: lightTraceResult.encounteredColors
             };
-            console.log('光線追蹤結果:', result);
             // 決定 in 和 out 格式
             const inFormat = selectedDirection.label;
 
