@@ -11,23 +11,51 @@ const getGridConfig = () => {
         if (width <= 480) {
             return {
                 cellSize: 30,
-                gap: 2
+                gap: 2,
+                colorButtonSize: 20,  // 手機版顏色按鈕大小
+                colorIconSize: 12,   // 手機版顏色圖示大小
+                colorTextSize: '7px', // 手機版顏色文字大小
+                gridShapeSize: 30,   // 手機版網格圖形大小
+                gridShapeFontSize: '48px', // 手機版網格圖形字體大小
+                triangleFontSize: '48px',  // 手機版三角形字體大小
+                squareFontSize: '50px'     // 手機版方形字體大小
             };
         }
         if (width <= 768) {
             return {
                 cellSize: 40,
-                gap: 3
+                gap: 3,
+                colorButtonSize: 24,  // 平板版顏色按鈕大小
+                colorIconSize: 14,   // 平板版顏色圖示大小
+                colorTextSize: '8px', // 平板版顏色文字大小
+                gridShapeSize: 30,   // 平板版網格圖形大小
+                gridShapeFontSize: '48px', // 平板版網格圖形字體大小
+                triangleFontSize: '55px',  // 平板版三角形字體大小
+                squareFontSize: '60px'     // 平板版方形字體大小
             };
         }
         return {
             cellSize: 60,
-            gap: 4
+            gap: 4,
+            colorButtonSize: 16,  // 桌面版顏色按鈕大小
+            colorIconSize: 16,   // 桌面版顏色圖示大小
+            colorTextSize: '8px', // 桌面版顏色文字大小
+            gridShapeSize: 40,   // 桌面版網格圖形大小
+            gridShapeFontSize: '90px', // 桌面版網格圖形字體大小
+            triangleFontSize: '80px',  // 桌面版三角形字體大小
+            squareFontSize: '105px'     // 桌面版方形字體大小
         };
     }
     return {
-        cellSize: 40,
-        gap: 3
+        cellSize: 60,
+        gap: 4,
+        colorButtonSize: 16,  // 桌面版顏色按鈕大小
+        colorIconSize: 16,   // 桌面版顏色圖示大小
+        colorTextSize: '8px', // 桌面版顏色文字大小
+        gridShapeSize: 40,   // 桌面版網格圖形大小
+        gridShapeFontSize: '40px', // 桌面版網格圖形字體大小
+        triangleFontSize: '40px',  // 桌面版三角形字體大小
+        squareFontSize: '30px'     // 桌面版方形字體大小
     };
 };
 
@@ -42,12 +70,12 @@ const bottomColLabels = Array.from({ length: cols }, (_, i) => String.fromCharCo
 
 // 定義顏色選項
 const colorTypes = [
-    { id: 'TYPE1', name: '白色', color: '#ffffff', borderColor: '#ddd' },
+    { id: 'TYPE1', name: '白色', color: '#ffffff', borderColor: '#D9D9D9' },
     { id: 'TYPE2', name: '紅色', color: '#ff6b6b', borderColor: '#e74c3c' },
     { id: 'TYPE3', name: '藍色', color: '#3F48CC', borderColor: '#3498db' },
     { id: 'TYPE4', name: '黃色', color: '#feca57', borderColor: '#FFF200' },
     { id: 'TYPE5', name: '黑色', color: '#2c3e50', borderColor: '#000000' },
-    { id: 'TRANSPARENT', name: '透明', color: 'transparent', borderColor: '#ccc' }
+    { id: 'TRANSPARENT', name: '透明', color: 'transparent', borderColor: '#F2F2F2' }
 ];
 
 // 定義形狀選項
@@ -60,29 +88,29 @@ const shapeTypes = [
 ];
 
 
-function MinaRoom({ 
-  gameData, 
-  showShapeSelector = false,
-  setShowShapeSelector = null,
-  showPositionSelector,
-  setShowPositionSelector,
-  showRadiateSelector,
-  setShowRadiateSelector,
-  onPositionConfirm,
-  onRadiateConfirm
+function MinaRoom({
+    gameData,
+    showShapeSelector = false,
+    setShowShapeSelector = null,
+    showPositionSelector,
+    setShowPositionSelector,
+    showRadiateSelector,
+    setShowRadiateSelector,
+    onPositionConfirm,
+    onRadiateConfirm
 }) {
-    const [currentCellSize, setCurrentCellSize] = useState(getGridConfig().cellSize);
-    
+    const [currentConfig, setCurrentConfig] = useState(getGridConfig());
+
     // 網格狀態（用於形狀驗證）
     const [grid, setGrid] = useState(Array(8).fill().map(() => Array(10).fill(null)));
-    
+
     // 選擇器狀態
     const [selectedColor, setSelectedColor] = useState(null);
     const [selectedShape, setSelectedShape] = useState(null);
 
     useEffect(() => {
         const handleResize = () => {
-            setCurrentCellSize(getGridConfig().cellSize);
+            setCurrentConfig(getGridConfig());
         };
 
         handleResize();
@@ -99,7 +127,6 @@ function MinaRoom({
             if (saved) {
                 const parsedGrid = JSON.parse(saved);
                 setGrid(parsedGrid);
-                console.log('網格已從 localStorage 載入');
             }
         } catch (error) {
             console.error('載入網格失敗:', error);
@@ -180,7 +207,7 @@ function MinaRoom({
                 newGrid[row][col] = currentSelection;
                 console.log(`放置圖形: 位置 (${row}, ${col}), 顏色: ${currentSelection.color}, 形狀: ${currentSelection.shape}`);
             }
-            
+
             // 保存到 localStorage
             saveGridToStorage(newGrid);
             return newGrid;
@@ -201,9 +228,9 @@ function MinaRoom({
             <div
                 style={{
                     display: "grid",
-                    gridTemplateRows: `${currentCellSize}px repeat(${rows}, ${currentCellSize}px) ${currentCellSize}px`, // 上 + 中間 + 下
-                    gridTemplateColumns: `${currentCellSize}px repeat(${cols}, ${currentCellSize}px) ${currentCellSize}px`, // 左 + 中間 + 右
-                    gap: getGridConfig().gap,
+                    gridTemplateRows: `${currentConfig.cellSize}px repeat(${rows}, ${currentConfig.cellSize}px) ${currentConfig.cellSize}px`, // 上 + 中間 + 下
+                    gridTemplateColumns: `${currentConfig.cellSize}px repeat(${cols}, ${currentConfig.cellSize}px) ${currentConfig.cellSize}px`, // 左 + 中間 + 右
+                    gap: currentConfig.gap,
                     justifyContent: "center",
                     marginBottom: window.innerWidth <= 480 ? 20 : 40,
                 }}
@@ -249,8 +276,8 @@ function MinaRoom({
                                     style={{
                                         border: cellData && cellData.color.id === 'TRANSPARENT' ? '2px dashed #999' : '1px solid #ccc',
                                         background: '#fff',
-                                        width: `${currentCellSize}px`,
-                                        height: `${currentCellSize}px`,
+                                        width: `${currentConfig.cellSize}px`,
+                                        height: `${currentConfig.cellSize}px`,
                                         cursor: 'pointer',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -270,18 +297,39 @@ function MinaRoom({
                                         }}>
                                             {cellData.shape.shape === 'triangle' ? (
                                                 cellData.color.id === 'TRANSPARENT' ? (
-                                                    <div style={{
-                                                        width: '20px',
-                                                        height: '20px',
-                                                        border: '2px solid #999',
-                                                        clipPath: cellData.shape.type === 'up-left' ? 'polygon(100% 0%, 100% 100%, 0% 100%)' :
-                                                            cellData.shape.type === 'up-right' ? 'polygon(0% 0%, 0% 100%, 100% 100%)' :
-                                                                cellData.shape.type === 'down-left' ? 'polygon(100% 0%, 100% 100%, 0% 0%)' :
-                                                                    'polygon(0% 0%, 100% 0%, 0% 100%)',
-                                                        backgroundColor: 'transparent'
-                                                    }}></div>
+                                                    <span style={{
+                                                        fontSize: currentConfig.triangleFontSize,
+                                                        color: cellData.color.borderColor,
+                                                        textShadow: '0 0 2px rgba(0,0,0,0.5)',
+                                                        fontWeight: 'bold',
+                                                        display: 'block',
+                                                        textAlign: 'center',
+                                                        lineHeight: 1,
+                                                        position: 'absolute',
+                                                        top: '45%',
+                                                        left: '50%',
+                                                        transform: 'translate(-50%, -50%)',
+                                                        width: 'auto',
+                                                        height: 'auto'
+                                                    }}>
+                                                        {cellData.shape.type === 'up-left' ? '◢' :
+                                                            cellData.shape.type === 'up-right' ? '◣' :
+                                                                cellData.shape.type === 'down-left' ? '◥' :
+                                                                    '◤'}
+                                                    </span>
                                                 ) : (
-                                                    <span style={{ fontSize: '40px' }}>
+                                                    <span style={{ 
+                                                        fontSize: currentConfig.triangleFontSize,
+                                                        display: 'block',
+                                                        textAlign: 'center',
+                                                        lineHeight: 1,
+                                                        position: 'absolute',
+                                                        top: '45%',
+                                                        left: '50%',
+                                                        transform: 'translate(-50%, -50%)',
+                                                        width: 'auto',
+                                                        height: 'auto'
+                                                    }}>
                                                         {cellData.shape.type === 'up-left' ? '◢' :
                                                             cellData.shape.type === 'up-right' ? '◣' :
                                                                 cellData.shape.type === 'down-left' ? '◥' :
@@ -290,17 +338,39 @@ function MinaRoom({
                                                 )
                                             ) : (
                                                 cellData.color.id === 'TRANSPARENT' ? (
-                                                    <div style={{
-                                                        width: '20px',
-                                                        height: '20px',
-                                                        border: '2px solid #999',
-                                                        backgroundColor: 'transparent'
-                                                    }}></div>
+                                                    <span style={{
+                                                        fontSize: currentConfig.squareFontSize,
+                                                        color: cellData.color.borderColor,
+                                                        textShadow: '0 0 3px rgba(0, 0, 0, 0.3)',
+                                                        fontWeight: 'bold',
+                                                        display: 'block',
+                                                        textAlign: 'center',
+                                                        lineHeight: 1,
+                                                        position: 'absolute',
+                                                        top: '45%',
+                                                        left: '50%',
+                                                        transform: 'translate(-48%, -55%)',
+                                                        width: 'auto',
+                                                        height: 'auto',
+                                                        margin: 0,
+                                                        padding: 0,
+                                                        fontFamily: 'monospace'
+                                                    }}>■</span>
                                                 ) : (
                                                     <span style={{
-                                                        fontSize: '50px',
-                                                        position: 'relative',
-                                                        top: '-8px'
+                                                        fontSize: currentConfig.squareFontSize,
+                                                        display: 'block',
+                                                        textAlign: 'center',
+                                                        lineHeight: 0.5,
+                                                        position: 'absolute',
+                                                        top: '45%',
+                                                        left: '50%',
+                                                        transform: 'translate(-50%, -60%)',
+                                                        width: 'auto',
+                                                        height: 'auto',
+                                                        margin: 0,
+                                                        padding: 0,
+                                                        fontFamily: 'monospace'
                                                     }}>■</span>
                                                 )
                                             )}
@@ -362,11 +432,11 @@ function MinaRoom({
 
             {/* 形狀選擇器 - 顯示在網格和按鈕之間 */}
             {showShapeSelector && (
-                <div style={{ 
+                <div style={{
                     marginTop: '20px',
-                    marginBottom: '20px', 
-                    padding: '15px', 
-                    backgroundColor: 'white', 
+                    marginBottom: '20px',
+                    padding: '15px',
+                    backgroundColor: 'white',
                     borderRadius: '8px',
                     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
                 }}>
@@ -387,17 +457,17 @@ function MinaRoom({
                             隱藏圖形
                         </button>
                     </div>
-                    
+
                     <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px', color: '#666', textAlign: 'center' }}>
                         選擇顏色和形狀：
                     </div>
-                    
+
                     {/* 顏色選擇區域 */}
                     <div style={{ marginBottom: '15px' }}>
                         <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#666', textAlign: 'center' }}>
                             顏色：
                         </div>
-                        
+
                         {/* 第一排：白色、紅色、藍色、黃色 */}
                         <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginBottom: '6px' }}>
                             {colorTypes.slice(0, 4).map(color => {
@@ -414,13 +484,13 @@ function MinaRoom({
                                             cursor: 'pointer',
                                             transition: 'all 0.2s ease',
                                             userSelect: 'none',
-                                            minWidth: '35px',
+                                            minWidth: `${currentConfig.colorButtonSize}px`,
                                             textAlign: 'center'
                                         }}
                                     >
                                         <div style={{
-                                            width: '16px',
-                                            height: '16px',
+                                            width: `${currentConfig.colorIconSize}px`,
+                                            height: `${currentConfig.colorIconSize}px`,
                                             backgroundColor: color.color,
                                             border: color.id === 'TRANSPARENT' ? '2px dashed #999' : `1px solid ${color.borderColor}`,
                                             borderRadius: '2px',
@@ -428,7 +498,7 @@ function MinaRoom({
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            fontSize: '8px',
+                                            fontSize: currentConfig.colorTextSize,
                                             fontWeight: 'bold',
                                             color: color.borderColor,
                                             position: 'relative'
@@ -448,7 +518,7 @@ function MinaRoom({
                                             ) : '■'}
                                         </div>
                                         <span style={{
-                                            fontSize: '8px',
+                                            fontSize: currentConfig.colorTextSize,
                                             fontWeight: 'bold',
                                             color: isSelected ? '#4f8cff' : '#333'
                                         }}>
@@ -458,7 +528,7 @@ function MinaRoom({
                                 );
                             })}
                         </div>
-                        
+
                         {/* 第二排：黑色、透明 */}
                         <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
                             {colorTypes.slice(4).map(color => {
@@ -475,13 +545,13 @@ function MinaRoom({
                                             cursor: 'pointer',
                                             transition: 'all 0.2s ease',
                                             userSelect: 'none',
-                                            minWidth: '35px',
+                                            minWidth: `${currentConfig.colorButtonSize}px`,
                                             textAlign: 'center'
                                         }}
                                     >
                                         <div style={{
-                                            width: '16px',
-                                            height: '16px',
+                                            width: `${currentConfig.colorIconSize}px`,
+                                            height: `${currentConfig.colorIconSize}px`,
                                             backgroundColor: color.color,
                                             border: color.id === 'TRANSPARENT' ? '2px dashed #999' : `1px solid ${color.borderColor}`,
                                             borderRadius: '2px',
@@ -489,7 +559,7 @@ function MinaRoom({
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            fontSize: '8px',
+                                            fontSize: currentConfig.colorTextSize,
                                             fontWeight: 'bold',
                                             color: color.borderColor,
                                             position: 'relative'
@@ -509,7 +579,7 @@ function MinaRoom({
                                             ) : '■'}
                                         </div>
                                         <span style={{
-                                            fontSize: '8px',
+                                            fontSize: currentConfig.colorTextSize,
                                             fontWeight: 'bold',
                                             color: isSelected ? '#4f8cff' : '#333'
                                         }}>
@@ -520,13 +590,13 @@ function MinaRoom({
                             })}
                         </div>
                     </div>
-                    
+
                     {/* 形狀選擇區域 */}
                     <div style={{ marginBottom: '10px' }}>
                         <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#666', textAlign: 'center' }}>
                             形狀：
                         </div>
-                        
+
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'flex-start' }}>
                             {/* 左邊：實心 */}
                             <div style={{ display: 'flex', gap: '4px' }}>
@@ -544,7 +614,7 @@ function MinaRoom({
                                                 cursor: 'pointer',
                                                 transition: 'all 0.2s ease',
                                                 userSelect: 'none',
-                                                minWidth: '35px',
+                                                minWidth: `${currentConfig.colorButtonSize}px`,
                                                 textAlign: 'center'
                                             }}
                                         >
@@ -565,7 +635,7 @@ function MinaRoom({
                                                 ■
                                             </div>
                                             <span style={{
-                                                fontSize: '8px',
+                                                fontSize: currentConfig.colorTextSize,
                                                 fontWeight: 'bold',
                                                 color: isSelected ? '#4f8cff' : '#333'
                                             }}>
@@ -575,7 +645,7 @@ function MinaRoom({
                                     );
                                 })}
                             </div>
-                            
+
                             {/* 右邊：2×2 三角形網格 */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                 {/* 上排：左上、右上 */}
@@ -594,7 +664,7 @@ function MinaRoom({
                                                     cursor: 'pointer',
                                                     transition: 'all 0.2s ease',
                                                     userSelect: 'none',
-                                                    minWidth: '35px',
+                                                    minWidth: `${currentConfig.colorButtonSize}px`,
                                                     textAlign: 'center'
                                                 }}
                                             >
@@ -608,14 +678,14 @@ function MinaRoom({
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
-                                                    fontSize: '8px',
+                                                    fontSize: currentConfig.colorTextSize,
                                                     fontWeight: 'bold',
                                                     color: 'white'
                                                 }}>
                                                     {shape.type === 'up-left' ? '◢' : '◣'}
                                                 </div>
                                                 <span style={{
-                                                    fontSize: '8px',
+                                                    fontSize: currentConfig.colorTextSize,
                                                     fontWeight: 'bold',
                                                     color: isSelected ? '#4f8cff' : '#333'
                                                 }}>
@@ -625,7 +695,7 @@ function MinaRoom({
                                         );
                                     })}
                                 </div>
-                                
+
                                 {/* 下排：左下、右下 */}
                                 <div style={{ display: 'flex', gap: '4px' }}>
                                     {shapeTypes.slice(3, 5).map(shape => {
@@ -642,7 +712,7 @@ function MinaRoom({
                                                     cursor: 'pointer',
                                                     transition: 'all 0.2s ease',
                                                     userSelect: 'none',
-                                                    minWidth: '35px',
+                                                    minWidth: `${currentConfig.colorButtonSize}px`,
                                                     textAlign: 'center'
                                                 }}
                                             >
@@ -656,14 +726,14 @@ function MinaRoom({
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
-                                                    fontSize: '8px',
+                                                    fontSize: currentConfig.colorTextSize,
                                                     fontWeight: 'bold',
                                                     color: 'white'
                                                 }}>
                                                     {shape.type === 'down-left' ? '◥' : '◤'}
                                                 </div>
                                                 <span style={{
-                                                    fontSize: '8px',
+                                                    fontSize: currentConfig.colorTextSize,
                                                     fontWeight: 'bold',
                                                     color: isSelected ? '#4f8cff' : '#333'
                                                 }}>
@@ -676,7 +746,7 @@ function MinaRoom({
                             </div>
                         </div>
                     </div>
-                    
+
                     {/* 操作按鈕 */}
                     <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
                         <button
