@@ -1,713 +1,568 @@
 import React, { useState, useEffect } from "react";
+import { ResponsiveDigitDisplay } from "./layouts";
+import { ComparisonSymbols } from "./model";
 
-export default function DigitCodeGrid({ 
+export default function DigitCodeGrid({
   gameData,
   userSelections = [],
-  onUserSelection
+  onUserSelection,
+  list = []
 }) {
-  const [selectedSegments, setSelectedSegments] = useState(userSelections);
+  const [selectedSegments, setSelectedSegments] = useState({});
+  const isMobile = window.innerWidth <= 768;
 
   // 當 userSelections 改變時更新 selectedSegments
   useEffect(() => {
     setSelectedSegments(userSelections);
   }, [userSelections]);
 
-  // 處理段按鈕點擊 - 支持三種狀態：0(白色), 1(黑色), -1(紅色X)
+  // 處理偶數奇數檢查 - 根據 list 中 type = 3 的記錄
+  const getEvenOddCheck = (digit) => {
+    if (!list || !Array.isArray(list)) return null;
+
+    const evenOddRecord = list.find(item =>
+      item.type === 3 &&
+      item.in &&
+      item.in.toString() === digit
+    );
+
+    if (!evenOddRecord) return null;
+
+    const result = evenOddRecord.out;
+    if (result.includes('偶數')) return 'even';
+    if (result.includes('奇數')) return 'odd';
+
+    return null;
+  };
+
+  // 處理相鄰位置比較 - 根據 list 中 type = 2 的記錄
+  const getAdjacentComparison = (digit1, digit2) => {
+    if (!list || !Array.isArray(list)) return null;
+
+    const comparisonRecord = list.find(item =>
+      item.type === 2 &&
+      item.in &&
+      item.in.includes(digit1) &&
+      item.in.includes(digit2)
+    );
+
+    if (!comparisonRecord) return null;
+
+    const result = comparisonRecord.out;
+    if (result.includes('>')) return '>';
+    if (result.includes('<')) return '<';
+    if (result.includes('=')) return '=';
+
+    return null;
+  };
+
+  // 渲染偶數奇數標記
+  const renderEvenOddMark = (type, size = 12) => {
+    const iconSize = size;
+    const color = "#e74c3c";
+
+    switch (type) {
+      case 'even':
+        return (
+          <svg width={iconSize} height={iconSize} viewBox="0 0 16 16">
+            <circle cx="6" cy="8" r="1.5" fill={color} />
+            <circle cx="10" cy="8" r="1.5" fill={color} />
+          </svg>
+        );
+      case 'odd':
+        return (
+          <svg width={iconSize} height={iconSize} viewBox="0 0 16 16">
+            <circle cx="8" cy="8" r="1.5" fill={color} />
+          </svg>
+        );
+      default:
+        return null;
+    }
+  };
+
+  // 渲染比較符號圖形
+  const renderComparisonIcon = (type, size = 16, isVertical = false) => {
+    const iconSize = size;
+    const strokeWidth = 2;
+    const color = "#e74c3c";
+
+    // 基礎箭頭 SVG
+    const getArrowSVG = (path, rotation = 0) => (
+      <svg width={iconSize} height={iconSize} viewBox="0 0 16 16" style={{ transform: `rotate(${rotation}deg)` }}>
+        <path d={path} stroke={color} strokeWidth={strokeWidth} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+
+    switch (type) {
+      case '>':
+        if (isVertical) {
+          // 垂直時：> 旋轉 90 度變成向下箭頭
+          return getArrowSVG("M4 4 L12 8 L4 12", 90);
+        } else {
+          // 水平時：正常的 > 箭頭
+          return getArrowSVG("M4 4 L12 8 L4 12");
+        }
+      case '<':
+        if (isVertical) {
+          // 垂直時：< 旋轉 90 度變成向上箭頭
+          return getArrowSVG("M12 4 L4 8 L12 12", 90);
+        } else {
+          // 水平時：正常的 < 箭頭
+          return getArrowSVG("M12 4 L4 8 L12 12");
+        }
+      case '=':
+        if (isVertical) {
+          // 垂直時：= 旋轉 90 度
+          return getArrowSVG("M6 4 L6 12 M10 4 L10 12", 90);
+        } else {
+          // 水平時：正常的 = 符號
+          return getArrowSVG("M4 6 L12 6 M4 10 L12 10");
+        }
+      default:
+        return null;
+    }
+  };
+
+  // 處理段按鈕點擊 - 支持三種狀態：0(白色), 1(綠色), -1(紅色)
   const handleSegmentClick = (segment) => {
     const currentState = selectedSegments[segment] || 0;
     let newState;
-    
-    // 循環切換狀態：0 -> 1 -> -1 -> 0
-    if (currentState === 0) {
-      newState = 1; // 白色 -> 黑色
-    } else if (currentState === 1) {
-      newState = -1; // 黑色 -> 紅色X
-    } else {
-      newState = 0; // 紅色X -> 白色
-    }
-    
+
+    // 循環：0 -> 1 -> -1 -> 0
+    if (currentState === 0) newState = 1;
+    else if (currentState === 1) newState = -1;
+    else newState = 0;
+
     const newSelections = { ...selectedSegments, [segment]: newState };
     setSelectedSegments(newSelections);
-    
-    // 通知父組件更新記錄
-    if (onUserSelection) {
-      onUserSelection(newSelections);
-    }
+    if (onUserSelection) onUserSelection(newSelections);
   };
 
-  // 數位顯示的段定義 (a-g)
-  const digitSegments = {
-    0: { a: true, b: true, c: true, d: true, e: true, f: true, g: false },
-    1: { a: false, b: true, c: true, d: false, e: false, f: false, g: false },
-    2: { a: true, b: true, c: false, d: true, e: true, f: false, g: true },
-    3: { a: true, b: true, c: true, d: true, e: false, f: false, g: true },
-    4: { a: false, b: true, c: true, d: false, e: false, f: true, g: true },
-    5: { a: true, b: false, c: true, d: true, e: false, f: true, g: true },
-    6: { a: true, b: false, c: true, d: true, e: true, f: true, g: true },
-    7: { a: true, b: true, c: true, d: false, e: false, f: false, g: false },
-    8: { a: true, b: true, c: true, d: true, e: true, f: true, g: true },
-    9: { a: true, b: true, c: true, d: true, e: false, f: true, g: true }
+  // 處理數字點擊
+  const handleNumberClick = (key, value) => {
+    const newSelections = { ...selectedSegments, [key]: value };
+    setSelectedSegments(newSelections);
+    if (onUserSelection) onUserSelection(newSelections);
   };
 
-  // 單個數位顯示組件
-  const DigitDisplay = ({ number, size = "medium", showNumber = true }) => {
-    // 尺寸設定
-    const sizeConfig = {
-      small: { width: 20, height: 35, strokeWidth: 2 },
-      medium: { width: 30, height: 50, strokeWidth: 3 },
-      large: { width: 40, height: 70, strokeWidth: 4 }
-    };
-
-    const config = sizeConfig[size] || sizeConfig.medium;
-    const segments = digitSegments[number] || { a: false, b: false, c: false, d: false, e: false, f: false, g: false };
-
-    // SVG 路徑定義
-    const segmentPaths = {
-      a: `M ${config.width * 0.1} ${config.height * 0.1} L ${config.width * 0.9} ${config.height * 0.1}`,
-      b: `M ${config.width * 0.9} ${config.height * 0.1} L ${config.width * 0.9} ${config.height * 0.45}`,
-      c: `M ${config.width * 0.9} ${config.height * 0.55} L ${config.width * 0.9} ${config.height * 0.9}`,
-      d: `M ${config.width * 0.1} ${config.height * 0.9} L ${config.width * 0.9} ${config.height * 0.9}`,
-      e: `M ${config.width * 0.1} ${config.height * 0.55} L ${config.width * 0.1} ${config.height * 0.9}`,
-      f: `M ${config.width * 0.1} ${config.height * 0.1} L ${config.width * 0.1} ${config.height * 0.45}`,
-      g: `M ${config.width * 0.1} ${config.height * 0.5} L ${config.width * 0.9} ${config.height * 0.5}`
-    };
-
-    return (
-      <div style={{ 
-        display: "inline-block", 
-        position: "relative",
-        margin: "2px"
+  return (
+    <div style={{ padding: "20px" }}>
+      {/* 0-9 數位顯示範例 */}
+      <div style={{
+        background: "#f8f9fa",
+        padding: "20px",
+        borderRadius: "12px",
+        marginBottom: "30px",
+        border: "2px solid #e9ecef"
       }}>
-        <svg 
-          width={config.width} 
-          height={config.height} 
-          viewBox={`0 0 ${config.width} ${config.height}`}
-          style={{ 
-            background: "#000", 
-            borderRadius: "4px",
-            padding: "2px"
-          }}
-        >
-          {/* 段 a */}
-          <path
-            d={segmentPaths.a}
-            stroke={segments.a ? "#00ff00" : "#333"}
-            strokeWidth={config.strokeWidth}
-            strokeLinecap="round"
-            fill="none"
-          />
-          {/* 段 b */}
-          <path
-            d={segmentPaths.b}
-            stroke={segments.b ? "#00ff00" : "#333"}
-            strokeWidth={config.strokeWidth}
-            strokeLinecap="round"
-            fill="none"
-          />
-          {/* 段 c */}
-          <path
-            d={segmentPaths.c}
-            stroke={segments.c ? "#00ff00" : "#333"}
-            strokeWidth={config.strokeWidth}
-            strokeLinecap="round"
-            fill="none"
-          />
-          {/* 段 d */}
-          <path
-            d={segmentPaths.d}
-            stroke={segments.d ? "#00ff00" : "#333"}
-            strokeWidth={config.strokeWidth}
-            strokeLinecap="round"
-            fill="none"
-          />
-          {/* 段 e */}
-          <path
-            d={segmentPaths.e}
-            stroke={segments.e ? "#00ff00" : "#333"}
-            strokeWidth={config.strokeWidth}
-            strokeLinecap="round"
-            fill="none"
-          />
-          {/* 段 f */}
-          <path
-            d={segmentPaths.f}
-            stroke={segments.f ? "#00ff00" : "#333"}
-            strokeWidth={config.strokeWidth}
-            strokeLinecap="round"
-            fill="none"
-          />
-          {/* 段 g */}
-          <path
-            d={segmentPaths.g}
-            stroke={segments.g ? "#00ff00" : "#333"}
-            strokeWidth={config.strokeWidth}
-            strokeLinecap="round"
-            fill="none"
-          />
-        </svg>
-        
-        {/* 顯示數字 */}
-        {showNumber && (
-          <div style={{
-            position: "absolute",
-            bottom: "-20px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            fontSize: "10px",
-            color: "#666",
-            fontWeight: "bold",
-            textAlign: "center",
-            width: "100%"
-          }}>
-            {number}
-          </div>
-        )}
+        <h3 style={{
+          margin: "0 0 15px 0",
+          color: "#495057",
+          fontSize: "16px",
+          fontWeight: "bold",
+          textAlign: "center"
+        }}>
+          數位顯示範例 (0-9)
+        </h3>
+        <DigitDisplayGrid />
       </div>
-    );
-  };
 
-  // 數位顯示網格組件
-  const DigitDisplayGrid = ({ numbers, size = "medium", showNumbers = true }) => {
-    // 檢測是否為手機模式
-    const isMobile = window.innerWidth <= 768;
-    
-    if (isMobile && numbers.length === 10) {
-      // 手機模式下分成兩行：0-4 和 5-9
-      return (
+      {/* 3x2 可點擊數位段網格 */}
+      <div style={{
+        position: "relative",
+        display: "grid",
+        gridTemplateColumns: "repeat(3, auto)",
+        gridTemplateRows: "repeat(2, auto)",
+        columnGap: isMobile ? "30px" : "40px",
+        rowGap: isMobile ? "12px" : "16px",
+        justifyContent: "center",
+        alignItems: "center",
+        maxWidth: isMobile ? "100%" : "800px",
+        margin: "0 auto"
+      }}>
+        {/* 行標籤 - A~I (上方，對齊到網格行) */}
+        {/* A B C - 第一列 */}
         <div style={{
+          position: "absolute",
+          top: isMobile ? "10px" : "0px",
+          left: "25%",
+          transform: "translateX(-50%)",
+          zIndex: 10,
+          pointerEvents: "none"
+        }}>
+          <span style={{
+            fontSize: isMobile ? "10px" : "12px",
+            fontWeight: "bold",
+            color: "#666",
+            wordSpacing: isMobile ? "2px" : "10px"
+          }}>A B C</span>
+        </div>
+        {/* D E F - 第二列 */}
+        <div style={{
+          position: "absolute",
+          top: isMobile ? "10px" : "0px",
+          left: "46%",
+          transform: "translateX(-50%)",
+          zIndex: 10,
+          pointerEvents: "none"
+        }}>
+          <span style={{
+            fontSize: isMobile ? "10px" : "12px",
+            fontWeight: "bold",
+            color: "#666",
+            wordSpacing: isMobile ? "2px" : "10px"
+          }}>D E F</span>
+        </div>
+        {/* G H I - 第三列 */}
+        <div style={{
+          position: "absolute",
+          top: isMobile ? "10px" : "0px",
+          left: "66%",
+          transform: "translateX(-50%)",
+          zIndex: 10,
+          pointerEvents: "none"
+        }}>
+          <span style={{
+            fontSize: isMobile ? "10px" : "12px",
+            fontWeight: "bold",
+            color: "#666",
+            wordSpacing: isMobile ? "2px" : "10px"
+          }}>G H I</span>
+        </div>
+
+        {/* 列標籤 - J~S (左側，對齊到網格列) */}
+        <div style={{
+          position: "absolute",
+          top: isMobile ? "60px" : "20px",
+          left: isMobile ? "0px" : "150px",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
-          gap: "8px",
-          padding: "10px",
-          background: "#f0f0f0",
-          borderRadius: "8px",
-          margin: "10px 0"
+          gap: isMobile ? "20px" : "70px",
+          zIndex: 10,
+          pointerEvents: "none"
         }}>
-          {/* 第一行：0-4 */}
           <div style={{
             display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "8px"
+            flexDirection: "column",
+            gap: isMobile ? "2px" : "5px",
+            alignItems: "flex-start",
+            textAlign: "left"
           }}>
-            {numbers.slice(0, 5).map((number, index) => (
-              <DigitDisplay 
-                key={index} 
-                number={number} 
-                size={size} 
-                showNumber={showNumbers}
-              />
-            ))}
+            <span style={{
+              fontSize: isMobile ? "10px" : "12px",
+              fontWeight: "bold",
+              color: "#666"
+            }}>J</span>
+            <span style={{
+              fontSize: isMobile ? "10px" : "12px",
+              fontWeight: "bold",
+              color: "#666"
+            }}>K</span>
+            <span style={{
+              fontSize: isMobile ? "10px" : "12px",
+              fontWeight: "bold",
+              color: "#666"
+            }}>L</span>
+            <span style={{
+              fontSize: isMobile ? "10px" : "12px",
+              fontWeight: "bold",
+              color: "#666"
+            }}>M</span>
+            <span style={{
+              fontSize: isMobile ? "10px" : "12px",
+              fontWeight: "bold",
+              color: "#666"
+            }}>N</span>
           </div>
-          {/* 第二行：5-9 */}
           <div style={{
             display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "8px"
+            flexDirection: "column",
+            gap: isMobile ? "2px" : "5px",
+            alignItems: "flex-start",
+            textAlign: "left"
           }}>
-            {numbers.slice(5, 10).map((number, index) => (
-              <DigitDisplay 
-                key={index + 5} 
-                number={number} 
-                size={size} 
-                showNumber={showNumbers}
-              />
-            ))}
+            <span style={{
+              fontSize: isMobile ? "10px" : "12px",
+              fontWeight: "bold",
+              color: "#666"
+            }}>O</span>
+            <span style={{
+              fontSize: isMobile ? "10px" : "12px",
+              fontWeight: "bold",
+              color: "#666"
+            }}>P</span>
+            <span style={{
+              fontSize: isMobile ? "10px" : "12px",
+              fontWeight: "bold",
+              color: "#666"
+            }}>Q</span>
+            <span style={{
+              fontSize: isMobile ? "10px" : "12px",
+              fontWeight: "bold",
+              color: "#666"
+            }}>R</span>
+            <span style={{
+              fontSize: isMobile ? "10px" : "12px",
+              fontWeight: "bold",
+              color: "#666"
+            }}>S</span>
           </div>
         </div>
-      );
-    }
-    
-    // 桌面模式：單行顯示
+
+        {[ 
+          { index: 0, label: "T" },
+          { index: 1, label: "U" },
+          { index: 2, label: "V" },
+          { index: 3, label: "W" },
+          { index: 4, label: "X" },
+          { index: 5, label: "Y" }
+        ].map(({ index, label }) => {
+          const digitLabels = ["T", "U", "V", "W", "X", "Y"];
+          const currentDigit = digitLabels[index];
+
+          // 檢查相鄰位置的比較
+          const rightComparison = index < 2 ? getAdjacentComparison(currentDigit, digitLabels[index + 1]) : null; // T-U, U-V
+          const bottomComparison = index < 3 ? getAdjacentComparison(currentDigit, digitLabels[index + 3]) : null; // T-W, U-X, V-Y (上下關係)
+          const rightComparisonBottom = index >= 3 && index < 5 ? getAdjacentComparison(currentDigit, digitLabels[index + 1]) : null; // W-X, X-Y
+          
+          // 檢查偶數奇數
+          const evenOddCheck = getEvenOddCheck(currentDigit);
+
+          return (
+            <ResponsiveDigitDisplay
+              key={index}
+              digitIndex={index}
+              label={label}
+              evenOddCheck={evenOddCheck}
+              selectedSegments={selectedSegments}
+              onSegmentClick={handleSegmentClick}
+              onNumberClick={handleNumberClick}
+              renderEvenOddMark={renderEvenOddMark}
+              rightComparison={rightComparison}
+              rightComparisonBottom={rightComparisonBottom}
+              bottomComparison={bottomComparison}
+              renderComparisonIcon={renderComparisonIcon}
+            />
+          );
+        })}
+
+        {/* 比較符號 - 使用模組化組件 */}
+        {[
+          { index: 0, label: "T" },
+          { index: 1, label: "U" },
+          { index: 2, label: "V" },
+          { index: 3, label: "W" },
+          { index: 4, label: "X" },
+          { index: 5, label: "Y" }
+        ].map(({ index, label }) => {
+          const digitLabels = ["T", "U", "V", "W", "X", "Y"];
+          const currentDigit = digitLabels[index];
+
+          // 檢查相鄰位置的比較
+          const rightComparison = index < 2 ? getAdjacentComparison(currentDigit, digitLabels[index + 1]) : null; // T-U, U-V
+          const bottomComparison = index < 3 ? getAdjacentComparison(currentDigit, digitLabels[index + 3]) : null; // T-W, U-X, V-Y (上下關係)
+          const rightComparisonBottom = index >= 3 && index < 5 ? getAdjacentComparison(currentDigit, digitLabels[index + 1]) : null; // W-X, X-Y
+
+          return (
+            <div key={`comparison-${index}`}>
+              {/* 右側比較符號 */}
+              <ComparisonSymbols
+                rightComparison={rightComparison}
+                rightComparisonBottom={rightComparisonBottom}
+                renderComparisonIcon={renderComparisonIcon}
+                isMobile={isMobile}
+                position="right"
+              />
+              
+              {/* 下方比較符號 */}
+              <ComparisonSymbols
+                bottomComparison={bottomComparison}
+                renderComparisonIcon={renderComparisonIcon}
+                isMobile={isMobile}
+                position="bottom"
+                columnIndex={index % 3} // 0,1,2 對應 T/U/V 欄，讓 T-W、U-X、V-Y 分別對齊
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// 數位顯示網格組件
+function DigitDisplayGrid() {
+  const isMobile = window.innerWidth <= 768;
+  const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const size = isMobile ? 20 : 24;
+
+  if (isMobile) {
+    // 手機版：分兩行顯示
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "center" }}>
+        {/* 第一行：0-4 */}
+        <div style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "8px"
+        }}>
+          {numbers.slice(0, 5).map((number, index) => (
+            <DigitDisplay
+              key={index}
+              number={number}
+              size={size}
+              showNumber={true}
+            />
+          ))}
+        </div>
+        {/* 第二行：5-9 */}
+        <div style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "8px"
+        }}>
+          {numbers.slice(5, 10).map((number, index) => (
+            <DigitDisplay
+              key={index + 5}
+              number={number}
+              size={size}
+              showNumber={true}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  } else {
+    // 桌面版：單行顯示
     return (
       <div style={{
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        gap: "8px",
-        padding: "10px",
-        background: "#f0f0f0",
-        borderRadius: "8px",
-        margin: "10px 0"
+        gap: "12px",
+        flexWrap: "wrap"
       }}>
         {numbers.map((number, index) => (
-          <DigitDisplay 
-            key={index} 
-            number={number} 
-            size={size} 
-            showNumber={showNumbers}
+          <DigitDisplay
+            key={index}
+            number={number}
+            size={size}
+            showNumber={true}
           />
         ))}
       </div>
     );
+  }
+}
+
+// 單個數位顯示組件
+function DigitDisplay({ number, size = 24, showNumber = false }) {
+  const config = {
+    width: size * 2.5,
+    height: size * 4,
+    strokeWidth: size * 0.1
   };
 
-  // 渲染可點擊的數位段顯示器 (6個數位段，3×2排列)
-  const renderClickableDigitDisplay = () => {
-    // 尺寸設定 - 加大尺寸方便用戶操作
-    const sizeConfig = {
-      large: { width: 60, height: 100, strokeWidth: 5 },
-      mobile: { width: 48, height: 80, strokeWidth: 4 }
-    };
-
-    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-    const config = isMobile ? sizeConfig.mobile : sizeConfig.large;
-
-    // SVG 路徑定義
-    const segmentPaths = {
-      a: `M ${config.width * 0.1} ${config.height * 0.1} L ${config.width * 0.9} ${config.height * 0.1}`,
-      b: `M ${config.width * 0.9} ${config.height * 0.1} L ${config.width * 0.9} ${config.height * 0.45}`,
-      c: `M ${config.width * 0.9} ${config.height * 0.55} L ${config.width * 0.9} ${config.height * 0.9}`,
-      d: `M ${config.width * 0.1} ${config.height * 0.9} L ${config.width * 0.9} ${config.height * 0.9}`,
-      e: `M ${config.width * 0.1} ${config.height * 0.55} L ${config.width * 0.1} ${config.height * 0.9}`,
-      f: `M ${config.width * 0.1} ${config.height * 0.1} L ${config.width * 0.1} ${config.height * 0.45}`,
-      g: `M ${config.width * 0.1} ${config.height * 0.5} L ${config.width * 0.9} ${config.height * 0.5}`
-    };
-
-    // 段的可點擊區域定義
-    const segmentClickAreas = {
-      a: { x: config.width * 0.1, y: config.height * 0.05, width: config.width * 0.8, height: config.height * 0.1 },
-      b: { x: config.width * 0.85, y: config.height * 0.1, width: config.width * 0.1, height: config.height * 0.4 },
-      c: { x: config.width * 0.85, y: config.height * 0.55, width: config.width * 0.1, height: config.height * 0.4 },
-      d: { x: config.width * 0.1, y: config.height * 0.85, width: config.width * 0.8, height: config.height * 0.1 },
-      e: { x: config.width * 0.05, y: config.height * 0.55, width: config.width * 0.1, height: config.height * 0.4 },
-      f: { x: config.width * 0.05, y: config.height * 0.1, width: config.width * 0.1, height: config.height * 0.4 },
-      g: { x: config.width * 0.1, y: config.height * 0.45, width: config.width * 0.8, height: config.height * 0.1 }
-    };
-
-    // 單個數位段顯示器
-    const SingleDigitDisplay = ({ digitIndex, label, isMobileView }) => {
-      // 獲取段狀態的函數
-      const getSegmentState = (segment) => {
-        return selectedSegments[`${segment}${digitIndex}`] || 0;
-      };
-
-      // 獲取數字狀態 (0: 無標記, -1: X)
-      const getNumState = (num) => {
-        return selectedSegments[`num${digitIndex}-${num}`] || 0;
-      };
-
-      // 切換數字狀態 (0 <-> -1)
-      const handleNumClick = (num) => {
-        const key = `num${digitIndex}-${num}`;
-        const current = selectedSegments[key] || 0;
-        const next = current === -1 ? 0 : -1;
-        const newSelections = { ...selectedSegments, [key]: next };
-        setSelectedSegments(newSelections);
-        if (onUserSelection) onUserSelection(newSelections);
-      };
-
-      // 獲取段顏色的函數
-      const getSegmentColor = (segment) => {
-        const state = getSegmentState(segment);
-        if (state === 1) return "#27ae60"; // 綠色 - 已標記
-        if (state === -1) return "#e74c3c"; // 紅色 - 一定不是
-        return "#ecf0f1"; // 淺灰色 - 未標記
-      };
-
-      return (
-        <div style={{ position: "relative", display: "inline-block" }}>
-          {/* 左上角位置標籤 */}
-          {label && (
-            <div
-              style={{
-                position: "absolute",
-                top: -8,
-                left: -8,
-                background: "rgba(0,0,0,0.7)",
-                color: "#fff",
-                fontSize: 10,
-                fontWeight: 700,
-                padding: "2px 6px",
-                borderRadius: 6,
-                zIndex: 20,
-                pointerEvents: "none"
-              }}
-            >
-              {label}
-            </div>
-          )}
-
-          <svg 
-            width={config.width} 
-            height={config.height} 
-            viewBox={`0 0 ${config.width} ${config.height}`}
-            style={{ 
-              background: "#000", 
-              borderRadius: "4px",
-              padding: "2px"
-            }}
-          >
-            {/* 段 a */}
-            <path
-              d={segmentPaths.a}
-              stroke={getSegmentColor('a')}
-              strokeWidth={config.strokeWidth}
-              strokeLinecap="round"
-              fill="none"
-            />
-            {/* 段 b */}
-            <path
-              d={segmentPaths.b}
-              stroke={getSegmentColor('b')}
-              strokeWidth={config.strokeWidth}
-              strokeLinecap="round"
-              fill="none"
-            />
-            {/* 段 c */}
-            <path
-              d={segmentPaths.c}
-              stroke={getSegmentColor('c')}
-              strokeWidth={config.strokeWidth}
-              strokeLinecap="round"
-              fill="none"
-            />
-            {/* 段 d */}
-            <path
-              d={segmentPaths.d}
-              stroke={getSegmentColor('d')}
-              strokeWidth={config.strokeWidth}
-              strokeLinecap="round"
-              fill="none"
-            />
-            {/* 段 e */}
-            <path
-              d={segmentPaths.e}
-              stroke={getSegmentColor('e')}
-              strokeWidth={config.strokeWidth}
-              strokeLinecap="round"
-              fill="none"
-            />
-            {/* 段 f */}
-            <path
-              d={segmentPaths.f}
-              stroke={getSegmentColor('f')}
-              strokeWidth={config.strokeWidth}
-              strokeLinecap="round"
-              fill="none"
-            />
-            {/* 段 g */}
-            <path
-              d={segmentPaths.g}
-              stroke={getSegmentColor('g')}
-              strokeWidth={config.strokeWidth}
-              strokeLinecap="round"
-              fill="none"
-            />
-          </svg>
-
-          {/* 0~9 標記 - 桌面在右側兩列直排，手機改在下方兩列直排 */}
-          {isMobileView ? (
-            <div style={{
-              marginTop: 6,
-              display: "flex",
-              flexDirection: "row",
-              gap: 6,
-              zIndex: 15
-            }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                {[0,2,4,6,8].map((n) => {
-                  const st = getNumState(n);
-                  return (
-                    <button
-                      key={`m-col-even-${n}`}
-                      onClick={() => handleNumClick(n)}
-                      title={`${n}：${st === -1 ? '排除' : '未排除'}`}
-                      style={{
-                        width: 22,
-                        height: 18,
-                        borderRadius: 4,
-                        border: st === -1 ? "1px solid #e74c3c" : "1px solid #cfd4da",
-                        background: st === -1 ? "#fdecea" : "#f8f9fa",
-                        color: st === -1 ? "#e74c3c" : "#495057",
-                        fontSize: 10,
-                        fontWeight: 700,
-                        lineHeight: "16px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        padding: 0
-                      }}
-                    >
-                      {st === -1 ? 'X' : n}
-                    </button>
-                  );
-                })}
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                {[1,3,5,7,9].map((n) => {
-                  const st = getNumState(n);
-                  return (
-                    <button
-                      key={`m-col-odd-${n}`}
-                      onClick={() => handleNumClick(n)}
-                      title={`${n}：${st === -1 ? '排除' : '未排除'}`}
-                      style={{
-                        width: 22,
-                        height: 18,
-                        borderRadius: 4,
-                        border: st === -1 ? "1px solid #e74c3c" : "1px solid #cfd4da",
-                        background: st === -1 ? "#fdecea" : "#f8f9fa",
-                        color: st === -1 ? "#e74c3c" : "#495057",
-                        fontSize: 10,
-                        fontWeight: 700,
-                        lineHeight: "16px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        padding: 0
-                      }}
-                    >
-                      {st === -1 ? 'X' : n}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ) : (
-            <div style={{
-              position: "absolute",
-              left: config.width + 8,
-              top: 0,
-              display: "flex",
-              flexDirection: "row",
-              gap: 6,
-              zIndex: 15
-            }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                {[0,2,4,6,8].map((n) => {
-                  const st = getNumState(n);
-                  return (
-                    <button
-                      key={`col-even-${n}`}
-                      onClick={() => handleNumClick(n)}
-                      title={`${n}：${st === -1 ? '排除' : '未排除'}`}
-                      style={{
-                        width: 22,
-                        height: 18,
-                        borderRadius: 4,
-                        border: st === -1 ? "1px solid #e74c3c" : "1px solid #cfd4da",
-                        background: st === -1 ? "#fdecea" : "#f8f9fa",
-                        color: st === -1 ? "#e74c3c" : "#495057",
-                        fontSize: 10,
-                        fontWeight: 700,
-                        lineHeight: "16px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        padding: 0
-                      }}
-                    >
-                      {st === -1 ? 'X' : n}
-                    </button>
-                  );
-                })}
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                {[1,3,5,7,9].map((n) => {
-                  const st = getNumState(n);
-                  return (
-                    <button
-                      key={`col-odd-${n}`}
-                      onClick={() => handleNumClick(n)}
-                      title={`${n}：${st === -1 ? '排除' : '未排除'}`}
-                      style={{
-                        width: 22,
-                        height: 18,
-                        borderRadius: 4,
-                        border: st === -1 ? "1px solid #e74c3c" : "1px solid #cfd4da",
-                        background: st === -1 ? "#fdecea" : "#f8f9fa",
-                        color: st === -1 ? "#e74c3c" : "#495057",
-                        fontSize: 10,
-                        fontWeight: 700,
-                        lineHeight: "16px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        padding: 0
-                      }}
-                    >
-                      {st === -1 ? 'X' : n}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* 可點擊的透明區域 */}
-          {Object.entries(segmentClickAreas).map(([segment, area]) => (
-            <div
-              key={`${segment}${digitIndex}`}
-              onClick={() => handleSegmentClick(`${segment}${digitIndex}`)}
-              style={{
-                position: "absolute",
-                left: area.x,
-                top: area.y,
-                width: area.width,
-                height: area.height,
-                cursor: "pointer",
-                background: "transparent",
-                zIndex: 10
-              }}
-              title={`點擊段 ${segment} (當前狀態: ${getSegmentState(segment) === 0 ? '白色' : getSegmentState(segment) === 1 ? '綠色' : '紅色'})`}
-            />
-          ))}
-        </div>
-      );
-    };
-
-    return (
-      <div style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "10px",
-        margin: "20px 0"
-      }}>
-        {/* 3×2 或 2×3 網格排列 - TUV / WXY */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gridTemplateRows: "repeat(2, 1fr)",
-          columnGap: isMobile ? 16 : 24,
-          rowGap: isMobile ? 12 : 16,
-          padding: "10px",
-          position: "relative"
-        }}>
-          {/* 上方的行標記 A~I - 對齊到網格 */}
-          <div style={{
-            position: "absolute",
-            top: isMobile ? "-8px" : "-6px",
-            left: isMobile ? "10px" : "20px",
-            right: isMobile ? "10px" : "0px",
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: isMobile ? "8px" : "10px",
-            fontSize: isMobile ? "9px" : "10px",
-            color: "#666",
-            fontWeight: "bold"
-          }}>
-            <span style={{ textAlign: isMobile ? "center" : "left", wordSpacing: isMobile ? "12px" : "16px" }}>A B C</span>
-            <span style={{ textAlign: isMobile ? "center" : "left", wordSpacing: isMobile ? "12px" : "16px" }}>D E F</span>
-            <span style={{ textAlign: isMobile ? "center" : "left", wordSpacing: isMobile ? "12px" : "16px" }}>G H I</span>
-          </div>
-          
-          {/* 左側的列標記 J~S - 分成上下兩組對齊兩排 */}
-          {/* 上排對應 J~N */}
-          <div style={{
-            position: "absolute",
-            left: "-25px",
-            top: "10px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-            fontSize: "10px",
-            color: "#666",
-            fontWeight: "bold"
-          }}>
-            {["J", "K", "L", "M", "N"].map((col, i) => (
-              <span key={i} style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%"
-              }}>{col}</span>
-            ))}
-          </div>
-          {/* 下排對應 O~S */}
-          <div style={{
-            position: "absolute",
-            left: "-25px",
-            top: "calc(50% + 10px)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-            fontSize: "10px",
-            color: "#666",
-            fontWeight: "bold"
-          }}>
-            {["O", "P", "Q", "R", "S"].map((col, i) => (
-              <span key={i} style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%"
-              }}>{col}</span>
-            ))}
-          </div>
-          
-          {[
-            { index: 0, label: "T" },
-            { index: 1, label: "U" },
-            { index: 2, label: "V" },
-            { index: 3, label: "W" },
-            { index: 4, label: "X" },
-            { index: 5, label: "Y" }
-          ].map(({ index, label }) => (
-            <div key={index} style={{ textAlign: "center", position: "relative", paddingRight: isMobile ? 0 : 60 }}>
-              <SingleDigitDisplay digitIndex={index} label={label} isMobileView={isMobile} />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+  const digitSegments = {
+    0: ['a', 'b', 'c', 'd', 'e', 'f'],
+    1: ['b', 'c'],
+    2: ['a', 'b', 'g', 'e', 'd'],
+    3: ['a', 'b', 'g', 'c', 'd'],
+    4: ['f', 'g', 'b', 'c'],
+    5: ['a', 'f', 'g', 'c', 'd'],
+    6: ['a', 'f', 'g', 'e', 'd', 'c'],
+    7: ['a', 'b', 'c'],
+    8: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+    9: ['a', 'b', 'c', 'd', 'f', 'g']
   };
+
+  const segmentPaths = {
+    a: { x: config.width * 0.1, y: config.height * 0.05, width: config.width * 0.8, height: config.height * 0.1 },
+    b: { x: config.width * 0.85, y: config.height * 0.1, width: config.width * 0.1, height: config.height * 0.4 },
+    c: { x: config.width * 0.85, y: config.height * 0.55, width: config.width * 0.1, height: config.height * 0.4 },
+    d: { x: config.width * 0.1, y: config.height * 0.9, width: config.width * 0.8, height: config.height * 0.1 },
+    e: { x: config.width * 0.05, y: config.height * 0.55, width: config.width * 0.1, height: config.height * 0.4 },
+    f: { x: config.width * 0.05, y: config.height * 0.1, width: config.width * 0.1, height: config.height * 0.4 },
+    g: { x: config.width * 0.1, y: config.height * 0.45, width: config.width * 0.8, height: config.height * 0.1 }
+  };
+
+  const activeSegments = digitSegments[number] || [];
 
   return (
-    <div>
-      {/* 數位顯示範例和可點擊數位段 - 合併在一起 */}
-      <div style={{
-        background: "#fff",
-        margin: "0 20px 20px 20px",
-        padding: "20px",
-        borderRadius: "12px",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
-      }}>
-        {/* 數位顯示範例 */}
-        <h3 style={{ margin: "0 0 15px 0", color: "#333", textAlign: "center" }}>數位顯示範例 (0-9)</h3>
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "30px" }}>
-          <DigitDisplayGrid numbers={[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]} size="medium" showNumbers={true} />
-        </div>
-        
-        {/* 分隔線 */}
+    <div style={{ position: "relative", display: "inline-block" }}>
+      <svg width={config.width} height={config.height}>
+        {/* 段 a */}
+        <path
+          d={`M${segmentPaths.a.x} ${segmentPaths.a.y} L${segmentPaths.a.x + segmentPaths.a.width} ${segmentPaths.a.y} L${segmentPaths.a.x + segmentPaths.a.width - 5} ${segmentPaths.a.y + segmentPaths.a.height} L${segmentPaths.a.x + 5} ${segmentPaths.a.y + segmentPaths.a.height} Z`}
+          stroke={activeSegments.includes('a') ? "#2c3e50" : "#bdc3c7"}
+          strokeWidth={config.strokeWidth}
+          strokeLinecap="round"
+          fill="none"
+        />
+        {/* 段 b */}
+        <path
+          d={`M${segmentPaths.b.x} ${segmentPaths.b.y} L${segmentPaths.b.x + segmentPaths.b.width} ${segmentPaths.b.y} L${segmentPaths.b.x + segmentPaths.b.width} ${segmentPaths.b.y + segmentPaths.b.height} L${segmentPaths.b.x} ${segmentPaths.b.y + segmentPaths.b.height - 5} Z`}
+          stroke={activeSegments.includes('b') ? "#2c3e50" : "#bdc3c7"}
+          strokeWidth={config.strokeWidth}
+          strokeLinecap="round"
+          fill="none"
+        />
+        {/* 段 c */}
+        <path
+          d={`M${segmentPaths.c.x} ${segmentPaths.c.y} L${segmentPaths.c.x + segmentPaths.c.width} ${segmentPaths.c.y} L${segmentPaths.c.x + segmentPaths.c.width} ${segmentPaths.c.y + segmentPaths.c.height} L${segmentPaths.c.x} ${segmentPaths.c.y + segmentPaths.c.height - 5} Z`}
+          stroke={activeSegments.includes('c') ? "#2c3e50" : "#bdc3c7"}
+          strokeWidth={config.strokeWidth}
+          strokeLinecap="round"
+          fill="none"
+        />
+        {/* 段 d */}
+        <path
+          d={`M${segmentPaths.d.x} ${segmentPaths.d.y} L${segmentPaths.d.x + segmentPaths.d.width} ${segmentPaths.d.y} L${segmentPaths.d.x + segmentPaths.d.width - 5} ${segmentPaths.d.y + segmentPaths.d.height} L${segmentPaths.d.x + 5} ${segmentPaths.d.y + segmentPaths.d.height} Z`}
+          stroke={activeSegments.includes('d') ? "#2c3e50" : "#bdc3c7"}
+          strokeWidth={config.strokeWidth}
+          strokeLinecap="round"
+          fill="none"
+        />
+        {/* 段 e */}
+        <path
+          d={`M${segmentPaths.e.x} ${segmentPaths.e.y} L${segmentPaths.e.x + segmentPaths.e.width} ${segmentPaths.e.y} L${segmentPaths.e.x + segmentPaths.e.width} ${segmentPaths.e.y + segmentPaths.e.height - 5} L${segmentPaths.e.x} ${segmentPaths.e.y + segmentPaths.e.height} Z`}
+          stroke={activeSegments.includes('e') ? "#2c3e50" : "#bdc3c7"}
+          strokeWidth={config.strokeWidth}
+          strokeLinecap="round"
+          fill="none"
+        />
+        {/* 段 f */}
+        <path
+          d={`M${segmentPaths.f.x} ${segmentPaths.f.y} L${segmentPaths.f.x + segmentPaths.f.width} ${segmentPaths.f.y} L${segmentPaths.f.x + segmentPaths.f.width} ${segmentPaths.f.y + segmentPaths.f.height - 5} L${segmentPaths.f.x} ${segmentPaths.f.y + segmentPaths.f.height} Z`}
+          stroke={activeSegments.includes('f') ? "#2c3e50" : "#bdc3c7"}
+          strokeWidth={config.strokeWidth}
+          strokeLinecap="round"
+          fill="none"
+        />
+        {/* 段 g */}
+        <path
+          d={`M${segmentPaths.g.x} ${segmentPaths.g.y} L${segmentPaths.g.x + segmentPaths.g.width} ${segmentPaths.g.y} L${segmentPaths.g.x + segmentPaths.g.width - 5} ${segmentPaths.g.y + segmentPaths.g.height} L${segmentPaths.g.x + 5} ${segmentPaths.g.y + segmentPaths.g.height} Z`}
+          stroke={activeSegments.includes('g') ? "#2c3e50" : "#bdc3c7"}
+          strokeWidth={config.strokeWidth}
+          strokeLinecap="round"
+          fill="none"
+        />
+      </svg>
+      {showNumber && (
         <div style={{
-          height: "1px",
-          background: "#e0e0e0",
-          margin: "20px 0"
-        }}></div>
-        
-        {/* 可點擊的數位段顯示器 */}
-        {renderClickableDigitDisplay()}
-      </div>
-
-
-      {/* 數位顯示預覽 */}
-      {gameData?.myCode && gameData.myCode.length > 0 && (
-        <div style={{
-          background: "#fff",
-          margin: "0 20px 20px 20px",
-          padding: "20px",
-          borderRadius: "12px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+          position: "absolute",
+          bottom: -20,
+          left: "50%",
+          transform: "translateX(-50%)",
+          fontSize: size * 0.6,
+          fontWeight: "bold",
+          color: "#666"
         }}>
-          <h4 style={{ margin: "0 0 15px 0", color: "#333", textAlign: "center" }}>數位顯示預覽</h4>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <DigitDisplayGrid 
-              numbers={gameData.myCode} 
-              size="medium" 
-              showNumbers={true} 
-            />
-          </div>
+          {number}
         </div>
       )}
-
     </div>
   );
 }

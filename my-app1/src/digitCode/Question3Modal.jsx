@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { getApiUrl } from '../config/api';
 
-export default function Question2Modal({ isOpen, onClose, onSubmit, gameData }) {
-  const [selectedPair, setSelectedPair] = useState("");
+export default function Question3Modal({ isOpen, onClose, onSubmit, gameData }) {
+  const [selectedDigit, setSelectedDigit] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   console.log('gameData', gameData);
+  
   // 解析遊戲答案數據
   const parseGameData = (data) => {
     if (!data || !Array.isArray(data)) return null;
@@ -22,69 +23,60 @@ export default function Question2Modal({ isOpen, onClose, onSubmit, gameData }) 
     };
   };
 
-  // 相鄰位置的選擇選項
-  const adjacentPairs = [
-    { value: "T-U", label: "T - U (第1個與第2個數字)", digit1: "T", digit2: "U" },
-    { value: "U-V", label: "U - V (第2個與第3個數字)", digit1: "U", digit2: "V" },
-    { value: "W-X", label: "W - X (第4個與第5個數字)", digit1: "W", digit2: "X" },
-    { value: "X-Y", label: "X - Y (第5個與第6個數字)", digit1: "X", digit2: "Y" },
-    { value: "T-W", label: "T - W (第1個與第4個數字)", digit1: "T", digit2: "W" },
-    { value: "U-X", label: "U - X (第2個與第5個數字)", digit1: "U", digit2: "X" },
-    { value: "V-Y", label: "V - Y (第3個與第6個數字)", digit1: "V", digit2: "Y" },
+  // 數字位置選擇選項
+  const digitPositions = [
+    { value: "T", label: "T (第1個數字)", position: 1 },
+    { value: "U", label: "U (第2個數字)", position: 2 },
+    { value: "V", label: "V (第3個數字)", position: 3 },
+    { value: "W", label: "W (第4個數字)", position: 4 },
+    { value: "X", label: "X (第5個數字)", position: 5 },
+    { value: "Y", label: "Y (第6個數字)", position: 6 },
   ];
 
-  // 比較兩個數字的大小關係
-  const compareDigits = (digit1, digit2, answerData) => {
+  // 判斷數字是偶數還是奇數
+  const checkEvenOdd = (digit, answerData) => {
     const parsedData = parseGameData(answerData);
     if (!parsedData) return null;
 
-    const value1 = parsedData[digit1];
-    const value2 = parsedData[digit2];
-
-    if (value1 > value2) {
-      return `${digit1} > ${digit2}`;
-    } else if (value1 < value2) {
-      return `${digit1} < ${digit2}`;
-    } else {
-      return `${digit1} = ${digit2}`;
-    }
+    const value = parsedData[digit];
+    return value % 2 === 0 ? "偶數" : "奇數";
   };
 
   // 處理提交
   const handleSubmit = async () => {
-    if (!selectedPair) {
-      alert("請選擇要比較的相鄰數字位置");
+    if (!selectedDigit) {
+      alert("請選擇要檢查的數字位置");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // 找到選擇的配對
-      const selectedPairData = adjacentPairs.find(pair => pair.value === selectedPair);
+      // 找到選擇的位置
+      const selectedDigitData = digitPositions.find(pos => pos.value === selectedDigit);
 
-      // 計算比較結果
-      let comparisonResult = null;
+      // 計算偶數/奇數結果
+      let evenOddResult = null;
       if (gameData.answerData) {
-        comparisonResult = compareDigits(
-          selectedPairData.digit1,
-          selectedPairData.digit2,
+        evenOddResult = checkEvenOdd(
+          selectedDigitData.value,
           gameData.answerData
         );
       }
-
-      // 準備API請求數據 - 參考 PositionSelector 的格式
+      console.log('evenOddResult', selectedDigitData);
+      // 準備API請求數據 - 參考 Question2Modal 的格式
       const requestBody = {
         room: gameData.room,
         round: gameData.currentRound,
         data: {
-          type: 2,
-          in: selectedPairData.digit1 + "-" + selectedPairData.digit2,
-          out: comparisonResult
+          type: 3, // 問題類型3
+          result: evenOddResult || "未知",
+          in: selectedDigitData.value,
+          out: evenOddResult || "未知"
         }
       };
 
-      // 調用API - 參考 PositionSelector 的方式
+      // 調用API - 參考 Question2Modal 的方式
       const apiUrl = getApiUrl('cloudflare_room_url');
       const response = await fetch(apiUrl + requestBody.room, {
         method: 'POST',
@@ -109,7 +101,7 @@ export default function Question2Modal({ isOpen, onClose, onSubmit, gameData }) 
       }
 
     } catch (error) {
-      console.error('提交問題2時發生錯誤:', error);
+      console.error('提交問題3時發生錯誤:', error);
       alert('提交失敗，請重試');
     } finally {
       setIsSubmitting(false);
@@ -118,7 +110,7 @@ export default function Question2Modal({ isOpen, onClose, onSubmit, gameData }) 
 
   // 處理取消
   const handleCancel = () => {
-    setSelectedPair("");
+    setSelectedDigit("");
     onClose();
   };
 
@@ -155,7 +147,7 @@ export default function Question2Modal({ isOpen, onClose, onSubmit, gameData }) 
           fontSize: "18px",
           fontWeight: "bold"
         }}>
-          問題2: 相鄰數字的大小關係
+          問題3: 數字是偶數還是奇數
         </h3>
 
         {/* 說明文字 */}
@@ -168,10 +160,10 @@ export default function Question2Modal({ isOpen, onClose, onSubmit, gameData }) 
           color: "#666",
           lineHeight: "1.5"
         }}>
-          請選擇要比較的相鄰數字位置，系統會告訴您這兩個數字的大小關係。
+          請選擇要檢查的數字位置，系統會告訴您該數字是偶數還是奇數。
         </div>
 
-        {/* 相鄰位置選擇 */}
+        {/* 數字位置選擇 */}
         <div style={{ marginBottom: "24px" }}>
           <label style={{
             display: "block",
@@ -180,45 +172,45 @@ export default function Question2Modal({ isOpen, onClose, onSubmit, gameData }) 
             fontWeight: "bold",
             color: "#333"
           }}>
-            選擇要比較的相鄰數字位置:
+            選擇要檢查的數字位置:
           </label>
 
           {/* 按鈕選擇區域 */}
           <div style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
             gap: "10px"
           }}>
-            {adjacentPairs.map(pair => (
+            {digitPositions.map(position => (
               <button
-                key={pair.value}
-                onClick={() => setSelectedPair(pair.value)}
+                key={position.value}
+                onClick={() => setSelectedDigit(position.value)}
                 style={{
                   padding: "12px 16px",
                   fontSize: "14px",
                   fontWeight: "bold",
-                  background: selectedPair === pair.value ? "#4CAF50" : "#f0f0f0",
-                  color: selectedPair === pair.value ? "white" : "#333",
-                  border: selectedPair === pair.value ? "2px solid #4CAF50" : "2px solid #ddd",
+                  background: selectedDigit === position.value ? "#4CAF50" : "#f0f0f0",
+                  color: selectedDigit === position.value ? "white" : "#333",
+                  border: selectedDigit === position.value ? "2px solid #4CAF50" : "2px solid #ddd",
                   borderRadius: "8px",
                   cursor: "pointer",
                   transition: "all 0.3s ease",
                   textAlign: "left"
                 }}
                 onMouseOver={(e) => {
-                  if (selectedPair !== pair.value) {
+                  if (selectedDigit !== position.value) {
                     e.target.style.background = "#e0e0e0";
                     e.target.style.borderColor = "#bbb";
                   }
                 }}
                 onMouseOut={(e) => {
-                  if (selectedPair !== pair.value) {
+                  if (selectedDigit !== position.value) {
                     e.target.style.background = "#f0f0f0";
                     e.target.style.borderColor = "#ddd";
                   }
                 }}
               >
-                {pair.label}
+                {position.label}
               </button>
             ))}
           </div>
@@ -251,16 +243,16 @@ export default function Question2Modal({ isOpen, onClose, onSubmit, gameData }) 
 
           <button
             onClick={handleSubmit}
-            disabled={isSubmitting || !selectedPair}
+            disabled={isSubmitting || !selectedDigit}
             style={{
               padding: "10px 20px",
               fontSize: "14px",
               fontWeight: "bold",
-              background: isSubmitting || !selectedPair ? "#ccc" : "#4CAF50",
+              background: isSubmitting || !selectedDigit ? "#ccc" : "#4CAF50",
               color: "white",
               border: "none",
               borderRadius: "6px",
-              cursor: isSubmitting || !selectedPair ? "not-allowed" : "pointer",
+              cursor: isSubmitting || !selectedDigit ? "not-allowed" : "pointer",
               transition: "all 0.3s ease"
             }}
           >
@@ -269,7 +261,7 @@ export default function Question2Modal({ isOpen, onClose, onSubmit, gameData }) 
         </div>
 
         {/* 選擇預覽 */}
-        {selectedPair && (
+        {selectedDigit && (
           <div style={{
             marginTop: "16px",
             padding: "12px",
@@ -279,7 +271,7 @@ export default function Question2Modal({ isOpen, onClose, onSubmit, gameData }) 
             color: "#2e7d32",
             textAlign: "center"
           }}>
-            將比較 {selectedPair} 的大小關係
+            將檢查 {selectedDigit} 位置的數字是偶數還是奇數
           </div>
         )}
       </div>

@@ -4,6 +4,7 @@ import DigitCodeGrid from "./DigitCodeGrid";
 import DigitCodeList from "./DigitCodeList";
 import { useDigitCodeData } from "./useDigitCodeData";
 import Question2Modal from "./Question2Modal";
+import Question3Modal from "./Question3Modal";
 
 export default function DigitCodeRoom() {
   const location = useLocation();
@@ -24,6 +25,9 @@ export default function DigitCodeRoom() {
 
   // 問題2彈跳視窗狀態
   const [showQuestion2Modal, setShowQuestion2Modal] = useState(false);
+  
+  // 問題3彈跳視窗狀態
+  const [showQuestion3Modal, setShowQuestion3Modal] = useState(false);
 
   // 從 API 數據獲取遊戲狀態
   const gameData = {
@@ -50,6 +54,16 @@ export default function DigitCodeRoom() {
     }
   };
 
+  // 處理問題3提交
+  const handleQuestion3Submit = (questionData) => {
+    console.log('問題3提交結果:', questionData);
+    
+    // 如果標記需要更新畫面，則重新獲取數據
+    if (questionData.needsRefresh) {
+      refresh();
+    }
+  };
+
   useEffect(() => {
     if (room) {
       document.title = `Digit Code (房間號碼 ${room})`;
@@ -68,6 +82,7 @@ export default function DigitCodeRoom() {
         gameData={gameData}
         userSelections={userSelections}
         onUserSelection={handleUserSelection}
+        list={data?.list || []}
       />
 
       {/* 重新整理按鈕 */}
@@ -146,7 +161,7 @@ export default function DigitCodeRoom() {
             </button>
             
             <button
-              onClick={() => {/* TODO: 處理問題3 */}}
+              onClick={() => setShowQuestion3Modal(true)}
               style={{
                 padding: "12px 20px",
                 fontSize: "16px",
@@ -245,6 +260,14 @@ export default function DigitCodeRoom() {
         isOpen={showQuestion2Modal}
         onClose={() => setShowQuestion2Modal(false)}
         onSubmit={handleQuestion2Submit}
+        gameData={gameData}
+      />
+
+      {/* 問題3彈跳視窗 */}
+      <Question3Modal
+        isOpen={showQuestion3Modal}
+        onClose={() => setShowQuestion3Modal(false)}
+        onSubmit={handleQuestion3Submit}
         gameData={gameData}
       />
     </div>
