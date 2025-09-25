@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { getApiUrl } from '../../config/api';
 
-const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
+const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) => {
     const [selectedDirection, setSelectedDirection] = useState(null);
     // 定義四列選項及其對應的進入座標
     const directionOptions = [
@@ -39,6 +39,30 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
         }))
     ];
 
+    // 過濾已詢問過的 in 和 out
+    const getUsedInOut = () => {
+        const usedIn = new Set();
+        const usedOut = new Set();
+        list.forEach(item => {
+            if (item.in) {
+                usedIn.add(item.in);
+            }
+            if (item.out) {
+                usedOut.add(item.out);
+            }
+        });
+        return { usedIn, usedOut };
+    };
+
+    const { usedIn, usedOut } = getUsedInOut();
+
+    // 檢查選項是否被禁用
+    const isOptionDisabled = (option) => {
+        // 檢查該選項的標籤是否在已使用的 in 或 out 中
+        // 所有選項都可能是 in 或 out，所以需要檢查兩者
+        return usedIn.has(option.label) || usedOut.has(option.label);
+    };
+
     // 將 NOTE3 轉換為顏色名稱
     const getColorName = (note3) => {
         switch (note3) {
@@ -50,7 +74,6 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
             default: return '透明';
         }
     };
-
     // 根據所有遇到的顏色計算最終顏色
     const calculateFinalColor = (encounteredColors) => {
         // 過濾掉透明和空值
@@ -389,21 +412,23 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                         {Array.from({ length: 10 }, (_, col) => {
                             const option = directionOptions.find(opt => opt.side === 'top' && opt.index === col);
                             const isSelected = selectedDirection && selectedDirection.side === 'top' && selectedDirection.index === col;
+                            const isDisabled = isOptionDisabled(option);
                             return (
                                 <div
                                     key={`top-${col}`}
-                                    onClick={() => setSelectedDirection(option)}
+                                    onClick={() => !isDisabled && setSelectedDirection(option)}
                                     style={{
                                         textAlign: 'center',
                                         padding: '8px 4px',
                                         border: '2px solid #ccc',
                                         borderRadius: '6px',
-                                        backgroundColor: isSelected ? '#4f8cff' : '#f8f9fa',
-                                        color: isSelected ? 'white' : '#333',
-                                        cursor: 'pointer',
+                                        backgroundColor: isDisabled ? '#f0f0f0' : (isSelected ? '#4f8cff' : '#f8f9fa'),
+                                        color: isDisabled ? '#999' : (isSelected ? 'white' : '#333'),
+                                        cursor: isDisabled ? 'not-allowed' : 'pointer',
                                         fontWeight: 'bold',
                                         userSelect: 'none',
-                                        transition: 'all 0.2s ease'
+                                        transition: 'all 0.2s ease',
+                                        opacity: isDisabled ? 0.5 : 1
                                     }}
                                 >
                                     {col + 1}
@@ -420,21 +445,23 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                         {Array.from({ length: 10 }, (_, col) => {
                             const option = directionOptions.find(opt => opt.side === 'bottom' && opt.index === col);
                             const isSelected = selectedDirection && selectedDirection.side === 'bottom' && selectedDirection.index === col;
+                            const isDisabled = isOptionDisabled(option);
                             return (
                                 <div
                                     key={`right-${col}`}
-                                    onClick={() => setSelectedDirection(option)}
+                                    onClick={() => !isDisabled && setSelectedDirection(option)}
                                     style={{
                                         textAlign: 'center',
                                         padding: '8px 4px',
                                         border: '2px solid #ccc',
                                         borderRadius: '6px',
-                                        backgroundColor: isSelected ? '#4f8cff' : '#f8f9fa',
-                                        color: isSelected ? 'white' : '#333',
-                                        cursor: 'pointer',
+                                        backgroundColor: isDisabled ? '#f0f0f0' : (isSelected ? '#4f8cff' : '#f8f9fa'),
+                                        color: isDisabled ? '#999' : (isSelected ? 'white' : '#333'),
+                                        cursor: isDisabled ? 'not-allowed' : 'pointer',
                                         fontWeight: 'bold',
                                         userSelect: 'none',
-                                        transition: 'all 0.2s ease'
+                                        transition: 'all 0.2s ease',
+                                        opacity: isDisabled ? 0.5 : 1
                                     }}
                                 >
                                     {String.fromCharCode('I'.charCodeAt(0) + col)}
@@ -451,21 +478,23 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                         {Array.from({ length: 8 }, (_, row) => {
                             const option = directionOptions.find(opt => opt.side === 'left' && opt.index === row);
                             const isSelected = selectedDirection && selectedDirection.side === 'left' && selectedDirection.index === row;
+                            const isDisabled = isOptionDisabled(option);
                             return (
                                 <div
                                     key={`left-${row}`}
-                                    onClick={() => setSelectedDirection(option)}
+                                    onClick={() => !isDisabled && setSelectedDirection(option)}
                                     style={{
                                         textAlign: 'center',
                                         padding: '8px 4px',
                                         border: '2px solid #ccc',
                                         borderRadius: '6px',
-                                        backgroundColor: isSelected ? '#4f8cff' : '#f8f9fa',
-                                        color: isSelected ? 'white' : '#333',
-                                        cursor: 'pointer',
+                                        backgroundColor: isDisabled ? '#f0f0f0' : (isSelected ? '#4f8cff' : '#f8f9fa'),
+                                        color: isDisabled ? '#999' : (isSelected ? 'white' : '#333'),
+                                        cursor: isDisabled ? 'not-allowed' : 'pointer',
                                         fontWeight: 'bold',
                                         userSelect: 'none',
-                                        transition: 'all 0.2s ease'
+                                        transition: 'all 0.2s ease',
+                                        opacity: isDisabled ? 0.5 : 1
                                     }}
                                 >
                                     {String.fromCharCode('A'.charCodeAt(0) + row)}
@@ -482,21 +511,23 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                         {Array.from({ length: 8 }, (_, row) => {
                             const option = directionOptions.find(opt => opt.side === 'right' && opt.index === row);
                             const isSelected = selectedDirection && selectedDirection.side === 'right' && selectedDirection.index === row;
+                            const isDisabled = isOptionDisabled(option);
                             return (
                                 <div
                                     key={`bottom-${row}`}
-                                    onClick={() => setSelectedDirection(option)}
+                                    onClick={() => !isDisabled && setSelectedDirection(option)}
                                     style={{
                                         textAlign: 'center',
                                         padding: '8px 4px',
                                         border: '2px solid #ccc',
                                         borderRadius: '6px',
-                                        backgroundColor: isSelected ? '#4f8cff' : '#f8f9fa',
-                                        color: isSelected ? 'white' : '#333',
-                                        cursor: 'pointer',
+                                        backgroundColor: isDisabled ? '#f0f0f0' : (isSelected ? '#4f8cff' : '#f8f9fa'),
+                                        color: isDisabled ? '#999' : (isSelected ? 'white' : '#333'),
+                                        cursor: isDisabled ? 'not-allowed' : 'pointer',
                                         fontWeight: 'bold',
                                         userSelect: 'none',
-                                        transition: 'all 0.2s ease'
+                                        transition: 'all 0.2s ease',
+                                        opacity: isDisabled ? 0.5 : 1
                                     }}
                                 >
                                     {11 + row}

@@ -1,11 +1,42 @@
 import React, { useState } from 'react';
 import { getApiUrl } from '../../config/api';
 
-const PositionSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
+const PositionSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) => {
     const [selectedPosition, setSelectedPosition] = useState(null);
 
+    // 過濾已使用的 out 值
+    const getUsedOut = () => {
+        const usedOut = new Set();
+        list.forEach(item => {
+            if (item.out) {
+                usedOut.add(item.out);
+            }
+        });
+        return usedOut;
+    };
+
+    const usedOut = getUsedOut();
+
+    // 將座標轉換為 A1 格式的標籤
+    const getPositionLabel = (row, col) => {
+        // 將網格座標轉換為 A1 格式
+        // row 0-7 對應 A-H
+        // col 0-9 對應 1-10
+        const letter = String.fromCharCode('A'.charCodeAt(0) + row);
+        const number = String(col + 1);
+        return letter + number;
+    };
+
+    // 檢查位置是否被禁用
+    const isPositionDisabled = (row, col) => {
+        const positionLabel = getPositionLabel(row, col);
+        return usedOut.has(positionLabel);
+    };
+
     const handlePositionSelect = (row, col) => {
-        setSelectedPosition({ row, col });
+        if (!isPositionDisabled(row, col)) {
+            setSelectedPosition({ row, col });
+        }
     };
 
     const handleConfirm = async () => {
@@ -118,44 +149,50 @@ const PositionSelector = ({ isOpen, onClose, onConfirm, gameData }) => {
                     aspectRatio: '10/8'
                 }}>
                     {Array.from({ length: 8 }, (_, row) =>
-                        Array.from({ length: 10 }, (_, col) => (
-                            <div
-                                key={`${row}-${col}`}
-                                onClick={() => handlePositionSelect(row, col)}
-                                style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    minWidth: '30px',
-                                    minHeight: '30px',
-                                    border: '1px solid #ccc',
-                                    backgroundColor: selectedPosition && selectedPosition.row === row && selectedPosition.col === col
-                                        ? '#4f8cff'
-                                        : '#f0f0f0',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: 'clamp(10px, 2.5vw, 12px)',
-                                    fontWeight: 'bold',
-                                    color: selectedPosition && selectedPosition.row === row && selectedPosition.col === col
-                                        ? 'white'
-                                        : '#333',
-                                    transition: 'all 0.2s ease'
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (!selectedPosition || selectedPosition.row !== row || selectedPosition.col !== col) {
-                                        e.target.style.backgroundColor = '#e0e0e0';
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (!selectedPosition || selectedPosition.row !== row || selectedPosition.col !== col) {
-                                        e.target.style.backgroundColor = '#f0f0f0';
-                                    }
-                                }}
-                            >
-                                {String.fromCharCode(65 + row)}{col + 1}
-                            </div>
-                        ))
+                        Array.from({ length: 10 }, (_, col) => {
+                            const isDisabled = isPositionDisabled(row, col);
+                            const isSelected = selectedPosition && selectedPosition.row === row && selectedPosition.col === col;
+                            
+                            return (
+                                <div
+                                    key={`${row}-${col}`}
+                                    onClick={() => handlePositionSelect(row, col)}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        minWidth: '30px',
+                                        minHeight: '30px',
+                                        border: '1px solid #ccc',
+                                        backgroundColor: isDisabled 
+                                            ? '#f0f0f0' 
+                                            : (isSelected ? '#4f8cff' : '#f0f0f0'),
+                                        cursor: isDisabled ? 'not-allowed' : 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: 'clamp(10px, 2.5vw, 12px)',
+                                        fontWeight: 'bold',
+                                        color: isDisabled 
+                                            ? '#999' 
+                                            : (isSelected ? 'white' : '#333'),
+                                        transition: 'all 0.2s ease',
+                                        opacity: isDisabled ? 0.5 : 1
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (!isDisabled && (!selectedPosition || selectedPosition.row !== row || selectedPosition.col !== col)) {
+                                            e.target.style.backgroundColor = '#e0e0e0';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (!isDisabled && (!selectedPosition || selectedPosition.row !== row || selectedPosition.col !== col)) {
+                                            e.target.style.backgroundColor = '#f0f0f0';
+                                        }
+                                    }}
+                                >
+                                    {String.fromCharCode(65 + row)}{col + 1}
+                                </div>
+                            );
+                        })
                     )}
                 </div>
 

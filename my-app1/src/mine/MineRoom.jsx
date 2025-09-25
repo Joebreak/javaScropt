@@ -106,6 +106,7 @@ export default function MinaRoom() {
         onRadiateConfirm={handleRadiateConfirm}
         showExampleShapes={showExampleShapes}
         setShowExampleShapes={setShowExampleShapes}
+        list={data?.list || []}
       />
 
       {/* 尺寸顯示 */}

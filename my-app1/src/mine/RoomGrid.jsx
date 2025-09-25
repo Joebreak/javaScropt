@@ -99,7 +99,8 @@ function MinaRoom({
     onPositionConfirm,
     onRadiateConfirm,
     showExampleShapes = true,
-    setShowExampleShapes = null
+    setShowExampleShapes = null,
+    list = []
 }) {
     const [currentConfig, setCurrentConfig] = useState(getGridConfig());
 
@@ -186,7 +187,6 @@ function MinaRoom({
         try {
             const key = `roomGrid_${gameData?.room || 'default'}`;
             localStorage.setItem(key, JSON.stringify(gridData));
-            console.log('網格已保存到 localStorage');
         } catch (error) {
             console.error('保存網格失敗:', error);
         }
@@ -878,6 +878,7 @@ function MinaRoom({
                 onClose={() => setShowPositionSelector(false)}
                 onConfirm={onPositionConfirm}
                 gameData={gameData}
+                list={list}
             />
 
             {/* 放射選擇器 */}
@@ -886,6 +887,7 @@ function MinaRoom({
                 onClose={() => setShowRadiateSelector(false)}
                 onConfirm={onRadiateConfirm}
                 gameData={gameData}
+                list={list}
             />
         </div>
     );
