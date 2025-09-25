@@ -436,134 +436,80 @@ function MinaRoom({
                     {/* 範例圖形展示 */}
                     <div style={{ 
                         display: 'flex', 
-                        gap: '30px', 
+                        gap: '20px', 
                         justifyContent: 'center',
                         flexWrap: 'wrap',
                         alignItems: 'center'
                     }}>
-                        {/* 紅色組合圖形 */}
+                        {/* 黑色三角形範例 */}
                         <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '1px',
+                            width: '60px',
+                            height: '30px',
+                            background: 'black',
+                            clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
                             position: 'relative'
                         }}>
-                            {/* 左上三角形 */}
                             <div style={{
-                                width: '0',
-                                height: '0',
-                                borderLeft: '12px solid transparent',
-                                borderRight: '12px solid transparent',
-                                borderBottom: '12px solid #e74c3c'
-                            }}></div>
-                            {/* 方形 */}
-                            <div style={{
-                                width: '24px',
-                                height: '24px',
-                                backgroundColor: '#e74c3c'
-                            }}></div>
-                            {/* 右下三角形 */}
-                            <div style={{
-                                width: '0',
-                                height: '0',
-                                borderLeft: '12px solid transparent',
-                                borderRight: '12px solid transparent',
-                                borderTop: '12px solid #e74c3c'
-                            }}></div>
+                                position: 'absolute',
+                                top: '1px',
+                                left: '1px',
+                                width: '58px',
+                                height: '28px',
+                                background: 'white',
+                                clipPath: 'polygon(50% 2%, 2% 98%, 98% 98%)',
+                            }} />
                         </div>
                         
-                        {/* 藍色組合圖形 */}
+                        {/* 黃色直角三角形範例 */}
                         <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '1px',
+                            width: '30px',
+                            height: '30px',
+                            background: 'yellow',
+                            clipPath: 'polygon(0 0, 100% 0, 0 100%)',
+                        }} />
+                        
+                        {/* 紅色平行四邊形範例 */}
+                        <div style={{
+                            width: '45px',
+                            height: '15px',
+                            background: 'red',
+                            clipPath: 'polygon(32% 0%, 0% 100%, 65% 100%, 100% 0%)',
+                        }} />
+                        
+                        {/* 藍色菱形範例 */}
+                        <div style={{
+                            width: '30px',
+                            height: '30px',
+                            background: 'blue',
+                            clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+                        }} />
+                        
+                        {/* 透明圖形範例 */}
+                        <div style={{
+                            width: '30px',
+                            height: '15px',
+                            background: 'transparent',
+                            border: '1px dashed #333',
+                            clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
                             position: 'relative'
                         }}>
-                            {/* 右上三角形 */}
                             <div style={{
-                                width: '0',
-                                height: '0',
-                                borderLeft: '12px solid transparent',
-                                borderRight: '12px solid transparent',
-                                borderBottom: '12px solid #3498db'
-                            }}></div>
-                            {/* 方形 */}
-                            <div style={{
-                                width: '24px',
-                                height: '24px',
-                                backgroundColor: '#3498db'
-                            }}></div>
-                            {/* 左下三角形 */}
-                            <div style={{
-                                width: '0',
-                                height: '0',
-                                borderLeft: '12px solid transparent',
-                                borderRight: '12px solid transparent',
-                                borderTop: '12px solid #3498db'
-                            }}></div>
+                                position: 'absolute',
+                                top: '0',
+                                left: '0',
+                                width: '30px',
+                                height: '15px',
+                                background: 'black',
+                                clipPath: 'polygon(51% 0, 49% 0, 50% 100%, 48% 7%, 0 100%, 50% 0, 50% 1%, 96% 99%, 100% 100%, 51% 0, 51% 0, 51% 100%)',
+                            }} />
                         </div>
                         
-                        {/* 白色組合圖形 */}
+                        {/* 黑色矩形範例 */}
                         <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '1px',
-                            position: 'relative'
-                        }}>
-                            {/* 左上三角形 */}
-                            <div style={{
-                                width: '0',
-                                height: '0',
-                                borderLeft: '12px solid transparent',
-                                borderRight: '12px solid transparent',
-                                borderBottom: '12px solid #D9D9D9'
-                            }}></div>
-                            {/* 方形 */}
-                            <div style={{
-                                width: '24px',
-                                height: '24px',
-                                backgroundColor: '#D9D9D9'
-                            }}></div>
-                            {/* 右下三角形 */}
-                            <div style={{
-                                width: '0',
-                                height: '0',
-                                borderLeft: '12px solid transparent',
-                                borderRight: '12px solid transparent',
-                                borderTop: '12px solid #D9D9D9'
-                            }}></div>
-                        </div>
-                        
-                        {/* 黃色組合圖形 */}
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '1px',
-                            position: 'relative'
-                        }}>
-                            {/* 右上三角形 */}
-                            <div style={{
-                                width: '0',
-                                height: '0',
-                                borderLeft: '12px solid transparent',
-                                borderRight: '12px solid transparent',
-                                borderBottom: '12px solid #FFF200'
-                            }}></div>
-                            {/* 方形 */}
-                            <div style={{
-                                width: '24px',
-                                height: '24px',
-                                backgroundColor: '#FFF200'
-                            }}></div>
-                            {/* 左下三角形 */}
-                            <div style={{
-                                width: '0',
-                                height: '0',
-                                borderLeft: '12px solid transparent',
-                                borderRight: '12px solid transparent',
-                                borderTop: '12px solid #FFF200'
-                            }}></div>
-                        </div>
+                            width: '15px',
+                            height: '30px',
+                            background: 'black',
+                        }} />
                     </div>
                 </div>
             )}
