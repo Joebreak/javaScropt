@@ -110,6 +110,24 @@ function MinaRoom({
     // 選擇器狀態
     const [selectedColor, setSelectedColor] = useState(null);
     const [selectedShape, setSelectedShape] = useState(null);
+    
+    // 範例圖形旋轉狀態
+    const [exampleRotations, setExampleRotations] = useState({
+        triangle1: 0,
+        triangle2: 0,
+        parallelogram: 0,
+        diamond: 0,
+        transparent: 0,
+        rectangle: 0
+    });
+
+    // 旋轉範例圖形
+    const rotateExampleShape = (shapeId) => {
+        setExampleRotations(prev => ({
+            ...prev,
+            [shapeId]: (prev[shapeId] + 90) % 360
+        }));
+    };
 
     useEffect(() => {
         const handleResize = () => {
@@ -427,7 +445,7 @@ function MinaRoom({
                         color: '#666', 
                         textAlign: 'center' 
                     }}>
-                        範例圖形：
+                        範例圖形(點擊會旋轉)：
                     </div>
                     
                     {/* 範例圖形展示 */}
@@ -439,13 +457,20 @@ function MinaRoom({
                         alignItems: 'center'
                     }}>
                         {/* 黑色三角形範例 */}
-                        <div style={{
-                            width: '60px',
-                            height: '30px',
-                            background: 'black',
-                            clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
-                            position: 'relative'
-                        }}>
+                        <div 
+                            onClick={() => rotateExampleShape('triangle1')}
+                            style={{
+                                width: '60px',
+                                height: '30px',
+                                background: 'black',
+                                clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+                                position: 'relative',
+                                cursor: 'pointer',
+                                transform: `rotate(${exampleRotations.triangle1}deg)`,
+                                transition: 'transform 0.3s ease',
+                                transformOrigin: 'center'
+                            }}
+                        >
                             <div style={{
                                 position: 'absolute',
                                 top: '1px',
@@ -458,38 +483,66 @@ function MinaRoom({
                         </div>
                         
                         {/* 黃色直角三角形範例 */}
-                        <div style={{
-                            width: '30px',
-                            height: '30px',
-                            background: 'yellow',
-                            clipPath: 'polygon(0 0, 100% 0, 0 100%)',
-                        }} />
+                        <div 
+                            onClick={() => rotateExampleShape('triangle2')}
+                            style={{
+                                width: '30px',
+                                height: '30px',
+                                background: 'yellow',
+                                clipPath: 'polygon(0 0, 100% 0, 0 100%)',
+                                cursor: 'pointer',
+                                transform: `rotate(${exampleRotations.triangle2}deg)`,
+                                transition: 'transform 0.3s ease',
+                                transformOrigin: 'center'
+                            }} 
+                        />
                         
                         {/* 紅色平行四邊形範例 */}
-                        <div style={{
-                            width: '45px',
-                            height: '15px',
-                            background: 'red',
-                            clipPath: 'polygon(32% 0%, 0% 100%, 65% 100%, 100% 0%)',
-                        }} />
+                        <div 
+                            onClick={() => rotateExampleShape('parallelogram')}
+                            style={{
+                                width: '45px',
+                                height: '15px',
+                                background: 'red',
+                                clipPath: 'polygon(32% 0%, 0% 100%, 65% 100%, 100% 0%)',
+                                cursor: 'pointer',
+                                transform: `rotate(${exampleRotations.parallelogram}deg)`,
+                                transition: 'transform 0.3s ease',
+                                transformOrigin: 'center'
+                            }} 
+                        />
                         
                         {/* 藍色菱形範例 */}
-                        <div style={{
-                            width: '30px',
-                            height: '30px',
-                            background: 'blue',
-                            clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-                        }} />
+                        <div 
+                            onClick={() => rotateExampleShape('diamond')}
+                            style={{
+                                width: '30px',
+                                height: '30px',
+                                background: 'blue',
+                                clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+                                cursor: 'pointer',
+                                transform: `rotate(${exampleRotations.diamond}deg)`,
+                                transition: 'transform 0.3s ease',
+                                transformOrigin: 'center'
+                            }} 
+                        />
                         
                         {/* 透明圖形範例 */}
-                        <div style={{
-                            width: '30px',
-                            height: '15px',
-                            background: 'transparent',
-                            border: '1px dashed #333',
-                            clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
-                            position: 'relative'
-                        }}>
+                        <div 
+                            onClick={() => rotateExampleShape('transparent')}
+                            style={{
+                                width: '30px',
+                                height: '15px',
+                                background: 'transparent',
+                                border: '1px dashed #333',
+                                clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+                                position: 'relative',
+                                cursor: 'pointer',
+                                transform: `rotate(${exampleRotations.transparent}deg)`,
+                                transition: 'transform 0.3s ease',
+                                transformOrigin: 'center'
+                            }}
+                        >
                             <div style={{
                                 position: 'absolute',
                                 top: '0',
@@ -502,11 +555,18 @@ function MinaRoom({
                         </div>
                         
                         {/* 黑色矩形範例 */}
-                        <div style={{
-                            width: '15px',
-                            height: '30px',
-                            background: 'black',
-                        }} />
+                        <div 
+                            onClick={() => rotateExampleShape('rectangle')}
+                            style={{
+                                width: '15px',
+                                height: '30px',
+                                background: 'black',
+                                cursor: 'pointer',
+                                transform: `rotate(${exampleRotations.rectangle}deg)`,
+                                transition: 'transform 0.3s ease',
+                                transformOrigin: 'center'
+                            }} 
+                        />
                     </div>
                 </div>
             )}
