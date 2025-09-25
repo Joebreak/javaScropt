@@ -97,7 +97,9 @@ function MinaRoom({
     showRadiateSelector,
     setShowRadiateSelector,
     onPositionConfirm,
-    onRadiateConfirm
+    onRadiateConfirm,
+    showExampleShapes = true,
+    setShowExampleShapes = null
 }) {
     const [currentConfig, setCurrentConfig] = useState(getGridConfig());
 
@@ -410,6 +412,161 @@ function MinaRoom({
                     </div>
                 ))}
             </div>
+
+            {/* 範例圖形顯示區域 */}
+            {showExampleShapes && (
+                <div style={{ 
+                    marginTop: '20px',
+                    marginBottom: '20px',
+                    padding: '15px',
+                    backgroundColor: 'white',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
+                }}>
+                    <div style={{ 
+                        fontSize: '14px', 
+                        fontWeight: 'bold', 
+                        marginBottom: '12px', 
+                        color: '#666', 
+                        textAlign: 'center' 
+                    }}>
+                        範例圖形：
+                    </div>
+                    
+                    {/* 範例圖形展示 */}
+                    <div style={{ 
+                        display: 'flex', 
+                        gap: '30px', 
+                        justifyContent: 'center',
+                        flexWrap: 'wrap',
+                        alignItems: 'center'
+                    }}>
+                        {/* 紅色組合圖形 */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '1px',
+                            position: 'relative'
+                        }}>
+                            {/* 左上三角形 */}
+                            <div style={{
+                                width: '0',
+                                height: '0',
+                                borderLeft: '12px solid transparent',
+                                borderRight: '12px solid transparent',
+                                borderBottom: '12px solid #e74c3c'
+                            }}></div>
+                            {/* 方形 */}
+                            <div style={{
+                                width: '24px',
+                                height: '24px',
+                                backgroundColor: '#e74c3c'
+                            }}></div>
+                            {/* 右下三角形 */}
+                            <div style={{
+                                width: '0',
+                                height: '0',
+                                borderLeft: '12px solid transparent',
+                                borderRight: '12px solid transparent',
+                                borderTop: '12px solid #e74c3c'
+                            }}></div>
+                        </div>
+                        
+                        {/* 藍色組合圖形 */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '1px',
+                            position: 'relative'
+                        }}>
+                            {/* 右上三角形 */}
+                            <div style={{
+                                width: '0',
+                                height: '0',
+                                borderLeft: '12px solid transparent',
+                                borderRight: '12px solid transparent',
+                                borderBottom: '12px solid #3498db'
+                            }}></div>
+                            {/* 方形 */}
+                            <div style={{
+                                width: '24px',
+                                height: '24px',
+                                backgroundColor: '#3498db'
+                            }}></div>
+                            {/* 左下三角形 */}
+                            <div style={{
+                                width: '0',
+                                height: '0',
+                                borderLeft: '12px solid transparent',
+                                borderRight: '12px solid transparent',
+                                borderTop: '12px solid #3498db'
+                            }}></div>
+                        </div>
+                        
+                        {/* 白色組合圖形 */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '1px',
+                            position: 'relative'
+                        }}>
+                            {/* 左上三角形 */}
+                            <div style={{
+                                width: '0',
+                                height: '0',
+                                borderLeft: '12px solid transparent',
+                                borderRight: '12px solid transparent',
+                                borderBottom: '12px solid #D9D9D9'
+                            }}></div>
+                            {/* 方形 */}
+                            <div style={{
+                                width: '24px',
+                                height: '24px',
+                                backgroundColor: '#D9D9D9'
+                            }}></div>
+                            {/* 右下三角形 */}
+                            <div style={{
+                                width: '0',
+                                height: '0',
+                                borderLeft: '12px solid transparent',
+                                borderRight: '12px solid transparent',
+                                borderTop: '12px solid #D9D9D9'
+                            }}></div>
+                        </div>
+                        
+                        {/* 黃色組合圖形 */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '1px',
+                            position: 'relative'
+                        }}>
+                            {/* 右上三角形 */}
+                            <div style={{
+                                width: '0',
+                                height: '0',
+                                borderLeft: '12px solid transparent',
+                                borderRight: '12px solid transparent',
+                                borderBottom: '12px solid #FFF200'
+                            }}></div>
+                            {/* 方形 */}
+                            <div style={{
+                                width: '24px',
+                                height: '24px',
+                                backgroundColor: '#FFF200'
+                            }}></div>
+                            {/* 左下三角形 */}
+                            <div style={{
+                                width: '0',
+                                height: '0',
+                                borderLeft: '12px solid transparent',
+                                borderRight: '12px solid transparent',
+                                borderTop: '12px solid #FFF200'
+                            }}></div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* 當前選擇顯示 */}
             <div style={{
@@ -747,6 +904,7 @@ function MinaRoom({
                         </div>
                     </div>
 
+
                     {/* 操作按鈕 */}
                     <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
                         <button
@@ -763,6 +921,7 @@ function MinaRoom({
                         >
                             清空網格
                         </button>
+                        
                     </div>
                 </div>
             )}

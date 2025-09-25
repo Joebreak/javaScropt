@@ -23,6 +23,7 @@ export default function MinaRoom() {
   const [showRadiateSelector, setShowRadiateSelector] = useState(false);
   const [showShapeValidator, setShowShapeValidator] = useState(false);
   const [roomGridData, setRoomGridData] = useState(null);
+  const [showExampleShapes, setShowExampleShapes] = useState(true);
 
   // 處理函數
   const handleRadiate = () => {
@@ -103,6 +104,8 @@ export default function MinaRoom() {
         setShowRadiateSelector={setShowRadiateSelector}
         onPositionConfirm={handlePositionConfirm}
         onRadiateConfirm={handleRadiateConfirm}
+        showExampleShapes={showExampleShapes}
+        setShowExampleShapes={setShowExampleShapes}
       />
 
       {/* 尺寸顯示 */}
@@ -144,6 +147,24 @@ export default function MinaRoom() {
           🔄
         </button>
 
+        {/* 顯示範例圖形按鈕 */}
+        <button
+          onClick={() => setShowExampleShapes(!showExampleShapes)}
+          style={{
+            padding: "8px 16px",
+            background: showExampleShapes ? "#6c757d" : "#17a2b8",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            fontSize: "14px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+            transition: "all 0.3s ease"
+          }}
+        >
+          {showExampleShapes ? "隱藏範例" : "顯示範例圖形"}
+        </button>
 
         {/* 顯示/隱藏圖形按鈕 */}
         <button
