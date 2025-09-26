@@ -17,8 +17,8 @@ const getGridConfig = () => {
                 colorTextSize: '7px', // 手機版顏色文字大小
                 gridShapeSize: 30,   // 手機版網格圖形大小
                 gridShapeFontSize: '48px', // 手機版網格圖形字體大小
-                triangleFontSize: '40px',  // 手機版三角形字體大小
-                squareFontSize: '45px'     // 手機版方形字體大小
+                triangleFontSize: '47px',  // 手機版三角形字體大小
+                squareFontSize: '54px'     // 手機版方形字體大小
             };
         }
         if (width <= 768) {
