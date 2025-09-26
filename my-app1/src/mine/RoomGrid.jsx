@@ -17,8 +17,8 @@ const getGridConfig = () => {
                 colorTextSize: '7px', // 手機版顏色文字大小
                 gridShapeSize: 30,   // 手機版網格圖形大小
                 gridShapeFontSize: '48px', // 手機版網格圖形字體大小
-                triangleFontSize: '48px',  // 手機版三角形字體大小
-                squareFontSize: '50px'     // 手機版方形字體大小
+                triangleFontSize: '40px',  // 手機版三角形字體大小
+                squareFontSize: '45px'     // 手機版方形字體大小
             };
         }
         if (width <= 768) {
@@ -300,14 +300,16 @@ function MinaRoom({
                                         fontWeight: 'bold',
                                         color: cellData ? cellData.color.borderColor : '#999',
                                         transition: 'all 0.2s ease',
-                                        position: 'relative'
+                                        position: 'relative',
+                                        zIndex: 1  // 網格單元在底層
                                     }}
                                 >
                                     {cellData && cellData.shape && (
                                         <div style={{
                                             transform: cellData.shape.rotation ? `rotate(${cellData.shape.rotation}deg)` : 'none',
                                             transition: 'transform 0.2s ease',
-                                            position: 'relative'
+                                            position: 'relative',
+                                            zIndex: 10  // 確保圖案在網格邊框之上
                                         }}>
                                             {cellData.shape.shape === 'triangle' ? (
                                                 cellData.color.id === 'TRANSPARENT' ? (
