@@ -107,75 +107,65 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
             const expectedMapData = gameData.mapData || [];
             let validationResult = null;
 
-            // 檢查每個預期的位置 - 遇到第一個不匹配就記錄並停止檢查
-            for (const expectedItem of expectedMapData) {
-                if (expectedItem && expectedItem.NOTE1 !== undefined && expectedItem.NOTE2 !== undefined) {
+            // 檢查 roomGridData 的每個位置
+            for (let rowIndex = 0; rowIndex < roomGridData.length; rowIndex++) {
+                if (validationResult) break; // 如果已經有錯誤結果，停止檢查
+                
+                for (let colIndex = 0; colIndex < roomGridData[rowIndex].length; colIndex++) {
+                    if (validationResult) break; // 如果已經有錯誤結果，停止檢查
+                    
+                    // 從 roomGridData 獲取該位置的實際數據
+                    const roomGridCell = roomGridData[rowIndex][colIndex];
+                    const shapeInfo = getShapeInfo(roomGridCell);
+                    
+                    // 在 expectedMapData 中查找該位置的預期數據
+                    const expectedItem = expectedMapData.find(item => 
+                        item && item.NOTE1 === colIndex && item.NOTE2 === rowIndex
+                    );
+                    
+                    // 在 currentMapData 中查找該位置的實際數據
                     const currentItem = currentMapData.find(item => 
-                        item.NOTE1 === expectedItem.NOTE1 && item.NOTE2 === expectedItem.NOTE2
+                        item.NOTE1 === colIndex && item.NOTE2 === rowIndex
                     );
                     
                     // 如果期望的 NOTE3 是 null，表示該位置應該沒有形狀
-                    if (expectedItem.NOTE3 === null) {
-                        if (currentItem) {
+                    if (expectedItem && expectedItem.NOTE3 === null) {
+                        if (currentItem || shapeInfo) {
                             validationResult = {
                                 success: false,
                                 message: '驗證失敗',
-                                details: `位置 (${expectedItem.NOTE1}, ${expectedItem.NOTE2}) 應該沒有形狀，但實際有 ${currentItem.NOTE3}`,
+                                details: `位置 (${colIndex}, ${rowIndex}) 應該沒有形狀，但實際有 ${currentItem ? currentItem.NOTE3 : '形狀'}`,
                                 data: { currentMapData, expectedMapData }
                             };
-                            break;
                         }
                         // 如果期望是 null 且實際也沒有，則正確，繼續檢查下一個
-                    } else {
+                    } else if (expectedItem && expectedItem.NOTE3 !== null) {
                         // 如果期望的 NOTE3 不是 null，表示該位置應該有形狀
-                        if (!currentItem) {
+                        if (!currentItem && !shapeInfo) {
                             validationResult = {
                                 success: false,
                                 message: '驗證失敗',
-                                details: `位置 (${expectedItem.NOTE1}, ${expectedItem.NOTE2}) 缺少形狀`,
+                                details: `位置 (${colIndex}, ${rowIndex}) 缺少形狀`,
                                 data: { currentMapData, expectedMapData }
                             };
-                            break;
-                        } else if (currentItem.NOTE3 !== expectedItem.NOTE3) {
+                        } else if (currentItem && currentItem.NOTE3 !== expectedItem.NOTE3) {
                             validationResult = {
                                 success: false,
                                 message: '驗證失敗',
-                                details: `位置 (${expectedItem.NOTE1}, ${expectedItem.NOTE2}) 顏色不匹配: 期望 ${expectedItem.NOTE3}, 實際 ${currentItem.NOTE3}`,
+                                details: `位置 (${colIndex}, ${rowIndex}) 顏色不匹配: 期望 ${expectedItem.NOTE3}, 實際 ${currentItem.NOTE3}`,
                                 data: { currentMapData, expectedMapData }
                             };
-                            break;
-                        } else if (currentItem.NOTE4 !== expectedItem.NOTE4) {
+                        } else if (currentItem && currentItem.NOTE4 !== expectedItem.NOTE4) {
                             validationResult = {
                                 success: false,
                                 message: '驗證失敗',
-                                details: `位置 (${expectedItem.NOTE1}, ${expectedItem.NOTE2}) 角度不匹配: 期望 ${expectedItem.NOTE4}, 實際 ${currentItem.NOTE4}`,
+                                details: `位置 (${colIndex}, ${rowIndex}) 角度不匹配: 期望 ${expectedItem.NOTE4}, 實際 ${currentItem.NOTE4}`,
                                 data: { currentMapData, expectedMapData }
                             };
-                            break;
                         }
                     }
                 }
             }
-
-            // 如果前面的檢查都通過，檢查是否有額外的形狀
-            if (!validationResult) {
-                for (const currentItem of currentMapData) {
-                    const expectedItem = expectedMapData.find(item => 
-                        item && item.NOTE1 === currentItem.NOTE1 && item.NOTE2 === currentItem.NOTE2
-                    );
-                    // 如果沒有找到對應的預期項目，或者預期項目的 NOTE3 是 null（表示應該沒有形狀）
-                    if (!expectedItem || expectedItem.NOTE3 === null) {
-                        validationResult = {
-                            success: false,
-                            message: '驗證失敗',
-                            details: `位置 (${currentItem.NOTE1}, ${currentItem.NOTE2}) 有多餘的形狀`,
-                            data: { currentMapData, expectedMapData }
-                        };
-                        break;
-                    }
-                }
-            }
-
             // 如果所有檢查都通過，設置成功結果
             if (!validationResult) {
                 validationResult = {
