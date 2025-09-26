@@ -99,7 +99,6 @@ function MinaRoom({
     onPositionConfirm,
     onRadiateConfirm,
     showExampleShapes = true,
-    setShowExampleShapes = null,
     list = []
 }) {
     const [currentConfig, setCurrentConfig] = useState(getGridConfig());
@@ -143,11 +142,9 @@ function MinaRoom({
     // 從 localStorage 讀取網格
     const loadGridFromStorage = React.useCallback(() => {
         try {
-            const key = `roomGrid_${gameData?.room || 'default'}`;
-            const saved = localStorage.getItem(key);
+            const saved = localStorage.getItem(`roomGrid_${gameData?.room || 'default'}`);
             if (saved) {
-                const parsedGrid = JSON.parse(saved);
-                setGrid(parsedGrid);
+                setGrid(JSON.parse(saved));
             }
         } catch (error) {
             console.error('載入網格失敗:', error);
