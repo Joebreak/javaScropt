@@ -922,7 +922,7 @@ function MinaRoom({
                                 fontSize: '10px'
                             }}
                         >
-                            清空網格
+                            清空(全部)網格
                         </button>
                         
                     </div>
