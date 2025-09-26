@@ -17,8 +17,8 @@ const getGridConfig = () => {
                 colorTextSize: '7px', // 手機版顏色文字大小
                 gridShapeSize: 30,   // 手機版網格圖形大小
                 gridShapeFontSize: '48px', // 手機版網格圖形字體大小
-                triangleFontSize: '40px',  // 手機版三角形字體大小
-                squareFontSize: '50px'     // 手機版方形字體大小
+                triangleFontSize: '35px',  // 手機版三角形字體大小
+                squareFontSize: '40px'     // 手機版方形字體大小
             };
         }
         if (width <= 768) {
@@ -42,8 +42,8 @@ const getGridConfig = () => {
             colorTextSize: '8px', // 桌面版顏色文字大小
             gridShapeSize: 40,   // 桌面版網格圖形大小
             gridShapeFontSize: '90px', // 桌面版網格圖形字體大小
-            triangleFontSize: '80px',  // 桌面版三角形字體大小
-            squareFontSize: '105px'     // 桌面版方形字體大小
+            triangleFontSize: '93px',  // 桌面版三角形字體大小
+            squareFontSize: '115px'     // 桌面版方形字體大小
         };
     }
     return {
@@ -381,7 +381,7 @@ function MinaRoom({
                                                         position: 'absolute',
                                                         top: '45%',
                                                         left: '50%',
-                                                        transform: 'translate(-50%, -60%)',
+                                                        transform: 'translate(-50%, -63%)',
                                                         width: 'auto',
                                                         height: 'auto',
                                                         margin: 0,
