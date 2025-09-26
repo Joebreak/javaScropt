@@ -10,19 +10,14 @@ export default function MobileLayout({
   onSegmentClick, 
   onNumberClick, 
   renderEvenOddMark,
-  rightComparison,
-  rightComparisonBottom,
-  bottomComparison,
-  renderComparisonIcon,
-  isMobileView = true
 }) {
   return (
     <div style={{ textAlign: "center", position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
       {/* 位置標籤 - T~Y 符號 */}
       <div style={{
         position: "absolute",
-        top: -10,
-        left: -10,
+        top: -15,
+        left: -18,
         fontSize: "12px",
         fontWeight: "bold",
         color: "#666",

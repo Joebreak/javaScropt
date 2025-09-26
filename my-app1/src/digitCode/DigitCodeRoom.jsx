@@ -102,7 +102,7 @@ export default function DigitCodeRoom() {
             transition: "all 0.3s ease"
           }}
         >
-          🔄 重新整理
+          🔄 
         </button>
       </div>
 

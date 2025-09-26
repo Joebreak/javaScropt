@@ -17,8 +17,8 @@ export default function SegmentDisplay({ digitIndex, isMobileView, evenOddCheck,
 
   // 段配置
   const config = {
-    width: isMobileView ? 40 : 60,
-    height: isMobileView ? 60 : 90,
+    width: isMobileView ? 100 : 60,
+    height: isMobileView ? 100 : 90,
     strokeWidth: isMobileView ? 2 : 3
   };
 
@@ -115,7 +115,7 @@ export default function SegmentDisplay({ digitIndex, isMobileView, evenOddCheck,
             // 手機版位置
             ...(evenOddCheck === 'even' ? {
               // 偶數：顯示在 a-g 段下方
-              top: "10%",
+              top: "15%",
               left: "50%",
               transform: "translateX(-50%) translateY(4px)",
             } : {
@@ -140,11 +140,11 @@ export default function SegmentDisplay({ digitIndex, isMobileView, evenOddCheck,
           }),
           zIndex: 5,
           background: "rgba(255, 255, 255, 0.9)",
-          padding: isMobileView ? "1px 3px" : "2px 4px",
+          padding: isMobileView ? "1px 10px" : "2px 4px",
           borderRadius: "3px",
           border: "1px solid #ddd"
         }}>
-          {renderEvenOddMark(evenOddCheck, isMobileView ? 10 : 12)}
+          {renderEvenOddMark(evenOddCheck, isMobileView ? 18 : 12)}
         </div>
       )}
     </div>

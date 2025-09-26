@@ -5,7 +5,6 @@ export default function Question2Modal({ isOpen, onClose, onSubmit, gameData }) 
   const [selectedPair, setSelectedPair] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  console.log('gameData', gameData);
   // 解析遊戲答案數據
   const parseGameData = (data) => {
     if (!data || !Array.isArray(data)) return null;

@@ -10,11 +10,6 @@ export default function DesktopLayout({
   onSegmentClick, 
   onNumberClick, 
   renderEvenOddMark,
-  rightComparison,
-  rightComparisonBottom,
-  bottomComparison,
-  renderComparisonIcon,
-  isMobileView = false
 }) {
   return (
     <div style={{ textAlign: "center", position: "relative", display: "flex", alignItems: "center", gap: "12px" }}>

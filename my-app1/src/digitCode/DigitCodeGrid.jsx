@@ -184,24 +184,24 @@ export default function DigitCodeGrid({
         {/* A B C - 第一列 */}
         <div style={{
           position: "absolute",
-          top: isMobile ? "10px" : "0px",
-          left: "25%",
+          top: isMobile ? "-15px" : "0px",
+          left: isMobile ? "28%" : "25%",
           transform: "translateX(-50%)",
           zIndex: 10,
           pointerEvents: "none"
         }}>
           <span style={{
-            fontSize: isMobile ? "10px" : "12px",
+            fontSize: isMobile ? "15px" : "12px",
             fontWeight: "bold",
             color: "#666",
-            wordSpacing: isMobile ? "2px" : "10px"
+            wordSpacing: isMobile ? "8px" : "10px"
           }}>A B C</span>
         </div>
         {/* D E F - 第二列 */}
         <div style={{
           position: "absolute",
-          top: isMobile ? "10px" : "0px",
-          left: "46%",
+          top: isMobile ? "-15px" : "0px",
+          left: isMobile ? "50%" : "46%",
           transform: "translateX(-50%)",
           zIndex: 10,
           pointerEvents: "none"
@@ -210,14 +210,14 @@ export default function DigitCodeGrid({
             fontSize: isMobile ? "10px" : "12px",
             fontWeight: "bold",
             color: "#666",
-            wordSpacing: isMobile ? "2px" : "10px"
+            wordSpacing: isMobile ? "8px" : "10px"
           }}>D E F</span>
         </div>
         {/* G H I - 第三列 */}
         <div style={{
           position: "absolute",
-          top: isMobile ? "10px" : "0px",
-          left: "66%",
+          top: isMobile ? "-15px" : "0px",
+          left: isMobile ? "72%" : "66%",
           transform: "translateX(-50%)",
           zIndex: 10,
           pointerEvents: "none"
@@ -226,87 +226,88 @@ export default function DigitCodeGrid({
             fontSize: isMobile ? "10px" : "12px",
             fontWeight: "bold",
             color: "#666",
-            wordSpacing: isMobile ? "2px" : "10px"
+            wordSpacing: isMobile ? "8px" : "10px"
           }}>G H I</span>
         </div>
 
-        {/* 列標籤 - J~S (左側，對齊到網格列) */}
+        {/* 列標籤 - J~N (左側，對齊到網格列) */}
         <div style={{
           position: "absolute",
           top: isMobile ? "60px" : "20px",
-          left: isMobile ? "0px" : "150px",
+          left: isMobile ? "60px" : "150px",
           display: "flex",
           flexDirection: "column",
-          gap: isMobile ? "20px" : "70px",
+          gap: isMobile ? "2px" : "5px",
+          alignItems: "flex-start",
+          textAlign: "left",
           zIndex: 10,
           pointerEvents: "none"
         }}>
-          <div style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: isMobile ? "2px" : "5px",
-            alignItems: "flex-start",
-            textAlign: "left"
-          }}>
-            <span style={{
-              fontSize: isMobile ? "10px" : "12px",
-              fontWeight: "bold",
-              color: "#666"
-            }}>J</span>
-            <span style={{
-              fontSize: isMobile ? "10px" : "12px",
-              fontWeight: "bold",
-              color: "#666"
-            }}>K</span>
-            <span style={{
-              fontSize: isMobile ? "10px" : "12px",
-              fontWeight: "bold",
-              color: "#666"
-            }}>L</span>
-            <span style={{
-              fontSize: isMobile ? "10px" : "12px",
-              fontWeight: "bold",
-              color: "#666"
-            }}>M</span>
-            <span style={{
-              fontSize: isMobile ? "10px" : "12px",
-              fontWeight: "bold",
-              color: "#666"
-            }}>N</span>
-          </div>
-          <div style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: isMobile ? "2px" : "5px",
-            alignItems: "flex-start",
-            textAlign: "left"
-          }}>
-            <span style={{
-              fontSize: isMobile ? "10px" : "12px",
-              fontWeight: "bold",
-              color: "#666"
-            }}>O</span>
-            <span style={{
-              fontSize: isMobile ? "10px" : "12px",
-              fontWeight: "bold",
-              color: "#666"
-            }}>P</span>
-            <span style={{
-              fontSize: isMobile ? "10px" : "12px",
-              fontWeight: "bold",
-              color: "#666"
-            }}>Q</span>
-            <span style={{
-              fontSize: isMobile ? "10px" : "12px",
-              fontWeight: "bold",
-              color: "#666"
-            }}>R</span>
-            <span style={{
-              fontSize: isMobile ? "10px" : "12px",
-              fontWeight: "bold",
-              color: "#666"
-            }}>S</span>
-          </div>
+          <span style={{
+            fontSize: isMobile ? "10px" : "12px",
+            fontWeight: "bold",
+            color: "#666"
+          }}>J</span>
+          <span style={{
+            fontSize: isMobile ? "10px" : "12px",
+            fontWeight: "bold",
+            color: "#666"
+          }}>K</span>
+          <span style={{
+            fontSize: isMobile ? "10px" : "12px",
+            fontWeight: "bold",
+            color: "#666"
+          }}>L</span>
+          <span style={{
+            fontSize: isMobile ? "10px" : "12px",
+            fontWeight: "bold",
+            color: "#666"
+          }}>M</span>
+          <span style={{
+            fontSize: isMobile ? "10px" : "12px",
+            fontWeight: "bold",
+            color: "#666"
+          }}>N</span>
+        </div>
+
+        {/* 列標籤 - O~S (左側，對齊到網格列) */}
+        <div style={{
+          position: "absolute",
+          top: isMobile ? "201px" : "174px",
+          left: isMobile ? "66px" : "150px",
+          display: "flex",
+          flexDirection: "column",
+          gap: isMobile ? "2px" : "5px",
+          alignItems: "flex-start",
+          textAlign: "left",
+          zIndex: 10,
+          pointerEvents: "none"
+        }}>
+          <span style={{
+            fontSize: isMobile ? "10px" : "12px",
+            fontWeight: "bold",
+            color: "#666"
+          }}>O</span>
+          <span style={{
+            fontSize: isMobile ? "10px" : "12px",
+            fontWeight: "bold",
+            color: "#666"
+          }}>P</span>
+          <span style={{
+            fontSize: isMobile ? "10px" : "12px",
+            fontWeight: "bold",
+            color: "#666"
+          }}>Q</span>
+          <span style={{
+            fontSize: isMobile ? "10px" : "12px",
+            fontWeight: "bold",
+            color: "#666"
+          }}>R</span>
+          <span style={{
+            fontSize: isMobile ? "10px" : "12px",
+            fontWeight: "bold",
+            color: "#666"
+          }}>S</span>
         </div>
 
         {[ 

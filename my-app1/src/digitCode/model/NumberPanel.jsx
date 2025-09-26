@@ -15,7 +15,7 @@ export default function NumberPanel({ digitIndex, isMobileView, selectedSegments
     onNumberClick(key, next);
   };
 
-  const size = isMobileView ? 20 : 24;
+  const size = isMobileView ? 30 : 24;
 
   if (isMobileView) {
     // 手機版：0-9 面板在下方

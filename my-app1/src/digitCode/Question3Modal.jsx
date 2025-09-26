@@ -4,8 +4,6 @@ import { getApiUrl } from '../config/api';
 export default function Question3Modal({ isOpen, onClose, onSubmit, gameData }) {
   const [selectedDigit, setSelectedDigit] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  console.log('gameData', gameData);
   
   // 解析遊戲答案數據
   const parseGameData = (data) => {
