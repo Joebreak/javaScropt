@@ -75,7 +75,7 @@ const colorTypes = [
     { id: 'TYPE3', name: '藍色', color: '#3F48CC', borderColor: '#3498db' },
     { id: 'TYPE4', name: '黃色', color: '#feca57', borderColor: '#FFF200' },
     { id: 'TYPE5', name: '黑色', color: '#2c3e50', borderColor: '#000000' },
-    { id: 'TRANSPARENT', name: '透明', color: 'transparent', borderColor: '#F2F2F2' }
+    { id: 'TYPE0', name: '透明', color: 'transparent', borderColor: '#F2F2F2' }
 ];
 
 // 定義形狀選項

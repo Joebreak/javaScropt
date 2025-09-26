@@ -11,7 +11,7 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
         { id: 'TYPE3', name: '藍色', color: '#3F48CC', borderColor: '#3498db' },
         { id: 'TYPE4', name: '黃色', color: '#feca57', borderColor: '#f39c12' },
         { id: 'TYPE5', name: '黑色', color: '#2c3e50', borderColor: '#000000' },
-        { id: 'TRANSPARENT', name: '透明', color: 'transparent', borderColor: '#ccc' }
+        { id: 'TYPE0', name: '透明', color: 'transparent', borderColor: '#ccc' }
     ];
 
     // 定義形狀選項（用於解析網格數據）
@@ -38,14 +38,14 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
         if (!cellData || typeof cellData !== 'object') return null;
 
         if (cellData.color && cellData.shape) {
-            const NOTE3 = colorTypes.find(c => c.id === cellData.color)?.id;
+            const color = colorTypes.find(c => c.id === cellData.color);
             const shape = shapeTypes.find(s => s.id === cellData.shape);
             const NOTE4 = shape ? getAngleFromShape(shape.id) : null;
-            if (!NOTE3 || !NOTE4) {
+            if (!color || !NOTE4) {
                 console.warn('無法找到對應的顏色或形狀:', cellData);
                 return null;
             }
-            return { NOTE3, NOTE4 };
+            return { NOTE3: color?.id, NOTE4 };
         }
         return null;
     };
