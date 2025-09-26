@@ -2,12 +2,7 @@ import React, { useState } from 'react';
 import { getApiUrl } from '../../config/api';
 
 const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = null }) => {
-    // 直接使用 roomGridData，如果沒有則使用空網格
-    const grid = roomGridData || Array(8).fill().map(() => Array(10).fill(null));
     const [isValidating, setIsValidating] = useState(false);
-
-    // 驗證結果狀態
-    const [validationResult, setValidationResult] = useState(null);
 
     // 定義顏色選項（用於解析網格數據）
     const colorTypes = [
@@ -27,27 +22,6 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
         { id: 'TRIANGLE_DOWN_LEFT', name: '左下', shape: 'triangle', rotation: 0, type: 'down-left' },
         { id: 'TRIANGLE_DOWN_RIGHT', name: '右下', shape: 'triangle', rotation: 0, type: 'down-right' }
     ];
-
-    // 解析形狀信息
-    const getShapeInfo = (cellData) => {
-        if (!cellData || typeof cellData !== 'object') return null;
-
-        if (cellData.color && cellData.shape) {
-            const color = colorTypes.find(c => c.id === cellData.color);
-            const shape = shapeTypes.find(s => s.id === cellData.shape);
-
-            if (!color || !shape) {
-                console.warn('無法找到對應的顏色或形狀:', cellData);
-                return null;
-            }
-
-            return { color, shape };
-        }
-
-        console.warn('無法解析的形狀 ID 格式:', cellData);
-        return null;
-    };
-
     // 將形狀 ID 轉換為角度（參考 RadiateSelector 的角度系統）
     const getAngleFromShape = (shapeId) => {
         switch (shapeId) {
@@ -59,6 +33,22 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
             default: return null;
         }
     };
+    // 解析形狀信息
+    const getShapeInfo = (cellData) => {
+        if (!cellData || typeof cellData !== 'object') return null;
+
+        if (cellData.color && cellData.shape) {
+            const NOTE3 = colorTypes.find(c => c.id === cellData.color)?.id;
+            const shape = shapeTypes.find(s => s.id === cellData.shape);
+            const NOTE4 = shape ? getAngleFromShape(shape.id) : null;
+            if (!NOTE3 || !NOTE4) {
+                console.warn('無法找到對應的顏色或形狀:', cellData);
+                return null;
+            }
+            return { NOTE3, NOTE4 };
+        }
+        return null;
+    };
 
     // 驗證網格
     const validateGrid = async () => {
@@ -66,116 +56,15 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
             console.error('缺少遊戲數據');
             return;
         }
-
-        console.log('roomGridData:', roomGridData);
-        console.log('gameData.mapData:', gameData.mapData);
-
         setIsValidating(true);
-        setValidationResult(null);
 
         try {
-            // 將網格數據轉換為 API 格式
-            const currentMapData = [];
-            let hasShapes = false;
-            
-            grid.forEach((row, rowIndex) => {
-                row.forEach((cell, colIndex) => {
-                    const shapeInfo = getShapeInfo(cell);
-                    if (shapeInfo) {
-                        hasShapes = true;
-                        currentMapData.push({
-                            NOTE1: colIndex, // 列
-                            NOTE2: rowIndex, // 行
-                            NOTE3: shapeInfo.color.id, // 顏色
-                            NOTE4: getAngleFromShape(shapeInfo.shape.id)
-                        });
-                    }
-                });
-            });
-            console.log('currentMapData:', currentMapData);
-            // 檢查是否有形狀
-            if (!hasShapes) {
-                setValidationResult({
-                    success: false,
-                    message: '驗證失敗',
-                    details: '網格中沒有放置任何形狀'
-                });
-                return;
-            }
-
             // 比較當前網格數據與遊戲數據是否匹配
             const expectedMapData = gameData.mapData || [];
-            let validationResult = null;
-
-            // 檢查 roomGridData 的每個位置
-            for (let rowIndex = 0; rowIndex < roomGridData.length; rowIndex++) {
-                if (validationResult) break; // 如果已經有錯誤結果，停止檢查
-                
-                for (let colIndex = 0; colIndex < roomGridData[rowIndex].length; colIndex++) {
-                    if (validationResult) break; // 如果已經有錯誤結果，停止檢查
-                    
-                    // 從 roomGridData 獲取該位置的實際數據
-                    const roomGridCell = roomGridData[rowIndex][colIndex];
-                    const shapeInfo = getShapeInfo(roomGridCell);
-                    
-                    // 在 expectedMapData 中查找該位置的預期數據
-                    const expectedItem = expectedMapData.find(item => 
-                        item && item.NOTE1 === colIndex && item.NOTE2 === rowIndex
-                    );
-                    
-                    // 在 currentMapData 中查找該位置的實際數據
-                    const currentItem = currentMapData.find(item => 
-                        item.NOTE1 === colIndex && item.NOTE2 === rowIndex
-                    );
-                    
-                    // 如果期望的 NOTE3 是 null，表示該位置應該沒有形狀
-                    if (expectedItem && expectedItem.NOTE3 === null) {
-                        if (currentItem || shapeInfo) {
-                            validationResult = {
-                                success: false,
-                                message: '驗證失敗',
-                                details: `位置 (${colIndex}, ${rowIndex}) 應該沒有形狀，但實際有 ${currentItem ? currentItem.NOTE3 : '形狀'}`,
-                                data: { currentMapData, expectedMapData }
-                            };
-                        }
-                        // 如果期望是 null 且實際也沒有，則正確，繼續檢查下一個
-                    } else if (expectedItem && expectedItem.NOTE3 !== null) {
-                        // 如果期望的 NOTE3 不是 null，表示該位置應該有形狀
-                        if (!currentItem && !shapeInfo) {
-                            validationResult = {
-                                success: false,
-                                message: '驗證失敗',
-                                details: `位置 (${colIndex}, ${rowIndex}) 缺少形狀`,
-                                data: { currentMapData, expectedMapData }
-                            };
-                        } else if (currentItem && currentItem.NOTE3 !== expectedItem.NOTE3) {
-                            validationResult = {
-                                success: false,
-                                message: '驗證失敗',
-                                details: `位置 (${colIndex}, ${rowIndex}) 顏色不匹配: 期望 ${expectedItem.NOTE3}, 實際 ${currentItem.NOTE3}`,
-                                data: { currentMapData, expectedMapData }
-                            };
-                        } else if (currentItem && currentItem.NOTE4 !== expectedItem.NOTE4) {
-                            validationResult = {
-                                success: false,
-                                message: '驗證失敗',
-                                details: `位置 (${colIndex}, ${rowIndex}) 角度不匹配: 期望 ${expectedItem.NOTE4}, 實際 ${currentItem.NOTE4}`,
-                                data: { currentMapData, expectedMapData }
-                            };
-                        }
-                    }
-                }
-            }
-            // 如果所有檢查都通過，設置成功結果
-            if (!validationResult) {
-                validationResult = {
-                    success: true,
-                    message: '驗證成功！',
-                    details: '網格配置與預期完全匹配',
-                    data: { currentMapData, expectedMapData }
-                };
-            }
-
+            // 直接使用 roomGridData，如果沒有則使用空網格
+            const grid = roomGridData || Array(8).fill().map(() => Array(10).fill(null));
+            let validationResult = getCheckResult(expectedMapData, grid);
+            console.log(validationResult);
             // 準備 API 請求數據
             const requestBody = {
                 room: gameData.room,
@@ -199,38 +88,87 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-
-            const result = await response.json();
-
-            // 設置最終驗證結果
-            setValidationResult({
-                ...validationResult,
-                apiResponse: result
-            });
+            await response.json();
+            // API 調用成功後直接關閉視窗
+            if (onConfirm) {
+                onConfirm({
+                    success: true,
+                    message: '提交成功！',
+                    details: '答案已成功提交'
+                });
+            }
+            onClose();
 
         } catch (error) {
             console.error('驗證失敗:', error);
-            setValidationResult({
-                success: false,
-                message: `驗證失敗: ${error.message}`,
-                details: '請檢查數據格式或稍後再試'
-            });
+            // API 調用失敗時也直接關閉視窗
+            if (onConfirm) {
+                onConfirm({
+                    success: false,
+                    message: `提交失敗: ${error.message}`,
+                    details: '請檢查數據格式或稍後再試'
+                });
+            }
+            onClose();
         } finally {
             setIsValidating(false);
         }
     };
 
-    // 處理確認
-    const handleConfirm = () => {
-        if (onConfirm) {
-            onConfirm(validationResult);
+    const getCheckResult = (expectedMapData, grid) => {
+        // 檢查 roomGridData 的每個位置
+        for (let rowIndex = 0; rowIndex < grid.length; rowIndex++) {
+            for (let colIndex = 0; colIndex < grid[rowIndex].length; colIndex++) {
+                // 從 roomGridData 獲取該位置的實際數據
+                const shapeInfo = getShapeInfo(grid[rowIndex][colIndex]);
+                // 在 expectedMapData 中查找該位置的預期數據
+                const expectedItem = expectedMapData.find(item =>
+                    item && item.NOTE1 === colIndex && item.NOTE2 === rowIndex
+                );
+                // 如果期望的 NOTE3 是 null，表示該位置應該沒有形狀
+                if ((expectedItem === undefined || expectedItem.NOTE3 === null) && shapeInfo) {
+                    return {
+                        success: false,
+                        message: '驗證失敗',
+                        details: `位置 (${colIndex}, ${rowIndex}) 應該沒有形狀`,
+                    };
+                }
+                if (expectedItem && expectedItem.NOTE3 !== null) {
+                    // 如果期望的 NOTE3 不是 null，表示該位置應該有形狀
+                    if (!shapeInfo) {
+                        return {
+                            success: false,
+                            message: '驗證失敗',
+                            details: `位置 (${colIndex}, ${rowIndex}) 缺少形狀`,
+                        };
+                    }
+                    if (shapeInfo && shapeInfo.NOTE3 !== expectedItem.NOTE3) {
+                        return {
+                            success: false,
+                            message: '驗證失敗',
+                            details: `位置 (${colIndex}, ${rowIndex}) 顏色不匹配`,
+                        };
+                    }
+                    if (shapeInfo && shapeInfo.NOTE4 !== expectedItem.NOTE4) {
+                        return {
+                            success: false,
+                            message: '驗證失敗',
+                            details: `位置 (${colIndex}, ${rowIndex}) 角度不匹配`,
+                        };
+                    }
+                }
+            }
         }
-        onClose();
+        return {
+            success: true,
+            message: '驗證成功！',
+            details: '網格配置與預期完全匹配',
+        };
     };
 
     // 處理取消
     const handleCancel = () => {
-        setValidationResult(null);
+        setIsValidating(false);
         onClose();
     };
 
@@ -260,100 +198,41 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
             }}>
                 <h3 style={{ margin: '0 0 20px 0', textAlign: 'center' }}>圖形擺放驗證</h3>
-            
 
-                {/* 驗證結果顯示 */}
-                {validationResult && (
-                    <div style={{
-                        marginBottom: '20px',
-                        padding: '15px',
-                        backgroundColor: validationResult.success ? '#d4edda' : '#f8d7da',
-                        border: `1px solid ${validationResult.success ? '#c3e6cb' : '#f5c6cb'}`,
-                        borderRadius: '6px',
-                        color: validationResult.success ? '#155724' : '#721c24'
-                    }}>
-                        <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                            {validationResult.success ? '✅ 驗證成功！' : '❌ 驗證失敗'}
-                        </div>
-                        <div style={{ fontSize: '14px' }}>
-                            {validationResult.message || (validationResult.success ? '您的圖形擺放是正確的！' : '請檢查您的圖形擺放')}
-                        </div>
-                        {validationResult.details && (
-                            <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
-                                {validationResult.details}
-                            </div>
-                        )}
-                    </div>
-                )}
+
 
                 {/* 按鈕區域 */}
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                    {!validationResult ? (
-                        <>
-                            <button
-                                onClick={validateGrid}
-                                disabled={isValidating}
-                                style={{
-                                    padding: '10px 20px',
-                                    backgroundColor: isValidating ? '#6c757d' : '#007bff',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    cursor: isValidating ? 'not-allowed' : 'pointer',
-                                    fontSize: '14px',
-                                    fontWeight: 'bold'
-                                }}
-                            >
-                                {isValidating ? '驗證中...' : '開始驗證'}
-                            </button>
-                            <button
-                                onClick={handleCancel}
-                                style={{
-                                    padding: '10px 20px',
-                                    backgroundColor: '#6c757d',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    cursor: 'pointer',
-                                    fontSize: '14px'
-                                }}
-                            >
-                                取消
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <button
-                                onClick={handleConfirm}
-                                style={{
-                                    padding: '10px 20px',
-                                    backgroundColor: '#28a745',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    cursor: 'pointer',
-                                    fontSize: '14px',
-                                    fontWeight: 'bold'
-                                }}
-                            >
-                                確認
-                            </button>
-                            <button
-                                onClick={handleCancel}
-                                style={{
-                                    padding: '10px 20px',
-                                    backgroundColor: '#6c757d',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    cursor: 'pointer',
-                                    fontSize: '14px'
-                                }}
-                            >
-                                關閉
-                            </button>
-                        </>
-                    )}
+                    <button
+                        onClick={validateGrid}
+                        disabled={isValidating}
+                        style={{
+                            padding: '10px 20px',
+                            backgroundColor: isValidating ? '#6c757d' : '#007bff',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: isValidating ? 'not-allowed' : 'pointer',
+                            fontSize: '14px',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        {isValidating ? '驗證中...' : '開始驗證'}
+                    </button>
+                    <button
+                        onClick={handleCancel}
+                        style={{
+                            padding: '10px 20px',
+                            backgroundColor: '#6c757d',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '14px'
+                        }}
+                    >
+                        取消
+                    </button>
                 </div>
             </div>
         </div>
