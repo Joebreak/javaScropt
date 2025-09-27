@@ -15,10 +15,8 @@ const getGridConfig = () => {
                 colorButtonSize: 20,  // 手機版顏色按鈕大小
                 colorIconSize: 12,   // 手機版顏色圖示大小
                 colorTextSize: '7px', // 手機版顏色文字大小
-                gridShapeSize: 30,   // 手機版網格圖形大小
-                gridShapeFontSize: '48px', // 手機版網格圖形字體大小
-                triangleFontSize: '35px',  // 手機版三角形字體大小
-                squareFontSize: '40px'     // 手機版方形字體大小
+                triangleFontSize: '30px',  // 手機版三角形字體大小
+                squareFontSize: '35px'     // 手機版方形字體大小
             };
         }
         if (width <= 768) {
@@ -28,10 +26,8 @@ const getGridConfig = () => {
                 colorButtonSize: 24,  // 平板版顏色按鈕大小
                 colorIconSize: 14,   // 平板版顏色圖示大小
                 colorTextSize: '8px', // 平板版顏色文字大小
-                gridShapeSize: 30,   // 平板版網格圖形大小
-                gridShapeFontSize: '48px', // 平板版網格圖形字體大小
-                triangleFontSize: '55px',  // 平板版三角形字體大小
-                squareFontSize: '60px'     // 平板版方形字體大小
+                triangleFontSize: '40px',  // 平板版三角形字體大小
+                squareFontSize: '40px'     // 平板版方形字體大小
             };
         }
         return {
@@ -40,8 +36,6 @@ const getGridConfig = () => {
             colorButtonSize: 16,  // 桌面版顏色按鈕大小
             colorIconSize: 16,   // 桌面版顏色圖示大小
             colorTextSize: '8px', // 桌面版顏色文字大小
-            gridShapeSize: 40,   // 桌面版網格圖形大小
-            gridShapeFontSize: '90px', // 桌面版網格圖形字體大小
             triangleFontSize: '93px',  // 桌面版三角形字體大小
             squareFontSize: '100px'     // 桌面版方形字體大小
         };
@@ -52,8 +46,6 @@ const getGridConfig = () => {
         colorButtonSize: 16,  // 桌面版顏色按鈕大小
         colorIconSize: 16,   // 桌面版顏色圖示大小
         colorTextSize: '8px', // 桌面版顏色文字大小
-        gridShapeSize: 40,   // 桌面版網格圖形大小
-        gridShapeFontSize: '40px', // 桌面版網格圖形字體大小
         triangleFontSize: '40px',  // 桌面版三角形字體大小
         squareFontSize: '30px'     // 桌面版方形字體大小
     };
