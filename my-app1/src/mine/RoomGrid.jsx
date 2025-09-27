@@ -15,7 +15,7 @@ const getGridConfig = () => {
                 colorButtonSize: 20,  // 手機版顏色按鈕大小
                 colorIconSize: 12,   // 手機版顏色圖示大小
                 colorTextSize: '7px', // 手機版顏色文字大小
-                triangleFontSize: '25px',  // 手機版三角形字體大小
+                triangleFontSize: '28px',  // 手機版三角形字體大小
                 squareFontSize: '30px',     // 手機版方形字體大小
                 transparentBorderSize: '28px'  // 手機版透明圖案邊框大小
             };
@@ -381,7 +381,7 @@ function MinaRoom({
                                                             margin: 0,
                                                             padding: 0,
                                                             fontFamily: 'monospace',
-                                                            transform: window.innerWidth <= 768 ? 'translateY(0px)' : 'translateY(-7px)'
+                                                            transform: window.innerWidth <= 768 ? 'translateY(-2px)' : 'translateY(-7px)'
                                                         }}>■</span>
                                                     </div>
                                                 ) : (
