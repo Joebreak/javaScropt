@@ -43,7 +43,7 @@ const getGridConfig = () => {
             gridShapeSize: 40,   // 桌面版網格圖形大小
             gridShapeFontSize: '90px', // 桌面版網格圖形字體大小
             triangleFontSize: '93px',  // 桌面版三角形字體大小
-            squareFontSize: '115px'     // 桌面版方形字體大小
+            squareFontSize: '100px'     // 桌面版方形字體大小
         };
     }
     return {
@@ -324,7 +324,7 @@ function MinaRoom({
                                                         position: 'absolute',
                                                         top: '45%',
                                                         left: '50%',
-                                                        transform: 'translate(-50%, -50%)',
+                                                        transform:  'translate(-50%, -50%)',
                                                         width: 'auto',
                                                         height: 'auto'
                                                     }}>
@@ -365,7 +365,7 @@ function MinaRoom({
                                                         position: 'absolute',
                                                         top: '45%',
                                                         left: '50%',
-                                                        transform:  window.innerWidth <= 768 ? 'translate(-50%, -50%)' : 'translate(-50%, -63%)',
+                                                        transform:  window.innerWidth <= 768 ? 'translate(-50%, -45%)' : 'translate(-50%, -55%)',
                                                         width: 'auto',
                                                         height: 'auto',
                                                         margin: 0,
