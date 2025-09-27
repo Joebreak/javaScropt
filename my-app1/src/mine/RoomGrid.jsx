@@ -363,7 +363,7 @@ function MinaRoom({
                                                         position: 'absolute',
                                                         top: '50%',
                                                         left: '50%',
-                                                        transform: window.innerWidth <= 768 ? 'translate(-50%, -45%)' : 'translate(-50%, -50%)',
+                                                        transform: window.innerWidth <= 768 ? 'translate(-50%, -50%)' : 'translate(-50%, -50%)',
                                                         width: currentConfig.transparentBorderSize,
                                                         height: currentConfig.transparentBorderSize,
                                                         border: '2px dashed #999',
