@@ -381,7 +381,7 @@ function MinaRoom({
                                                             margin: 0,
                                                             padding: 0,
                                                             fontFamily: 'monospace',
-                                                            transform: window.innerWidth <= 768 ? 'translateY(-2px)' : 'translateY(-7px)'
+                                                            transform: window.innerWidth <= 768 ? 'translateY(2px)' : 'translateY(-7px)'
                                                         }}>■</span>
                                                     </div>
                                                 ) : (
