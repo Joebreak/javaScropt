@@ -16,7 +16,8 @@ const getGridConfig = () => {
                 colorIconSize: 12,   // 手機版顏色圖示大小
                 colorTextSize: '7px', // 手機版顏色文字大小
                 triangleFontSize: '28px',  // 手機版三角形字體大小
-                squareFontSize: '30px'     // 手機版方形字體大小
+                squareFontSize: '30px',     // 手機版方形字體大小
+                transparentBorderSize: '25px'  // 手機版透明圖案邊框大小
             };
         }
         if (width <= 768) {
@@ -27,7 +28,8 @@ const getGridConfig = () => {
                 colorIconSize: 14,   // 平板版顏色圖示大小
                 colorTextSize: '8px', // 平板版顏色文字大小
                 triangleFontSize: '40px',  // 平板版三角形字體大小
-                squareFontSize: '40px'     // 平板版方形字體大小
+                squareFontSize: '40px',     // 平板版方形字體大小
+                transparentBorderSize: '52px'  // 平板版透明圖案邊框大小
             };
         }
         return {
@@ -37,7 +39,8 @@ const getGridConfig = () => {
             colorIconSize: 16,   // 桌面版顏色圖示大小
             colorTextSize: '8px', // 桌面版顏色文字大小
             triangleFontSize: '93px',  // 桌面版三角形字體大小
-            squareFontSize: '100px'     // 桌面版方形字體大小
+            squareFontSize: '100px',     // 桌面版方形字體大小
+            transparentBorderSize: '55px'  // 桌面版透明圖案邊框大小
         };
     }
     return {
@@ -47,7 +50,8 @@ const getGridConfig = () => {
         colorIconSize: 16,   // 桌面版顏色圖示大小
         colorTextSize: '8px', // 桌面版顏色文字大小
         triangleFontSize: '40px',  // 桌面版三角形字體大小
-        squareFontSize: '30px'     // 桌面版方形字體大小
+        squareFontSize: '30px',     // 桌面版方形字體大小
+        transparentBorderSize: '36px'  // 桌面版透明圖案邊框大小
     };
 };
 
@@ -280,7 +284,7 @@ function MinaRoom({
                                     key={`${rIdx}-${cIdx}`}
                                     onClick={() => handleCellClick(rIdx, cIdx)}
                                     style={{
-                                        border: cellData && cellData.color.id === 'TYPE0' ? '2px dashed #999' : '1px solid #ccc',
+                                        border: '1px solid #ccc',
                                         background: '#fff',
                                         width: `${currentConfig.cellSize}px`,
                                         height: `${currentConfig.cellSize}px`,
@@ -305,26 +309,35 @@ function MinaRoom({
                                         }}>
                                             {cellData.shape.shape === 'triangle' ? (
                                                 cellData.color.id === 'TYPE0' ? (
-                                                    <span style={{
-                                                        fontSize: currentConfig.triangleFontSize,
-                                                        color: cellData.color.borderColor,
-                                                        textShadow: '0 0 2px rgba(0,0,0,0.5)',
-                                                        fontWeight: 'bold',
-                                                        display: 'block',
-                                                        textAlign: 'center',
-                                                        lineHeight: 1,
+                                                    <div style={{
                                                         position: 'absolute',
                                                         top: '45%',
                                                         left: '50%',
-                                                        transform:  'translate(-50%, -50%)',
-                                                        width: 'auto',
-                                                        height: 'auto'
+                                                        transform: 'translate(-50%, -50%)',
+                                                        width: currentConfig.transparentBorderSize,
+                                                        height: currentConfig.transparentBorderSize,
+                                                        border: '2px dashed #999',
+                                                        borderRadius: '2px',
+                                                        backgroundColor: 'transparent',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
                                                     }}>
-                                                        {cellData.shape.type === 'up-left' ? '◢' :
-                                                            cellData.shape.type === 'up-right' ? '◣' :
-                                                                cellData.shape.type === 'down-left' ? '◥' :
-                                                                    '◤'}
-                                                    </span>
+                                                        <span style={{
+                                                            fontSize: currentConfig.triangleFontSize,
+                                                            color: cellData.color.borderColor,
+                                                            fontWeight: 'bold',
+                                                            lineHeight: 1,
+                                                            margin: 0,
+                                                            padding: 0,
+                                                            fontFamily: 'monospace'
+                                                        }}>
+                                                            {cellData.shape.type === 'up-left' ? '◢' :
+                                                                cellData.shape.type === 'up-right' ? '◣' :
+                                                                    cellData.shape.type === 'down-left' ? '◥' :
+                                                                        '◤'}
+                                                        </span>
+                                                    </div>
                                                 ) : (
                                                     <span style={{ 
                                                         fontSize: currentConfig.triangleFontSize,
@@ -346,24 +359,31 @@ function MinaRoom({
                                                 )
                                             ) : (
                                                 cellData.color.id === 'TYPE0' ? (
-                                                    <span style={{
-                                                        fontSize: currentConfig.squareFontSize,
-                                                        color: cellData.color.borderColor,
-                                                        textShadow: '0 0 3px rgba(0, 0, 0, 0.3)',
-                                                        fontWeight: 'bold',
-                                                        display: 'block',
-                                                        textAlign: 'center',
-                                                        lineHeight: 1,
+                                                    <div style={{
                                                         position: 'absolute',
-                                                        top: '45%',
+                                                        top: '50%',
                                                         left: '50%',
-                                                        transform:  window.innerWidth <= 768 ? 'translate(-50%, -45%)' : 'translate(-50%, -55%)',
-                                                        width: 'auto',
-                                                        height: 'auto',
-                                                        margin: 0,
-                                                        padding: 0,
-                                                        fontFamily: 'monospace'
-                                                    }}>■</span>
+                                                        transform:  window.innerWidth <= 768 ? 'translate(-50%, -45%)' : 'translate(-50%, -50%)',
+                                                        width: currentConfig.transparentBorderSize,
+                                                        height: currentConfig.transparentBorderSize,
+                                                        border: '2px dashed #999',
+                                                        borderRadius: '2px',
+                                                        backgroundColor: 'transparent',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}>
+                                                        <span style={{
+                                                            fontSize: currentConfig.squareFontSize,
+                                                            color: cellData.color.borderColor,
+                                                            fontWeight: 'bold',
+                                                            lineHeight: 1,
+                                                            margin: 0,
+                                                            padding: 0,
+                                                            fontFamily: 'monospace',
+                                                            transform: 'translateY(-7px)'
+                                                        }}>■</span>
+                                                    </div>
                                                 ) : (
                                                     <span style={{
                                                         fontSize: currentConfig.squareFontSize,
