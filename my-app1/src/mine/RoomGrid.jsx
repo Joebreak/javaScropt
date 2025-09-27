@@ -17,6 +17,7 @@ const getGridConfig = () => {
                 colorTextSize: '7px', // 手機版顏色文字大小
                 triangleFontSize: '28px',  // 手機版三角形字體大小
                 squareFontSize: '30px',     // 手機版方形字體大小
+                xFontSize: '28px',          // 手機版X圖形字體大小
                 transparentBorderSize: '28px'  // 手機版透明圖案邊框大小
             };
         }
@@ -29,6 +30,7 @@ const getGridConfig = () => {
                 colorTextSize: '8px', // 平板版顏色文字大小
                 triangleFontSize: '40px',  // 平板版三角形字體大小
                 squareFontSize: '40px',     // 平板版方形字體大小
+                xFontSize: '40px',          // 平板版X圖形字體大小
                 transparentBorderSize: '52px'  // 平板版透明圖案邊框大小
             };
         }
@@ -40,6 +42,7 @@ const getGridConfig = () => {
             colorTextSize: '8px', // 桌面版顏色文字大小
             triangleFontSize: '78px',  // 桌面版三角形字體大小
             squareFontSize: '100px',     // 桌面版方形字體大小
+            xFontSize: '80px',          // 桌面版X圖形字體大小
             transparentBorderSize: '55px'  // 桌面版透明圖案邊框大小
         };
     }
@@ -51,6 +54,7 @@ const getGridConfig = () => {
         colorTextSize: '8px', // 桌面版顏色文字大小
         triangleFontSize: '40px',  // 桌面版三角形字體大小
         squareFontSize: '30px',     // 桌面版方形字體大小
+        xFontSize: '30px',          // 桌面版X圖形字體大小
         transparentBorderSize: '36px'  // 桌面版透明圖案邊框大小
     };
 };
@@ -66,12 +70,12 @@ const bottomColLabels = Array.from({ length: cols }, (_, i) => String.fromCharCo
 
 // 定義顏色選項
 const colorTypes = [
-    { id: 'TYPE1', name: '白色', color: '#ffffff', borderColor: '#D9D9D9' },
+    { id: 'TYPE1', name: '白色', color: '#ffffff', borderColor: '#BFBFBF' },
     { id: 'TYPE2', name: '紅色', color: '#ff6b6b', borderColor: '#e74c3c' },
     { id: 'TYPE3', name: '藍色', color: '#3F48CC', borderColor: '#3498db' },
     { id: 'TYPE4', name: '黃色', color: '#feca57', borderColor: '#FFF200' },
     { id: 'TYPE5', name: '黑色', color: '#2c3e50', borderColor: '#000000' },
-    { id: 'TYPE0', name: '透明', color: 'transparent', borderColor: '#F2F2F2' }
+    { id: 'TYPE0', name: '透明', color: 'transparent', borderColor: '#BFBFBF' }
 ];
 
 // 定義形狀選項
@@ -80,7 +84,8 @@ const shapeTypes = [
     { id: 'TRIANGLE_UP_LEFT', name: '左上', shape: 'triangle', rotation: 0, type: 'up-left' },
     { id: 'TRIANGLE_UP_RIGHT', name: '右上', shape: 'triangle', rotation: 0, type: 'up-right' },
     { id: 'TRIANGLE_DOWN_LEFT', name: '左下', shape: 'triangle', rotation: 0, type: 'down-left' },
-    { id: 'TRIANGLE_DOWN_RIGHT', name: '右下', shape: 'triangle', rotation: 0, type: 'down-right' }
+    { id: 'TRIANGLE_DOWN_RIGHT', name: '右下', shape: 'triangle', rotation: 0, type: 'down-right' },
+    { id: 'X_SHAPE', name: 'X', shape: 'x', rotation: 0, type: 'x' }
 ];
 
 
@@ -171,7 +176,15 @@ function MinaRoom({
 
     // 獲取當前組合的 ID
     const getCurrentSelection = () => {
-        if (!selectedColor || !selectedShape) return null;
+        if (!selectedShape) return null;
+        
+        // 如果是 X 圖形，不需要顏色
+        if (selectedShape === 'X_SHAPE') {
+            return { color: null, shape: selectedShape };
+        }
+        
+        // 其他圖形需要顏色
+        if (!selectedColor) return null;
         return { color: selectedColor, shape: selectedShape };
     };
 
@@ -179,11 +192,25 @@ function MinaRoom({
     const getShapeInfo = (shapeId) => {
         if (!shapeId) return null;
 
-        if (typeof shapeId === 'object' && shapeId.color && shapeId.shape) {
-            const color = colorTypes.find(c => c.id === shapeId.color);
+        if (typeof shapeId === 'object' && shapeId.shape) {
             const shape = shapeTypes.find(s => s.id === shapeId.shape);
+            
+            if (!shape) {
+                return null;
+            }
 
-            if (!color || !shape) {
+            // 如果是 X 圖形，不需要顏色
+            if (shapeId.shape === 'X_SHAPE') {
+                return { color: null, shape, id: shapeId.shape };
+            }
+
+            // 其他圖形需要顏色
+            if (!shapeId.color) {
+                return null;
+            }
+
+            const color = colorTypes.find(c => c.id === shapeId.color);
+            if (!color) {
                 return null;
             }
 
@@ -294,7 +321,7 @@ function MinaRoom({
                                         justifyContent: 'center',
                                         fontSize: '16px',
                                         fontWeight: 'bold',
-                                        color: cellData ? cellData.color.borderColor : '#999',
+                                        color: cellData && cellData.color ? cellData.color.borderColor : '#999',
                                         transition: 'all 0.2s ease',
                                         position: 'relative',
                                         zIndex: 1  // 網格單元在底層
@@ -357,6 +384,24 @@ function MinaRoom({
                                                                     '◤'}
                                                     </span>
                                                 )
+                                            ) : cellData.shape.shape === 'x' ? (
+                                                <span style={{
+                                                    fontSize: currentConfig.xFontSize,
+                                                    color: '#e74c3c', // 紅色
+                                                    fontWeight: 'bold',
+                                                    display: 'block',
+                                                    textAlign: 'center',
+                                                    lineHeight: 1,
+                                                    position: 'absolute',
+                                                    top: '50%',
+                                                    left: '50%',
+                                                    transform: 'translate(-50%, -50%)',
+                                                    width: 'auto',
+                                                    height: 'auto',
+                                                    margin: 0,
+                                                    padding: 0,
+                                                    fontFamily: 'monospace'
+                                                }}>✕</span>
                                             ) : (
                                                 cellData.color.id === 'TYPE0' ? (
                                                     <div style={{
@@ -769,8 +814,9 @@ function MinaRoom({
                         </div>
 
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'flex-start' }}>
-                            {/* 左邊：實心 */}
-                            <div style={{ display: 'flex', gap: '4px' }}>
+                            {/* 左邊：實心和X */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                {/* 實心 */}
                                 {shapeTypes.slice(0, 1).map(shape => {
                                     const isSelected = selectedShape === shape.id;
                                     return (
@@ -804,6 +850,52 @@ function MinaRoom({
                                                 color: 'white'
                                             }}>
                                                 ■
+                                            </div>
+                                            <span style={{
+                                                fontSize: currentConfig.colorTextSize,
+                                                fontWeight: 'bold',
+                                                color: isSelected ? '#4f8cff' : '#333'
+                                            }}>
+                                                {shape.name}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                                
+                                {/* X 圖形 */}
+                                {shapeTypes.slice(5, 6).map(shape => {
+                                    const isSelected = selectedShape === shape.id;
+                                    return (
+                                        <div
+                                            key={shape.id}
+                                            onClick={() => handleShapeSelect(shape.id)}
+                                            style={{
+                                                padding: '4px 8px',
+                                                border: `2px solid ${isSelected ? '#4f8cff' : '#ccc'}`,
+                                                borderRadius: '4px',
+                                                backgroundColor: '#f8f9fa',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s ease',
+                                                userSelect: 'none',
+                                                minWidth: `${currentConfig.colorButtonSize}px`,
+                                                textAlign: 'center'
+                                            }}
+                                        >
+                                            <div style={{
+                                                width: '16px',
+                                                height: '16px',
+                                                backgroundColor: '#e74c3c',
+                                                border: '1px solid #c0392b',
+                                                borderRadius: '0',
+                                                margin: '0 auto 2px auto',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: currentConfig.colorTextSize,
+                                                fontWeight: 'bold',
+                                                color: 'white'
+                                            }}>
+                                                ✕
                                             </div>
                                             <span style={{
                                                 fontSize: currentConfig.colorTextSize,
@@ -916,6 +1008,7 @@ function MinaRoom({
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
 

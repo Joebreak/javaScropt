@@ -20,7 +20,8 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
         { id: 'TRIANGLE_UP_LEFT', name: '左上', shape: 'triangle', rotation: 0, type: 'up-left' },
         { id: 'TRIANGLE_UP_RIGHT', name: '右上', shape: 'triangle', rotation: 0, type: 'up-right' },
         { id: 'TRIANGLE_DOWN_LEFT', name: '左下', shape: 'triangle', rotation: 0, type: 'down-left' },
-        { id: 'TRIANGLE_DOWN_RIGHT', name: '右下', shape: 'triangle', rotation: 0, type: 'down-right' }
+        { id: 'TRIANGLE_DOWN_RIGHT', name: '右下', shape: 'triangle', rotation: 0, type: 'down-right' },
+        { id: 'X_SHAPE', name: 'X', shape: 'x', rotation: 0, type: 'x' }
     ];
     // 將形狀 ID 轉換為角度（參考 RadiateSelector 的角度系統）
     const getAngleFromShape = (shapeId) => {
@@ -38,6 +39,11 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
         if (!cellData || typeof cellData !== 'object') return null;
 
         if (cellData.color && cellData.shape) {
+            // 如果是 X 圖形，不參與驗證
+            if (cellData.shape === 'X_SHAPE' || cellData.shape === 'x') {
+                return null;
+            }
+            
             const color = colorTypes.find(c => c.id === cellData.color);
             const shape = shapeTypes.find(s => s.id === cellData.shape);
             const NOTE4 = shape ? getAngleFromShape(shape.id) : null;
