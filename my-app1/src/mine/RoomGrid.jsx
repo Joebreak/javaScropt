@@ -381,7 +381,7 @@ function MinaRoom({
                                                         position: 'absolute',
                                                         top: '45%',
                                                         left: '50%',
-                                                        transform:  window.innerWidth <= 768 ? 'translate(-50%, -50%)' : 'translate(-50%, -63%)',
+                                                        transform:  window.innerWidth <= 768 ? 'translate(-50%, -45%)' : 'translate(-50%, -63%)',
                                                         width: 'auto',
                                                         height: 'auto',
                                                         margin: 0,
