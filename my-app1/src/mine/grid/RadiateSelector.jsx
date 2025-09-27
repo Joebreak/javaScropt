@@ -161,7 +161,6 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
                 default: return { row: point.row, col: point.col };
             }
         };
-        console.log(currentPoint);
         // 檢查是否在邊界內
         const isInBounds = (point) => {
             return point.row >= 0 && point.row < 8 && point.col >= 0 && point.col < 10;
@@ -173,17 +172,14 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
         while (true) {
             // 計算下一個位置
             const nextPos = moveToNext(currentPoint, currentDirection);
-
             // 檢查是否在邊界內
             if (!isInBounds(nextPos)) {
-                // 超過邊界，保持當前位置
+                // 超過邊界，先記錄當前位置到路徑中
+                path.push({ ...nextPos });
                 break;
             }
-
             // 移動到新位置
             currentPoint = nextPos;
-            // console.log('當前位置:', currentPoint);
-            // console.log('當前方向:', currentDirection);
             // 在 mapData 中尋找當前位置的資料（避免在迴圈中宣告函式）
             const cellData = getCellDataAt(currentPoint, mapData);
             // console.log('地圖資料地圖資料:', cellData);
@@ -299,11 +295,6 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
             // 執行光線追蹤
             const lightTraceResult = traceLightPath(selectedDirection.entryPoint, selectedDirection.side, mapData || []);
             const result = {
-                direction: selectedDirection,
-                type: selectedDirection.type,
-                index: selectedDirection.index,
-                label: selectedDirection.label,
-                side: selectedDirection.side,
                 entryPoint: selectedDirection.entryPoint,
                 lightPath: lightTraceResult.path,
                 finalColor: lightTraceResult.finalColor,
@@ -324,15 +315,14 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
                     const lastPath = lightTraceResult.path[lightTraceResult.path.length - 1];
                     if (lastPath) {
                         const { row, col } = lastPath;
-                        
                         // 根據最後位置決定出口格式
-                        if (row === 0) {
+                        if (row === -1) {
                             outFormat = String(col + 1); // 從上方出來，回復到 1~10 格式
-                        } else if (row === 7) {
-                            outFormat = String.fromCharCode('I'.charCodeAt(0) + col); // 從下方出來，回復到 I~R 格式
-                        } else if (col === 0) {
+                        } else if (col === -1) {
                             outFormat = String.fromCharCode('A'.charCodeAt(0) + row); // 從左方出來，回復到 A~H 格式
-                        } else if (col === 9) {
+                        } else if (row === 8) {
+                            outFormat = String.fromCharCode('I'.charCodeAt(0) + col); // 從下方出來，回復到 I~R 格式
+                        } else if (col === 10) {
                             outFormat = String(11 + row); // 從右方出來，回復到 11~18 格式
                         } else {
                             outFormat = inFormat;
