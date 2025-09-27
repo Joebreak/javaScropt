@@ -1,6 +1,9 @@
 name: hanabi test
 
 on:
+  push:
+    branches:
+      - hanabi
   workflow_dispatch:
   schedule:
     - cron: "0 22 * * *"
