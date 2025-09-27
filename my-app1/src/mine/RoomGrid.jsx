@@ -288,7 +288,7 @@ function MinaRoom({
                                     key={`${rIdx}-${cIdx}`}
                                     onClick={() => handleCellClick(rIdx, cIdx)}
                                     style={{
-                                        border: cellData && cellData.color.id === 'TRANSPARENT' ? '2px dashed #999' : '1px solid #ccc',
+                                        border: cellData && cellData.color.id === 'TYPE0' ? '2px dashed #999' : '1px solid #ccc',
                                         background: '#fff',
                                         width: `${currentConfig.cellSize}px`,
                                         height: `${currentConfig.cellSize}px`,
@@ -312,7 +312,7 @@ function MinaRoom({
                                             zIndex: 10  // 確保圖案在網格邊框之上
                                         }}>
                                             {cellData.shape.shape === 'triangle' ? (
-                                                cellData.color.id === 'TRANSPARENT' ? (
+                                                cellData.color.id === 'TYPE0' ? (
                                                     <span style={{
                                                         fontSize: currentConfig.triangleFontSize,
                                                         color: cellData.color.borderColor,
@@ -353,7 +353,7 @@ function MinaRoom({
                                                     </span>
                                                 )
                                             ) : (
-                                                cellData.color.id === 'TRANSPARENT' ? (
+                                                cellData.color.id === 'TYPE0' ? (
                                                     <span style={{
                                                         fontSize: currentConfig.squareFontSize,
                                                         color: cellData.color.borderColor,
@@ -651,7 +651,7 @@ function MinaRoom({
                                             width: `${currentConfig.colorIconSize}px`,
                                             height: `${currentConfig.colorIconSize}px`,
                                             backgroundColor: color.color,
-                                            border: color.id === 'TRANSPARENT' ? '2px dashed #999' : `1px solid ${color.borderColor}`,
+                                            border: color.id === 'TYPE0' ? '2px dashed #999' : `1px solid ${color.borderColor}`,
                                             borderRadius: '2px',
                                             margin: '0 auto 2px auto',
                                             display: 'flex',
@@ -662,7 +662,7 @@ function MinaRoom({
                                             color: color.borderColor,
                                             position: 'relative'
                                         }}>
-                                            {color.id === 'TRANSPARENT' ? (
+                                            {color.id === 'TYPE0' ? (
                                                 <div style={{
                                                     position: 'absolute',
                                                     top: '50%',
@@ -712,7 +712,7 @@ function MinaRoom({
                                             width: `${currentConfig.colorIconSize}px`,
                                             height: `${currentConfig.colorIconSize}px`,
                                             backgroundColor: color.color,
-                                            border: color.id === 'TRANSPARENT' ? '2px dashed #999' : `1px solid ${color.borderColor}`,
+                                            border: color.id === 'TYPE0' ? '2px dashed #999' : `1px solid ${color.borderColor}`,
                                             borderRadius: '2px',
                                             margin: '0 auto 2px auto',
                                             display: 'flex',
@@ -723,7 +723,7 @@ function MinaRoom({
                                             color: color.borderColor,
                                             position: 'relative'
                                         }}>
-                                            {color.id === 'TRANSPARENT' ? (
+                                            {color.id === 'TYPE0' ? (
                                                 <div style={{
                                                     position: 'absolute',
                                                     top: '50%',
