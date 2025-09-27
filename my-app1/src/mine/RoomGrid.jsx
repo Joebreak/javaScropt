@@ -15,7 +15,7 @@ const getGridConfig = () => {
                 colorButtonSize: 20,  // 手機版顏色按鈕大小
                 colorIconSize: 12,   // 手機版顏色圖示大小
                 colorTextSize: '7px', // 手機版顏色文字大小
-                triangleFontSize: '28px',  // 手機版三角形字體大小
+                triangleFontSize: '25px',  // 手機版三角形字體大小
                 squareFontSize: '30px',     // 手機版方形字體大小
                 transparentBorderSize: '25px'  // 手機版透明圖案邊框大小
             };
@@ -38,7 +38,7 @@ const getGridConfig = () => {
             colorButtonSize: 16,  // 桌面版顏色按鈕大小
             colorIconSize: 16,   // 桌面版顏色圖示大小
             colorTextSize: '8px', // 桌面版顏色文字大小
-            triangleFontSize: '93px',  // 桌面版三角形字體大小
+            triangleFontSize: '78px',  // 桌面版三角形字體大小
             squareFontSize: '100px',     // 桌面版方形字體大小
             transparentBorderSize: '55px'  // 桌面版透明圖案邊框大小
         };
@@ -105,7 +105,7 @@ function MinaRoom({
     // 選擇器狀態
     const [selectedColor, setSelectedColor] = useState(null);
     const [selectedShape, setSelectedShape] = useState(null);
-    
+
     // 範例圖形旋轉狀態
     const [exampleRotations, setExampleRotations] = useState({
         triangle1: 0,
@@ -339,7 +339,7 @@ function MinaRoom({
                                                         </span>
                                                     </div>
                                                 ) : (
-                                                    <span style={{ 
+                                                    <span style={{
                                                         fontSize: currentConfig.triangleFontSize,
                                                         display: 'block',
                                                         textAlign: 'center',
@@ -363,7 +363,7 @@ function MinaRoom({
                                                         position: 'absolute',
                                                         top: '50%',
                                                         left: '50%',
-                                                        transform:  window.innerWidth <= 768 ? 'translate(-50%, -45%)' : 'translate(-50%, -50%)',
+                                                        transform: window.innerWidth <= 768 ? 'translate(-50%, -45%)' : 'translate(-50%, -50%)',
                                                         width: currentConfig.transparentBorderSize,
                                                         height: currentConfig.transparentBorderSize,
                                                         border: '2px dashed #999',
@@ -381,7 +381,7 @@ function MinaRoom({
                                                             margin: 0,
                                                             padding: 0,
                                                             fontFamily: 'monospace',
-                                                            transform: 'translateY(-7px)'
+                                                            transform: window.innerWidth <= 768 ? 'translateY(0px)' : 'translateY(-7px)'
                                                         }}>■</span>
                                                     </div>
                                                 ) : (
@@ -393,7 +393,7 @@ function MinaRoom({
                                                         position: 'absolute',
                                                         top: '45%',
                                                         left: '50%',
-                                                        transform:  window.innerWidth <= 768 ? 'translate(-50%, -45%)' : 'translate(-50%, -63%)',
+                                                        transform: window.innerWidth <= 768 ? 'translate(-50%, -45%)' : 'translate(-50%, -63%)',
                                                         width: 'auto',
                                                         height: 'auto',
                                                         margin: 0,
@@ -441,7 +441,7 @@ function MinaRoom({
 
             {/* 範例圖形顯示區域 */}
             {showExampleShapes && (
-                <div style={{ 
+                <div style={{
                     marginTop: '20px',
                     marginBottom: '20px',
                     padding: '15px',
@@ -449,26 +449,26 @@ function MinaRoom({
                     borderRadius: '8px',
                     boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
                 }}>
-                    <div style={{ 
-                        fontSize: '14px', 
-                        fontWeight: 'bold', 
-                        marginBottom: '12px', 
-                        color: '#666', 
-                        textAlign: 'center' 
+                    <div style={{
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        marginBottom: '12px',
+                        color: '#666',
+                        textAlign: 'center'
                     }}>
                         範例圖形(點擊會旋轉)：
                     </div>
-                    
+
                     {/* 範例圖形展示 */}
-                    <div style={{ 
-                        display: 'flex', 
-                        gap: '20px', 
+                    <div style={{
+                        display: 'flex',
+                        gap: '20px',
                         justifyContent: 'center',
                         flexWrap: 'wrap',
                         alignItems: 'center'
                     }}>
                         {/* 黑色三角形範例 */}
-                        <div 
+                        <div
                             onClick={() => rotateExampleShape('triangle1')}
                             style={{
                                 width: '60px',
@@ -492,9 +492,9 @@ function MinaRoom({
                                 clipPath: 'polygon(50% 2%, 2% 98%, 98% 98%)',
                             }} />
                         </div>
-                        
+
                         {/* 黃色直角三角形範例 */}
-                        <div 
+                        <div
                             onClick={() => rotateExampleShape('triangle2')}
                             style={{
                                 width: '30px',
@@ -505,11 +505,11 @@ function MinaRoom({
                                 transform: `rotate(${exampleRotations.triangle2}deg)`,
                                 transition: 'transform 0.3s ease',
                                 transformOrigin: 'center'
-                            }} 
+                            }}
                         />
-                        
+
                         {/* 紅色平行四邊形範例 */}
-                        <div 
+                        <div
                             onClick={() => rotateExampleShape('parallelogram')}
                             style={{
                                 width: '45px',
@@ -520,11 +520,11 @@ function MinaRoom({
                                 transform: `rotate(${exampleRotations.parallelogram}deg)`,
                                 transition: 'transform 0.3s ease',
                                 transformOrigin: 'center'
-                            }} 
+                            }}
                         />
-                        
+
                         {/* 藍色菱形範例 */}
-                        <div 
+                        <div
                             onClick={() => rotateExampleShape('diamond')}
                             style={{
                                 width: '30px',
@@ -535,11 +535,11 @@ function MinaRoom({
                                 transform: `rotate(${exampleRotations.diamond}deg)`,
                                 transition: 'transform 0.3s ease',
                                 transformOrigin: 'center'
-                            }} 
+                            }}
                         />
-                        
+
                         {/* 透明圖形範例 */}
-                        <div 
+                        <div
                             onClick={() => rotateExampleShape('transparent')}
                             style={{
                                 width: '30px',
@@ -564,9 +564,9 @@ function MinaRoom({
                                 clipPath: 'polygon(51% 0, 49% 0, 50% 100%, 48% 7%, 0 100%, 50% 0, 50% 1%, 96% 99%, 100% 100%, 51% 0, 51% 0, 51% 100%)',
                             }} />
                         </div>
-                        
+
                         {/* 黑色矩形範例 */}
-                        <div 
+                        <div
                             onClick={() => rotateExampleShape('rectangle')}
                             style={{
                                 width: '15px',
@@ -576,7 +576,7 @@ function MinaRoom({
                                 transform: `rotate(${exampleRotations.rectangle}deg)`,
                                 transition: 'transform 0.3s ease',
                                 transformOrigin: 'center'
-                            }} 
+                            }}
                         />
                     </div>
                 </div>
@@ -935,7 +935,7 @@ function MinaRoom({
                         >
                             清空(全部)網格
                         </button>
-                        
+
                     </div>
                 </div>
             )}
