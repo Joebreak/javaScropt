@@ -1,4 +1,5 @@
 import React from "react";
+import { getColorStyle } from "./gameData";
 
 export default function HanabiGrid({ 
   players = [], 
@@ -11,27 +12,13 @@ export default function HanabiGrid({
   hasObserver = false, // 新增觀看者狀態
   currentPlayerRank = 1 // 當前玩家的順位
 }) {
-  // 獲取卡片樣式的函數 - 簡化版本，不依賴 gameData
-  const getCardStyle = (color) => {
-    const colorMap = {
-      'RED': { backgroundColor: 'crimson', color: '#fff' },
-      'GREEN': { backgroundColor: 'seagreen', color: '#fff' },
-      'BLUE': { backgroundColor: 'royalblue', color: '#fff' },
-      'YELLOW': { backgroundColor: 'goldenrod', color: '#fff' },
-      'WHITE': { backgroundColor: 'lightgray', color: '#000' }
-    };
-    
-    return colorMap[color] || { backgroundColor: '#ddd', color: '#999' };
-  };
 
   const renderPlayer = (player, playerIndex) => {
     const isCurrentPlayer = !checkGameEnded() && playerIndex === validCurrentIndex;
     const isLastRoundTrigger = isLastRoundTriggerPlayer(playerIndex);
     const playerClass = `player ${isCurrentPlayer ? 'current-player' : ''}`;
     
-    // 除錯資訊
-    console.log(`玩家 ${player.name} (rank ${player.rank}): isSelf = ${player.isSelf}`);
-    
+
     // 使用傳入的 hasObserver 參數
     return (
       <div key={player.name} className={playerClass}>
@@ -59,12 +46,10 @@ export default function HanabiGrid({
 
             if (player.isSelf) {
               // 自己的卡片：不顯示，只顯示背面
-              console.log(`自己的卡片: ${player.name} (rank ${player.rank})`);
               cls += " unknown";
               text = "?";
             } else {
               // 其他玩家的卡片：顯示真實顏色和數字
-              console.log(`其他玩家卡片: ${player.name} (rank ${player.rank}) - ${card.color} ${card.number}`);
               cls += ` ${card.color}`;
               text = card.number;
               cls += card.knownNumber ? " known-number" : " unknown-number";
@@ -76,10 +61,10 @@ export default function HanabiGrid({
             if (player.isSelf) {
               // 自己的卡片：不顯示顏色，只顯示背面
               cardStyle = { backgroundColor: '#ddd', color: '#999' };
-            } else {
-              // 其他玩家的卡片：顯示真實顏色
-              cardStyle = getCardStyle(card.color);
-            }
+                    } else {
+                      // 其他玩家的卡片：顯示真實顏色
+                      cardStyle = getColorStyle(card.color);
+                    }
 
             return (
               <div 
@@ -112,23 +97,23 @@ export default function HanabiGrid({
           {Object.keys(grouped).map(color => (
             <div key={color} className="discard-row">
               <div className="discard-cards">
-                {grouped[color].map((card, index) => {
-                  const cardStyle = getCardStyle(card.color);
-                  return (
-                    <div 
-                      key={index} 
-                      className="card discard-card"
-                      style={{
-                        backgroundColor: "transparent",
-                        color: cardStyle.backgroundColor,
-                        border: "none",
-                        margin: "1px"
-                      }}
-                    >
-                      {card.number}
-                    </div>
-                  );
-                })}
+                        {grouped[color].map((card, index) => {
+                          const cardStyle = getColorStyle(card.color);
+                          return (
+                            <div 
+                              key={index} 
+                              className="card discard-card"
+                              style={{
+                                backgroundColor: "transparent",
+                                color: cardStyle.backgroundColor,
+                                border: "none",
+                                margin: "1px"
+                              }}
+                            >
+                              {card.number}
+                            </div>
+                          );
+                        })}
               </div>
             </div>
           ))}
@@ -154,12 +139,12 @@ export default function HanabiGrid({
             const card = grouped[color];
             return (
               <div key={color} className="fireworks-stack">
-                <div 
-                  className={`card ${card.color}`}
-                  style={getCardStyle(card.color)}
-                >
-                  {card.number}
-                </div>
+                    <div 
+                      className={`card ${card.color}`}
+                      style={getColorStyle(card.color)}
+                    >
+                      {card.number}
+                    </div>
               </div>
             );
           })}

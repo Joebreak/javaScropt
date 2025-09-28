@@ -1,30 +1,12 @@
 import React from "react";
+import { 
+  getColorChineseName, 
+  getActionTypeChineseName 
+} from "./gameData";
 
 export default function HanabiList({ data }) {
-  // 如果沒有資料或 list 為空，顯示空白區域避免錯誤
-  if (!data || !data.list || !data.list.length) {
-    return (
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "center", 
-        marginBottom: 20,
-        minHeight: "100px" // 留白避免錯誤
-      }}>
-        <div style={{
-          background: "#f8f9fa",
-          borderRadius: 12,
-          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-          width: "95vw",
-          maxWidth: 400,
-          padding: "20px",
-          textAlign: "center",
-          color: "#666"
-        }}>
-          暫無遊戲記錄
-        </div>
-      </div>
-    );
-  }
+  // 如果沒有資料或 list 為空，顯示表格標題但無內容
+  const hasData = data && data.list && data.list.length > 0;
 
   return (
     <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
@@ -44,20 +26,26 @@ export default function HanabiList({ data }) {
               <tr>
                 <th style={{ position: "sticky", top: 0, background: "#4f8cff", color: "#fff", padding: "12px 8px" }}>#</th>
                 <th style={{ position: "sticky", top: 0, background: "#4f8cff", color: "#fff", padding: "12px 8px" }}>動作</th>
-                <th style={{ position: "sticky", top: 0, background: "#4f8cff", color: "#fff", padding: "12px 8px" }}>玩家</th>
+                <th style={{ position: "sticky", top: 0, background: "#4f8cff", color: "#fff", padding: "12px 8px" }}>目標玩家</th>
+                <th style={{ position: "sticky", top: 0, background: "#4f8cff", color: "#fff", padding: "12px 8px" }}>提示內容</th>
               </tr>
             </thead>
             <tbody>
-              {data.list.map((item, idx) => (
+              {hasData && data.list.map((item, idx) => (
                 <tr key={idx}>
                   <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center", fontWeight: "bold", color: "#666" }}>
                     {data.list.length - idx}
                   </td>
                   <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center" }}>
-                    {item.action || "未知動作"}
+                    {getActionTypeChineseName(item.type)}
                   </td>
                   <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center" }}>
-                    {item.player || "未知玩家"}
+                    {item.player || ""}
+                  </td>
+                  <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center" }}>
+                    {item.type === 1 ? 
+                      getColorChineseName(item.out) : 
+                      item.out || "未知內容"}
                   </td>
                 </tr>
               ))}

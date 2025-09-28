@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useDigitCodeData } from "./useHanabiData";
 import HanabiGrid from "./HanabiGrid";
 import HanabiList from "./HanabiList";
+import HintSystem from "./HintSystem";
+import PlayCardSystem from "./PlayCardSystem";
 import "./HanabiRoom.css";
 
 export default function HanabiRoom() {
@@ -10,8 +12,8 @@ export default function HanabiRoom() {
   const navigate = useNavigate();
   const { room, rank } = location.state || {};
   const [showTooltip, setShowTooltip] = useState(false);
-  
-  console.log('HanabiRoom 除錯:', { room, rank, locationState: location.state });
+  const [showHintSystem, setShowHintSystem] = useState(false);
+  const [showPlayCardSystem, setShowPlayCardSystem] = useState(false);
   
   const { 
     data, 
@@ -30,11 +32,39 @@ export default function HanabiRoom() {
     }
   }, [room]);
 
-  if (!room) {
-    navigate("/");
-    return null;
-  }
-console.log(rank);
+  // 提示處理函數
+  const handleHintGiven = (hintData) => {
+    console.log('提示資料:', hintData);
+    
+    // 如果 API 成功，需要刷新資料
+    if (hintData.needsRefresh) {
+      refresh();
+    }
+    
+    // 關閉提示系統
+    setShowHintSystem(false);
+  };
+
+  const handleHintButtonClick = (type) => {
+    setShowHintSystem(true);
+  };
+
+  // 出牌處理函數
+  const handleCardPlayed = (cardData) => {
+    console.log('出牌資料:', cardData);
+    
+    // 如果 API 成功，需要刷新資料
+    if (cardData.needsRefresh) {
+      refresh();
+    }
+    
+    // 關閉出牌系統
+    setShowPlayCardSystem(false);
+  };
+
+  const handlePlayCardButtonClick = () => {
+    setShowPlayCardSystem(true);
+  };
   // 載入中狀態
   if (loading) {
     return (
@@ -131,7 +161,6 @@ console.log(rank);
         isLastRoundTriggerPlayer={isLastRoundTriggerPlayer}
         hasObserver={(() => {
           const hasObserver = rank && data?.members && rank > data.members;
-          console.log('hasObserver 計算:', { rank, members: data?.members, hasObserver });
           return hasObserver;
         })()}
         currentPlayerRank={parseInt(rank)}
@@ -156,7 +185,7 @@ console.log(rank);
           }}>
             {/* 花火遊戲操作按鈕 */}
             <button
-              onClick={() => {/* TODO: 處理出牌 */}}
+              onClick={handlePlayCardButtonClick}
               style={{
                 padding: "12px 20px",
                 fontSize: "16px",
@@ -174,7 +203,7 @@ console.log(rank);
             </button>
             
             <button
-              onClick={() => {/* TODO: 處理提示顏色 */}}
+              onClick={() => handleHintButtonClick('color')}
               style={{
                 padding: "12px 20px",
                 fontSize: "16px",
@@ -188,52 +217,11 @@ console.log(rank);
                 transition: "all 0.3s ease"
               }}
             >
-              🎨 提示顏色
-            </button>
-            
-            <button
-              onClick={() => {/* TODO: 處理提示數字 */}}
-              style={{
-                padding: "12px 20px",
-                fontSize: "16px",
-                fontWeight: "bold",
-                background: "#FF9800",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                boxShadow: "0 4px 12px rgba(255, 152, 0, 0.3)",
-                transition: "all 0.3s ease"
-              }}
-            >
-              🔢 提示數字
-            </button>
-            
-            <button
-              onClick={() => {/* TODO: 處理棄牌 */}}
-              style={{
-                padding: "12px 20px",
-                fontSize: "16px",
-                fontWeight: "bold",
-                background: "#9C27B0",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                boxShadow: "0 4px 12px rgba(156, 39, 176, 0.3)",
-                transition: "all 0.3s ease"
-              }}
-            >
-              🗑️ 棄牌
+               提示🎨顏色 or 🔢數字
             </button>
           </div>
         </div>
       )}
-
-      {/* 下方：遊戲記錄表格 */}
-      <HanabiList 
-        data={data} 
-      />
 
       {/* 重新整理按鈕 */}
       <div style={{ textAlign: "center", padding: "10px 0" }}>
@@ -257,6 +245,11 @@ console.log(rank);
         </button>
       </div>
 
+      {/* 下方：遊戲記錄表格 */}
+      <HanabiList 
+        data={data} 
+      />
+
       <button
         onClick={() => navigate("/")}
         style={{
@@ -273,6 +266,37 @@ console.log(rank);
       >
         返回首頁
       </button>
+
+      {/* 提示系統彈窗 */}
+      {showHintSystem && (
+        <HintSystem
+          players={players}
+          currentPlayerRank={parseInt(rank)}
+          onHintGiven={handleHintGiven}
+          onClose={() => {
+            setShowHintSystem(false);
+          }}
+          room={room}
+          currentRound={lastRound || 1}
+        />
+      )}
+
+      {/* 出牌系統彈窗 */}
+      {showPlayCardSystem && (
+        <PlayCardSystem
+          players={players}
+          currentPlayerRank={parseInt(rank)}
+          onCardPlayed={handleCardPlayed}
+          onClose={() => {
+            setShowPlayCardSystem(false);
+          }}
+          room={room}
+          currentRound={lastRound || 1}
+          gameLog={data?.list || []}
+          mapData={data?.mapData || []}
+          fireworks={fireworks}
+        />
+      )}
     </div>
   );
 }
