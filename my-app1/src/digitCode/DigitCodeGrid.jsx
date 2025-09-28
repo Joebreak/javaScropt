@@ -234,7 +234,7 @@ export default function DigitCodeGrid({
         <div style={{
           position: "absolute",
           top: isMobile ? "60px" : "20px",
-          left: isMobile ? "60px" : "150px",
+          left: isMobile ? "0px" : "150px",
           display: "flex",
           flexDirection: "column",
           gap: isMobile ? "2px" : "5px",
@@ -491,64 +491,73 @@ function DigitDisplay({ number, size = 24, showNumber = false }) {
 
   const activeSegments = digitSegments[number] || [];
 
+  // 獲取段的顏色和填充
+  const getSegmentColor = (segment) => {
+    return activeSegments.includes(segment) ? "#2c3e50" : "#bdc3c7";
+  };
+
+  const getSegmentFill = (segment) => {
+    return activeSegments.includes(segment) ? "#2c3e50" : "#f5f5dc";
+  };
+
   return (
     <div style={{ position: "relative", display: "inline-block" }}>
       <svg width={config.width} height={config.height}>
         {/* 段 a */}
         <path
           d={`M${segmentPaths.a.x} ${segmentPaths.a.y} L${segmentPaths.a.x + segmentPaths.a.width} ${segmentPaths.a.y} L${segmentPaths.a.x + segmentPaths.a.width - 5} ${segmentPaths.a.y + segmentPaths.a.height} L${segmentPaths.a.x + 5} ${segmentPaths.a.y + segmentPaths.a.height} Z`}
-          stroke={activeSegments.includes('a') ? "#2c3e50" : "#bdc3c7"}
+          stroke={getSegmentColor('a')}
           strokeWidth={config.strokeWidth}
           strokeLinecap="round"
-          fill="none"
+          fill={getSegmentFill('a')}
         />
         {/* 段 b */}
         <path
           d={`M${segmentPaths.b.x} ${segmentPaths.b.y} L${segmentPaths.b.x + segmentPaths.b.width} ${segmentPaths.b.y} L${segmentPaths.b.x + segmentPaths.b.width} ${segmentPaths.b.y + segmentPaths.b.height} L${segmentPaths.b.x} ${segmentPaths.b.y + segmentPaths.b.height - 5} Z`}
-          stroke={activeSegments.includes('b') ? "#2c3e50" : "#bdc3c7"}
+          stroke={getSegmentColor('b')}
           strokeWidth={config.strokeWidth}
           strokeLinecap="round"
-          fill="none"
+          fill={getSegmentFill('b')}
         />
         {/* 段 c */}
         <path
           d={`M${segmentPaths.c.x} ${segmentPaths.c.y} L${segmentPaths.c.x + segmentPaths.c.width} ${segmentPaths.c.y} L${segmentPaths.c.x + segmentPaths.c.width} ${segmentPaths.c.y + segmentPaths.c.height} L${segmentPaths.c.x} ${segmentPaths.c.y + segmentPaths.c.height - 5} Z`}
-          stroke={activeSegments.includes('c') ? "#2c3e50" : "#bdc3c7"}
+          stroke={getSegmentColor('c')}
           strokeWidth={config.strokeWidth}
           strokeLinecap="round"
-          fill="none"
+          fill={getSegmentFill('c')}
         />
         {/* 段 d */}
         <path
           d={`M${segmentPaths.d.x} ${segmentPaths.d.y} L${segmentPaths.d.x + segmentPaths.d.width} ${segmentPaths.d.y} L${segmentPaths.d.x + segmentPaths.d.width - 5} ${segmentPaths.d.y + segmentPaths.d.height} L${segmentPaths.d.x + 5} ${segmentPaths.d.y + segmentPaths.d.height} Z`}
-          stroke={activeSegments.includes('d') ? "#2c3e50" : "#bdc3c7"}
+          stroke={getSegmentColor('d')}
           strokeWidth={config.strokeWidth}
           strokeLinecap="round"
-          fill="none"
+          fill={getSegmentFill('d')}
         />
         {/* 段 e */}
         <path
           d={`M${segmentPaths.e.x} ${segmentPaths.e.y} L${segmentPaths.e.x + segmentPaths.e.width} ${segmentPaths.e.y} L${segmentPaths.e.x + segmentPaths.e.width} ${segmentPaths.e.y + segmentPaths.e.height - 5} L${segmentPaths.e.x} ${segmentPaths.e.y + segmentPaths.e.height} Z`}
-          stroke={activeSegments.includes('e') ? "#2c3e50" : "#bdc3c7"}
+          stroke={getSegmentColor('e')}
           strokeWidth={config.strokeWidth}
           strokeLinecap="round"
-          fill="none"
+          fill={getSegmentFill('e')}
         />
         {/* 段 f */}
         <path
           d={`M${segmentPaths.f.x} ${segmentPaths.f.y} L${segmentPaths.f.x + segmentPaths.f.width} ${segmentPaths.f.y} L${segmentPaths.f.x + segmentPaths.f.width} ${segmentPaths.f.y + segmentPaths.f.height - 5} L${segmentPaths.f.x} ${segmentPaths.f.y + segmentPaths.f.height} Z`}
-          stroke={activeSegments.includes('f') ? "#2c3e50" : "#bdc3c7"}
+          stroke={getSegmentColor('f')}
           strokeWidth={config.strokeWidth}
           strokeLinecap="round"
-          fill="none"
+          fill={getSegmentFill('f')}
         />
         {/* 段 g */}
         <path
           d={`M${segmentPaths.g.x} ${segmentPaths.g.y} L${segmentPaths.g.x + segmentPaths.g.width} ${segmentPaths.g.y} L${segmentPaths.g.x + segmentPaths.g.width - 5} ${segmentPaths.g.y + segmentPaths.g.height} L${segmentPaths.g.x + 5} ${segmentPaths.g.y + segmentPaths.g.height} Z`}
-          stroke={activeSegments.includes('g') ? "#2c3e50" : "#bdc3c7"}
+          stroke={getSegmentColor('g')}
           strokeWidth={config.strokeWidth}
           strokeLinecap="round"
-          fill="none"
+          fill={getSegmentFill('g')}
         />
       </svg>
       {showNumber && (
