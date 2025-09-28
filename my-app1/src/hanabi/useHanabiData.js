@@ -1,198 +1,241 @@
-import { useState, useEffect } from 'react';
-import { getInitialGameState, fetchGameStateFromAPI,fetchGameLog, addGameLogEntry, isGameEnded, getCurrentPlayer as getCurrentPlayerFromData } from './gameData';
+import { useEffect, useState, useCallback, useRef } from "react";
+import { getApiUrl } from "../config/api";
 
-// 從 API 獲取遊戲資料
-const fetchGameData = async (roomId, playerName = null) => {
-  try {
-    const gameState = await fetchGameStateFromAPI(playerName);
-    return gameState;
-  } catch (error) {
-    console.error('獲取遊戲資料失敗:', error);
-    return getInitialGameState(playerName);
+export function useDigitCodeData(intervalMs = 0, room, rank = null) {
+  if (!room) {
+    throw new Error('useDigitCodeData: room 參數是必須的');
   }
-};
-
-// 模擬更新遊戲狀態的 API
-const updateGameState = async (roomId, newState) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // 這裡之後可以替換為真實的 API 呼叫
-      console.log('更新遊戲狀態:', roomId, newState);
-      resolve(newState);
-    }, 500);
-  });
-};
-
-export const useHanabiData = (roomId, playerName = null) => {
-  const [gameState, setGameState] = useState(null);
+  
+  const [data, setData] = useState({ list: [] });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const isFetchingRef = useRef(false);
 
-  // 載入遊戲資料
+  const fetchData = useCallback(async () => {
+    if (isFetchingRef.current) {
+      return;
+    }
+    isFetchingRef.current = true;
+    setLoading(true);
+    
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      const requestOptions = {
+        method: "GET",
+        headers: {},
+        signal: controller.signal,
+      };
+      
+      // 使用 digitcode 專用的 API 端點
+      const apiUrl = getApiUrl('cloudflare_room_url');
+      const res = await fetch(apiUrl + room, requestOptions);
+      clearTimeout(timeoutId);
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+
+      // 處理 DigitCode 專用的資料格式
+      const filteredList = Array.isArray(json)
+      ? json
+        .filter(item => item && item.round !== 0)
+        .map(item => ({ id: item.id, round: item.round, ...item.data }))
+        .reverse()
+      : [];
+
+      // 獲取遊戲設定資料 (round 0)
+      const roundZeroData = Array.isArray(json)
+        ? json
+          .filter(item => item && item.round === 0)[0] || null
+        : null;
+
+      // 處理 mapData 來發牌
+      const mapData = roundZeroData?.list || [];
+      const members = roundZeroData?.data?.NOTE2 || 2;
+      
+      // 顏色映射
+      const colorMap = {
+        1: 'RED',
+        2: 'GREEN', 
+        3: 'BLUE',
+        4: 'YELLOW',
+        5: 'WHITE'
+      };
+      
+      // 根據 mapData 創建卡片
+      const allCards = mapData.map(card => ({
+        color: colorMap[card.NOTE2] || 'UNKNOWN',
+        number: card.NOTE3,
+        knownColor: false,
+        knownNumber: false
+      }));
+      
+      // 發牌給每個玩家 - 每個人固定5張牌
+      const players = [];
+      const cardsPerPlayer = 5; // 固定每人5張牌
+      
+      // 從傳遞的參數或 URL 參數獲取當前玩家的 rank
+      const urlParams = new URLSearchParams(window.location.search);
+      const currentPlayerRank = parseInt(rank) || (urlParams.get('rank') 
+        ? parseInt(urlParams.get('rank')) 
+        : 2); // 預設為 rank 2
+      
+      // 檢查當前玩家是否超過最大人數
+      const isPlayerExceeded = currentPlayerRank > members;
+      
+      console.log('除錯資訊:', {
+        currentPlayerRank,
+        members,
+        isPlayerExceeded
+      });
+      
+      for (let i = 0; i < members; i++) {
+        const startIndex = i * cardsPerPlayer;
+        const endIndex = startIndex + cardsPerPlayer;
+        const playerCards = allCards.slice(startIndex, endIndex);
+        
+        const isSelf = (i + 1) === currentPlayerRank && !isPlayerExceeded;
+        console.log(`玩家${i + 1}: rank=${i + 1}, currentPlayerRank=${currentPlayerRank}, isSelf=${isSelf}`);
+        
+        players.push({
+          name: `玩家${i + 1}`,
+          rank: i + 1,
+          hand: playerCards,
+          isSelf: isSelf
+        });
+      }
+      
+      // 如果玩家超過最大人數，不添加觀看者到 players 陣列
+      // 觀看者只存在於邏輯中，不佔用桌面位置
+      
+      // 為 Hanabi 創建適合的資料結構
+      const gameState = {
+        players: players,
+        discardPile: roundZeroData?.data?.discardPile || [],
+        fireworks: roundZeroData?.data?.fireworks || [],
+        currentPlayerIndex: roundZeroData?.data?.currentPlayerIndex || 0,
+        lastRoundTriggerPlayer: roundZeroData?.data?.lastRoundTriggerPlayer || null
+      };
+
+      setData({
+        list: filteredList,
+        gameState: gameState,
+        mapData: roundZeroData?.list || [],
+        members: roundZeroData?.data?.NOTE2 || null
+      });
+
+    } catch (err) {
+      console.error("Hanabi API 失敗：", err);
+      // 提供預設的遊戲資料
+      const defaultMapData = [
+        { NOTE1: 1, NOTE2: 1, NOTE3: 1 }, // RED 1
+        { NOTE1: 2, NOTE2: 2, NOTE3: 2 }, // GREEN 2
+        { NOTE1: 3, NOTE2: 3, NOTE3: 3 }, // BLUE 3
+        { NOTE1: 4, NOTE2: 4, NOTE3: 4 }, // YELLOW 4
+        { NOTE1: 5, NOTE2: 5, NOTE3: 5 }, // WHITE 5
+        { NOTE1: 6, NOTE2: 1, NOTE3: 2 }, // RED 2
+        { NOTE1: 7, NOTE2: 2, NOTE3: 3 }, // GREEN 3
+        { NOTE1: 8, NOTE2: 3, NOTE3: 4 }, // BLUE 4
+        { NOTE1: 9, NOTE2: 4, NOTE3: 5 }, // YELLOW 5
+        { NOTE1: 10, NOTE2: 5, NOTE3: 1 }  // WHITE 1
+      ];
+      
+      const members = 2;
+      const colorMap = {
+        1: 'RED',
+        2: 'GREEN', 
+        3: 'BLUE',
+        4: 'YELLOW',
+        5: 'WHITE'
+      };
+      
+      const allCards = defaultMapData.map(card => ({
+        color: colorMap[card.NOTE2] || 'UNKNOWN',
+        number: card.NOTE3,
+        knownColor: false,
+        knownNumber: false
+      }));
+      
+      const players = [];
+      const cardsPerPlayer = 5; // 固定每人5張牌
+      
+      // 從傳遞的參數或 URL 參數獲取當前玩家的 rank
+      const urlParams = new URLSearchParams(window.location.search);
+      const currentPlayerRank = parseInt(rank) || (urlParams.get('rank') 
+        ? parseInt(urlParams.get('rank')) 
+        : 2); // 預設為 rank 2
+      console.log('Rank 參數除錯:', {
+        passedRank: rank,
+        search: window.location.search,
+        rankParam: urlParams.get('rank'),
+        currentPlayerRank
+      });
+      
+      // 檢查當前玩家是否超過最大人數
+      const isPlayerExceeded = currentPlayerRank > members;
+      console.log('除錯資訊:', {
+        currentPlayerRank,
+        members,
+        isPlayerExceeded
+      });
+      
+      for (let i = 0; i < members; i++) {
+        const startIndex = i * cardsPerPlayer;
+        const endIndex = startIndex + cardsPerPlayer;
+        const playerCards = allCards.slice(startIndex, endIndex);
+        
+        players.push({
+          name: `玩家${i + 1}`,
+          rank: i + 1,
+          hand: playerCards,
+          isSelf: (i + 1) === currentPlayerRank && !isPlayerExceeded // 只有當玩家在範圍內且匹配時才是自己
+        });
+      }
+      
+      // 如果玩家超過最大人數，不添加觀看者到 players 陣列
+      // 觀看者只存在於邏輯中，不佔用桌面位置
+      
+      const defaultGameState = {
+        players: players,
+        discardPile: [],
+        fireworks: [],
+        currentPlayerIndex: 0,
+        lastRoundTriggerPlayer: null
+      };
+      
+      setData({
+        list: [],
+        gameState: defaultGameState,
+        mapData: defaultMapData,
+        members: members
+      });
+    } finally {
+      setLoading(false);
+      isFetchingRef.current = false;
+    }
+  }, [room, rank]);
+
   useEffect(() => {
-    const loadGameData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await fetchGameData(roomId, playerName);
-        setGameState(data);
-      } catch (err) {
-        setError(err.message);
-        // 如果 API 失敗，使用預設資料
-        setGameState(getInitialGameState(playerName));
-      } finally {
-        setLoading(false);
+    let mounted = true;
+    let intervalId = null;
+
+    fetchData();
+
+    if (intervalMs > 0) {
+      intervalId = setInterval(() => {
+        if (mounted) {
+          fetchData();
+        }
+      }, intervalMs);
+    }
+
+    return () => {
+      mounted = false;
+      if (intervalId) {
+        clearInterval(intervalId);
       }
     };
+  }, [intervalMs, fetchData]);
 
-    if (roomId) {
-      loadGameData();
-    }
-  }, [roomId, playerName]);
-
-  // 更新遊戲狀態
-  const updateState = async (newState) => {
-    try {
-      setLoading(true);
-      const updatedState = await updateGameState(roomId, newState);
-      setGameState(updatedState);
-    } catch (err) {
-      setError(err.message);
-      // 即使 API 失敗，也更新本地狀態
-      setGameState(newState);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 更新玩家資料
-  const updatePlayers = (newPlayers) => {
-    const newState = { ...gameState, players: newPlayers };
-    updateState(newState);
-  };
-
-  // 更新棄牌堆
-  const updateDiscardPile = (newDiscardPile) => {
-    const newState = { ...gameState, discardPile: newDiscardPile };
-    updateState(newState);
-  };
-
-  // 更新煙火
-  const updateFireworks = (newFireworks) => {
-    const newState = { ...gameState, fireworks: newFireworks };
-    updateState(newState);
-  };
-
-  // 切換到下一個玩家 - 使用取餘數確保循環
-  const nextPlayer = () => {
-    if (!gameState) return;
-    
-    const playerCount = gameState.players.length;
-    const nextIndex = (gameState.currentPlayerIndex + 1) % playerCount;
-    
-    const newState = { 
-      ...gameState, 
-      currentPlayerIndex: nextIndex 
-    };
-    updateState(newState);
-  };
-
-  // 切換到指定玩家 - 使用取餘數確保索引有效
-  const setCurrentPlayer = (playerIndex) => {
-    if (!gameState) return;
-    
-    const playerCount = gameState.players.length;
-    // 使用取餘數確保索引在有效範圍內
-    const validIndex = ((playerIndex % playerCount) + playerCount) % playerCount;
-    
-    const newState = { 
-      ...gameState, 
-      currentPlayerIndex: validIndex 
-    };
-    updateState(newState);
-  };
-
-  // 獲取當前玩家 - 整合遊戲狀態檢查
-  const getCurrentPlayer = () => {
-    if (!gameState) return null;
-    return getCurrentPlayerFromData(gameState.players, gameState.currentPlayerIndex);
-  };
-
-  // 檢查遊戲是否結束
-  const checkGameEnded = () => {
-    if (!gameState) return false;
-    return isGameEnded(gameState.currentPlayerIndex);
-  };
-
-  // 設定最後一輪觸發條件的人
-  const setLastRoundTriggerPlayer = (playerIndex) => {
-    updateState(prev => ({
-      ...prev,
-      lastRoundTriggerPlayer: playerIndex
-    }));
-  };
-
-  // 獲取最後一輪觸發條件的人
-  const getLastRoundTriggerPlayer = () => {
-    if (!gameState) return null;
-    return gameState.lastRoundTriggerPlayer;
-  };
-
-  // 檢查是否為最後一輪觸發條件的人
-  const isLastRoundTriggerPlayer = (playerIndex) => {
-    if (!gameState) return false;
-    return gameState.lastRoundTriggerPlayer === playerIndex;
-  };
-
-  // 獲取遊戲記錄
-  const fetchGameLogData = async () => {
-    try {
-      setLoading(true);
-      const response = await fetchGameLog(roomId);
-      if (response.success) {
-        updateState(prev => ({
-          ...prev,
-          gameLog: response.data
-        }));
-      }
-    } catch (err) {
-      setError('獲取遊戲記錄失敗: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 添加遊戲記錄
-  const addLogEntry = async (action, player) => {
-    try {
-      const response = await addGameLogEntry(roomId, { action, player });
-      if (response.success) {
-        updateState(prev => ({
-          ...prev,
-          gameLog: [...prev.gameLog, response.data]
-        }));
-      }
-    } catch (err) {
-      console.error('添加遊戲記錄失敗:', err);
-    }
-  };
-
-  return {
-    gameState,
-    loading,
-    error,
-    updatePlayers,
-    updateDiscardPile,
-    updateFireworks,
-    updateState,
-    nextPlayer,
-    setCurrentPlayer,
-    getCurrentPlayer,
-    fetchGameLogData,
-    addLogEntry,
-    checkGameEnded,
-    setLastRoundTriggerPlayer,
-    getLastRoundTriggerPlayer,
-    isLastRoundTriggerPlayer
-  };
-};
+  return { data, loading, refresh: fetchData };
+}
