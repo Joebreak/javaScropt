@@ -89,13 +89,21 @@ export function useDigitCodeData(intervalMs = 0, room, rank = null) {
         isPlayerExceeded
       });
       
+      // 按照 NOTE1 順序輪流發牌
       for (let i = 0; i < members; i++) {
-        const startIndex = i * cardsPerPlayer;
-        const endIndex = startIndex + cardsPerPlayer;
-        const playerCards = allCards.slice(startIndex, endIndex);
+        const playerCards = [];
+        
+        // 輪流發牌：第1張給順位1，第2張給順位2，第3張給順位1，以此類推
+        for (let cardIndex = 0; cardIndex < cardsPerPlayer; cardIndex++) {
+          const globalCardIndex = (cardIndex * members) + i;
+          if (globalCardIndex < allCards.length) {
+            playerCards.push(allCards[globalCardIndex]);
+          }
+        }
         
         const isSelf = (i + 1) === currentPlayerRank && !isPlayerExceeded;
         console.log(`玩家${i + 1}: rank=${i + 1}, currentPlayerRank=${currentPlayerRank}, isSelf=${isSelf}`);
+        console.log(`玩家${i + 1} 的牌:`, playerCards.map(card => `${card.color}${card.number}`));
         
         players.push({
           name: `玩家${i + 1}`,
@@ -179,10 +187,17 @@ export function useDigitCodeData(intervalMs = 0, room, rank = null) {
         isPlayerExceeded
       });
       
+      // 按照 NOTE1 順序輪流發牌
       for (let i = 0; i < members; i++) {
-        const startIndex = i * cardsPerPlayer;
-        const endIndex = startIndex + cardsPerPlayer;
-        const playerCards = allCards.slice(startIndex, endIndex);
+        const playerCards = [];
+        
+        // 輪流發牌：第1張給順位1，第2張給順位2，第3張給順位1，以此類推
+        for (let cardIndex = 0; cardIndex < cardsPerPlayer; cardIndex++) {
+          const globalCardIndex = (cardIndex * members) + i;
+          if (globalCardIndex < allCards.length) {
+            playerCards.push(allCards[globalCardIndex]);
+          }
+        }
         
         players.push({
           name: `玩家${i + 1}`,
