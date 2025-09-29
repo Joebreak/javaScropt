@@ -14,16 +14,16 @@ export default function HanabiRoom() {
   const [showTooltip, setShowTooltip] = useState(false);
   const [showHintSystem, setShowHintSystem] = useState(false);
   const [showPlayCardSystem, setShowPlayCardSystem] = useState(false);
-  
-  const { 
-    data, 
-    loading, 
+
+  const {
+    data,
+    loading,
     refresh
   } = useDigitCodeData(0, room, rank);
-  
+
   // 從 DigitCodeRoom 添加的邏輯
   const lastRound = data?.list?.length ? data.list[0]?.round : 0;
-  const remainder = data?.members ? Number(data.members) : 4;
+  const remainder = data?.gameState?.players?.length || 4;
   const showActionButtons = rank && lastRound !== undefined && Number(rank) === ((Number(lastRound) % remainder) + 1);
 
   useEffect(() => {
@@ -34,13 +34,11 @@ export default function HanabiRoom() {
 
   // 提示處理函數
   const handleHintGiven = (hintData) => {
-    console.log('提示資料:', hintData);
-    
     // 如果 API 成功，需要刷新資料
     if (hintData.needsRefresh) {
       refresh();
     }
-    
+
     // 關閉提示系統
     setShowHintSystem(false);
   };
@@ -52,12 +50,12 @@ export default function HanabiRoom() {
   // 出牌處理函數
   const handleCardPlayed = (cardData) => {
     console.log('出牌資料:', cardData);
-    
+
     // 如果 API 成功，需要刷新資料
     if (cardData.needsRefresh) {
       refresh();
     }
-    
+
     // 關閉出牌系統
     setShowPlayCardSystem(false);
   };
@@ -68,10 +66,10 @@ export default function HanabiRoom() {
   // 載入中狀態
   if (loading) {
     return (
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "center", 
-        alignItems: "center", 
+      <div style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
         height: "100vh",
         background: "#f0f0f0"
       }}>
@@ -86,10 +84,10 @@ export default function HanabiRoom() {
   // 如果沒有資料，顯示錯誤
   if (!data) {
     return (
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "center", 
-        alignItems: "center", 
+      <div style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
         height: "100vh",
         background: "#f0f0f0"
       }}>
@@ -116,7 +114,15 @@ export default function HanabiRoom() {
     );
   }
 
-  const { players = [], discardPile = [], fireworks = [], currentPlayerIndex = 0 } = data.gameState || {};
+  const {
+    players = [],
+    discardPile = [],
+    fireworks = [],
+    currentPlayerIndex = 0,
+    lives = 3,
+    hints = 8,
+    gameLogic = {}
+  } = data.gameState || {};
 
   // 簡單的替代函數
   const getCurrentPlayer = () => {
@@ -136,8 +142,8 @@ export default function HanabiRoom() {
 
   return (
     <div style={{ padding: 20, background: "#f0f0f0", minHeight: "100vh", position: "relative" }}>
-      <div 
-        className="help-icon" 
+      <div
+        className="help-icon"
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
       >
@@ -149,7 +155,44 @@ export default function HanabiRoom() {
           </div>
         )}
       </div>
-      
+
+      {/* 遊戲狀態顯示 */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '20px',
+        marginBottom: '20px',
+        padding: '15px',
+        background: '#fff',
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: '18px',
+          fontWeight: 'bold'
+        }}>
+          <span>❤️</span>
+          <span style={{ color: lives > 1 ? '#4CAF50' : '#f44336' }}>
+            生命值: {lives}
+          </span>
+        </div>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: '18px',
+          fontWeight: 'bold'
+        }}>
+          <span>💡</span>
+          <span style={{ color: hints > 0 ? '#2196F3' : '#ff9800' }}>
+            提示次數: {hints}
+          </span>
+        </div>
+      </div>
+
       {/* 上方：遊戲網格區域 */}
       <HanabiGrid
         players={players}
@@ -160,24 +203,25 @@ export default function HanabiRoom() {
         checkGameEnded={checkGameEnded}
         isLastRoundTriggerPlayer={isLastRoundTriggerPlayer}
         hasObserver={(() => {
-          const hasObserver = rank && data?.members && rank > data.members;
+          const hasObserver = rank && data?.gameState?.players?.length && rank > data.gameState.players.length;
           return hasObserver;
         })()}
         currentPlayerRank={parseInt(rank)}
+        gameLogic={gameLogic}
       />
 
       {/* 中間：遊戲操作按鈕區域 - 只有輪到該玩家時才顯示 */}
       {showActionButtons && (
-        <div style={{ 
-          textAlign: "center", 
+        <div style={{
+          textAlign: "center",
           padding: "20px 0",
           background: "#fff",
           margin: "20px 0",
           borderRadius: "12px",
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
         }}>
-          <div style={{ 
-            display: "flex", 
+          <div style={{
+            display: "flex",
             flexDirection: "column",
             gap: "12px",
             maxWidth: "400px",
@@ -201,7 +245,7 @@ export default function HanabiRoom() {
             >
               🎴 出牌
             </button>
-            
+
             <button
               onClick={() => handleHintButtonClick('color')}
               style={{
@@ -217,7 +261,7 @@ export default function HanabiRoom() {
                 transition: "all 0.3s ease"
               }}
             >
-               提示🎨顏色 or 🔢數字
+              提示🎨顏色 or 🔢數字
             </button>
           </div>
         </div>
@@ -246,8 +290,8 @@ export default function HanabiRoom() {
       </div>
 
       {/* 下方：遊戲記錄表格 */}
-      <HanabiList 
-        data={data} 
+      <HanabiList
+        data={data}
       />
 
       <button
@@ -277,7 +321,7 @@ export default function HanabiRoom() {
             setShowHintSystem(false);
           }}
           room={room}
-          currentRound={lastRound || 1}
+          currentRound={lastRound}
         />
       )}
 
@@ -291,10 +335,11 @@ export default function HanabiRoom() {
             setShowPlayCardSystem(false);
           }}
           room={room}
-          currentRound={lastRound || 1}
+          currentRound={lastRound}
           gameLog={data?.list || []}
           mapData={data?.mapData || []}
           fireworks={fireworks}
+          gameLogic={gameLogic}
         />
       )}
     </div>

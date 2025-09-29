@@ -34,7 +34,7 @@ export default function HanabiList({ data }) {
               {hasData && data.list.map((item, idx) => (
                 <tr key={idx}>
                   <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center", fontWeight: "bold", color: "#666" }}>
-                    {data.list.length - idx}
+                    {item.round}
                   </td>
                   <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center" }}>
                     {getActionTypeChineseName(item.type)}

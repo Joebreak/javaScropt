@@ -8,11 +8,11 @@ body {
 }
 
 .card.known-number {
-  color: white;
+  color: white !important;
 }
 
 .card.unknown-number {
-  color: black;
+  color: black !important;
 }
 
 .card.unknown-color {

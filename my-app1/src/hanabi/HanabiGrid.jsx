@@ -1,10 +1,10 @@
 import React from "react";
 import { getColorStyle } from "./gameData";
 
-export default function HanabiGrid({ 
-  players = [], 
-  discardPile = [], 
-  fireworks = [], 
+export default function HanabiGrid({
+  players = [],
+  discardPile = [],
+  fireworks = [],
   currentPlayerIndex = 0,
   getCurrentPlayer,
   checkGameEnded,
@@ -17,7 +17,7 @@ export default function HanabiGrid({
     const isCurrentPlayer = !checkGameEnded() && playerIndex === validCurrentIndex;
     const isLastRoundTrigger = isLastRoundTriggerPlayer(playerIndex);
     const playerClass = `player ${isCurrentPlayer ? 'current-player' : ''}`;
-    
+
 
     // 使用傳入的 hasObserver 參數
     return (
@@ -29,9 +29,9 @@ export default function HanabiGrid({
         <div className="hand">
           {hasObserver ? (
             // 如果有觀看者，所有玩家都顯示背面
-            player.hand.map((card, index) => (
-              <div 
-                key={index} 
+            player.hand.map((index) => (
+              <div
+                key={index}
                 className="card unknown"
                 style={{ backgroundColor: '#ddd', color: '#999' }}
                 title="觀看者模式 - 無法看到其他玩家的牌"
@@ -41,42 +41,70 @@ export default function HanabiGrid({
             ))
           ) : (
             player.hand.map((card, index) => {
-            let text = "";
-            let cls = "card";
+              let text = "?";
+              let cls = "card";
 
-            if (player.isSelf) {
-              // 自己的卡片：不顯示，只顯示背面
-              cls += " unknown";
-              text = "?";
-            } else {
-              // 其他玩家的卡片：顯示真實顏色和數字
-              cls += ` ${card.color}`;
-              text = card.number;
-              cls += card.knownNumber ? " known-number" : " unknown-number";
-              cls += card.knownColor ? " known-color" : " unknown-color";
-            }
+              if (player.isSelf) {
+                // 自己的卡片：根據提示狀態顯示
+                cls += " unknown";
 
-            // 決定是否應用顏色樣式
-            let cardStyle = {};
-            if (player.isSelf) {
-              // 自己的卡片：不顯示顏色，只顯示背面
-              cardStyle = { backgroundColor: '#ddd', color: '#999' };
-                    } else {
-                      // 其他玩家的卡片：顯示真實顏色
-                      cardStyle = getColorStyle(card.color);
-                    }
+                if (card.hintNumber === true) {
+                  text = `${card.number}`;
+                }
+                // 顯示提示的資訊
+                if (card.hintColor === true && card.hintNumber === true) {
+                  cls += " known-color known-number";
+                } else if (card.hintColor === true) {
+                  cls += " known-color unknown-number";
+                } else if (card.hintNumber === true) {
+                  cls += " unknown-color known-number";
+                } else {
+                  cls += " unknown-color unknown-number";
+                }
+              } else {
+                // 其他玩家的卡片：顯示真實顏色和數字
+                cls += ` ${card.color}`;
+                text = card.number;
 
-            return (
-              <div 
-                key={index} 
-                className={cls}
-                style={cardStyle}
-                title={player.isSelf ? "自己的卡片" : `顏色: ${card.color}, 數字: ${card.number}`}
-              >
-                {text}
-              </div>
-            );
-          }))}
+                // 如果有提示資訊，顯示提示
+                if (card.hintColor === true) {
+                  cls += " known-color";
+                } else {
+                  cls += " unknown-color";
+                }
+
+                if (card.hintNumber === true) {
+                  cls += " known-number";
+                } else {
+                  cls += " unknown-number";
+                }
+              }
+
+              // 決定是否應用顏色樣式
+              let cardStyle = {};
+              if (player.isSelf) {
+                // 自己的卡片：根據提示狀態顯示顏色
+                if (card.hintColor === true) {
+                  cardStyle = getColorStyle(card.color);
+                } else {
+                  cardStyle = { backgroundColor: '#ddd', color: '#999' };
+                }
+              } else {
+                // 其他玩家的卡片：顯示真實顏色
+                cardStyle = getColorStyle(card.color);
+              }
+
+              return (
+                <div
+                  key={index}
+                  className={cls}
+                  style={cardStyle}
+                  title={player.isSelf ? "自己的卡片" : `顏色: ${card.color}, 數字: ${card.number}`}
+                >
+                  {text}
+                </div>
+              );
+            }))}
         </div>
       </div>
     );
@@ -97,23 +125,23 @@ export default function HanabiGrid({
           {Object.keys(grouped).map(color => (
             <div key={color} className="discard-row">
               <div className="discard-cards">
-                        {grouped[color].map((card, index) => {
-                          const cardStyle = getColorStyle(card.color);
-                          return (
-                            <div 
-                              key={index} 
-                              className="card discard-card"
-                              style={{
-                                backgroundColor: "transparent",
-                                color: cardStyle.backgroundColor,
-                                border: "none",
-                                margin: "1px"
-                              }}
-                            >
-                              {card.number}
-                            </div>
-                          );
-                        })}
+                {grouped[color].map((card, index) => {
+                  const cardStyle = getColorStyle(card.color);
+                  return (
+                    <div
+                      key={index}
+                      className="card discard-card"
+                      style={{
+                        backgroundColor: "transparent",
+                        color: cardStyle.backgroundColor,
+                        border: "none",
+                        margin: "1px"
+                      }}
+                    >
+                      {card.number}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))}
@@ -123,28 +151,28 @@ export default function HanabiGrid({
   };
 
   const renderFireworks = () => {
-    const grouped = {};
-    for (let card of fireworks) {
-      const key = card.color;
-      if (!grouped[key] || grouped[key].number < card.number) {
-        grouped[key] = card;
-      }
-    }
+    // fireworks 現在是一個物件，每個顏色對應一個陣列
+    const fireworksData = typeof fireworks === 'object' && !Array.isArray(fireworks)
+      ? fireworks
+      : {};
 
     return (
       <div className="firework-area">
         <strong>煙火</strong>
         <div className="fireworks-group">
-          {Object.keys(grouped).map(color => {
-            const card = grouped[color];
+          {Object.keys(fireworksData).map(color => {
+            const cards = fireworksData[color] || [];
             return (
               <div key={color} className="fireworks-stack">
-                    <div 
-                      className={`card ${card.color}`}
-                      style={getColorStyle(card.color)}
-                    >
-                      {card.number}
-                    </div>
+                {cards.map((card, index) => (
+                  <div
+                    key={index}
+                    className={`card ${card.color}`}
+                    style={getColorStyle(card.color)}
+                  >
+                    {card.number}
+                  </div>
+                ))}
               </div>
             );
           })}
@@ -160,9 +188,9 @@ export default function HanabiGrid({
   return (
     <div className="table">
       <div className="info">
-        <div style={{ 
-          color: checkGameEnded() ? "#666" : "#d32f2f", 
-          fontWeight: "bold", 
+        <div style={{
+          color: checkGameEnded() ? "#666" : "#d32f2f",
+          fontWeight: "bold",
           fontSize: "16px",
           marginTop: "5px"
         }}>
@@ -174,7 +202,7 @@ export default function HanabiGrid({
         {playerCount === 2 && (
           <>
             <div id="player-top" className="player-area">
-              {hasObserver ? 
+              {hasObserver ?
                 // 觀看者模式：顯示順位2在上方
                 renderPlayer(players.find(p => p.rank === 2) || players[1], 1) :
                 // 正常模式：顯示非當前玩家
@@ -182,7 +210,7 @@ export default function HanabiGrid({
               }
             </div>
             <div id="player-bottom" className="player-area">
-              {hasObserver ? 
+              {hasObserver ?
                 // 觀看者模式：顯示順位1在下方
                 renderPlayer(players.find(p => p.rank === 1) || players[0], 0) :
                 // 正常模式：顯示當前玩家
@@ -191,7 +219,7 @@ export default function HanabiGrid({
             </div>
           </>
         )}
-        
+
         {playerCount === 3 && (
           <>
             <div id="player-top" className="player-area">
@@ -205,7 +233,7 @@ export default function HanabiGrid({
             </div>
           </>
         )}
-        
+
         {playerCount === 4 && (
           <>
             <div id="player-left" className="player-area">

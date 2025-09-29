@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { getApiUrl } from '../config/api';
-import { 
-  getColorValue, 
-  getColorStyle, 
-  getColorChineseName
+import {
+    getColorStyle,
+    getColorChineseName
 } from './gameData';
 
 // 出牌系統組件
@@ -14,9 +13,8 @@ export default function PlayCardSystem({
     onClose,
     room,
     currentRound = 1,
-    gameLog = [], // 遊戲記錄，用於判斷提示資訊
-    mapData = [], // 卡片資料，用於獲取卡片 ID
-    fireworks = [] // 花火區資料，用於判斷是否能出牌
+    fireworks = [], // 花火區資料，用於判斷是否能出牌
+    gameLogic = {} // 遊戲邏輯函數
 }) {
     const [selectedCard, setSelectedCard] = useState('');
     const [playDirection, setPlayDirection] = useState('fireworks'); // 'fireworks' 或 'discard'
@@ -30,23 +28,18 @@ export default function PlayCardSystem({
 
     // 根據遊戲記錄處理卡片提示資訊
     const processCardHints = (cards) => {
-        // 如果沒有遊戲記錄，所有卡片都應該是未知的
-        if (!gameLog || gameLog.length === 0) {
-            return cards.map(card => ({
-                ...card,
-                knownColor: false,
-                knownNumber: false
-            }));
-        }
-
-        // 這裡可以根據 gameLog 來更新卡片的 knownColor 和 knownNumber
-        // 目前先返回原始卡片，後續可以根據實際需求實現
+        // 使用新的卡片結構，包含 hintColor 和 hintNumber
         return cards.map(card => ({
             ...card,
-            // 可以根據 gameLog 來更新提示資訊
-            knownColor: card.knownColor || false,
-            knownNumber: card.knownNumber || false
+            hintColor: card.hintColor || false,
+            hintNumber: card.hintNumber || false
         }));
+    };
+
+    // 檢查卡片是否可以放置到 fireworks
+    const canPlaceCardToFireworks = (card) => {
+        if (!gameLogic.canPlaceCard) return false;
+        return gameLogic.canPlaceCard(card, fireworks);
     };
 
     // 檢查出牌是否有效
@@ -69,23 +62,20 @@ export default function PlayCardSystem({
             const currentPlayer = players.find(p => p.rank === currentPlayerRank);
             const selectedCardData = currentPlayer?.hand[selectedCardIndex];
 
-            // 從 mapData 中找到對應的卡片 ID
-            const cardId = mapData.find(card =>
-                card.NOTE2 === getColorValue(selectedCardData?.color) &&
-                card.NOTE3 === selectedCardData?.number
-            )?.NOTE1;
+            // 直接使用卡片的 id（已經是 NOTE1）
+            const cardId = selectedCardData?.id;
 
-             // 準備API請求數據
-             const requestBody = {
-                 room: room,
-                 round: currentRound,
-                 data: {
-                     type: playDirection === 'fireworks' ? 3 : 4, // 3=出牌, 4=棄牌
-                     in: cardId, // 卡片 ID (NOTE1)
-                     player: currentPlayerRank, // 當前玩家順位
-                     out: getCardDisplay(selectedCardData) // 卡片顏色+數字
-                 }
-             };
+            // 準備API請求數據
+            const requestBody = {
+                room: room,
+                round: currentRound + 1,
+                data: {
+                    type: playDirection === 'fireworks' ? 3 : 4, // 3=出牌, 4=棄牌
+                    in: cardId, // 卡片 ID (NOTE1)
+                    player: currentPlayerRank, // 當前玩家順位
+                    out: getCardDisplay(selectedCardData) // 卡片顏色+數字
+                }
+            };
             // 調用API
             const apiUrl = getApiUrl('cloudflare_room_url');
             const response = await fetch(apiUrl + requestBody.room, {
@@ -118,21 +108,18 @@ export default function PlayCardSystem({
         }
     };
 
-     // 獲取卡片樣式的函數
-     const getCardStyle = (card) => {
-         return getColorStyle(card.color);
-     };
+    // 獲取卡片樣式的函數
+    const getCardStyle = (card) => {
+        return getColorStyle(card.color);
+    };
 
-     // 獲取卡片顯示文字 (顏色+數字)
-     const getCardDisplay = (card) => {
-         if (!card) return "未知卡片";
-         const color = getColorChineseName(card.color);
-         const number = card.number || '?';
-         return `${color} ${number}`;
-     };
-
-
-
+    // 獲取卡片顯示文字 (顏色+數字)
+    const getCardDisplay = (card) => {
+        if (!card) return "未知卡片";
+        const color = getColorChineseName(card.color);
+        const number = card.number || '?';
+        return `${color} ${number}`;
+    };
     const currentPlayerCards = processCardHints(getCurrentPlayerCards());
 
     return (
@@ -225,6 +212,8 @@ export default function PlayCardSystem({
                         {currentPlayerCards.map((card, index) => {
                             const isSelected = selectedCard === index.toString();
                             const cardStyle = getCardStyle(card);
+                            const canPlace = canPlaceCardToFireworks(card);
+                            const hasHint = card.hintColor === true || card.hintNumber === true;
 
                             return (
                                 <button
@@ -234,14 +223,14 @@ export default function PlayCardSystem({
                                         width: '60px',
                                         height: '80px',
                                         border: isSelected ? '3px solid #ff6b6b' :
-                                            (card.knownColor || card.knownNumber) ? '2px solid #4CAF50' : '1px solid #ddd',
+                                            hasHint ? '2px solid #FF9800' : '1px solid #ddd',
                                         borderRadius: '6px',
                                         display: 'flex',
                                         flexDirection: 'column',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         background: isSelected ? '#fff3cd' :
-                                            (card.knownColor || card.knownNumber) ? cardStyle.backgroundColor : '#ddd',
+                                            hasHint ? '#fff3e0' : '#ddd',
                                         color: cardStyle.color,
                                         fontWeight: 'bold',
                                         cursor: 'pointer',
@@ -253,21 +242,21 @@ export default function PlayCardSystem({
                                     <div style={{
                                         fontSize: '12px',
                                         marginBottom: '2px',
-                                        fontWeight: card.knownColor ? 'bold' : 'normal',
-                                        textDecoration: card.knownColor ? 'none' : 'line-through',
-                                        color: card.knownColor ? cardStyle.color : '#999'
-                                     }}>
-                                         {card.knownColor ? getColorChineseName(card.color) : '?'}
-                                     </div>
+                                        fontWeight: card.hintColor === true ? 'bold' : 'normal',
+                                        textDecoration: card.hintColor === true ? 'none' : 'line-through',
+                                        color: card.hintColor === true ? cardStyle.color : '#999'
+                                    }}>
+                                        {card.hintColor === true ? getColorChineseName(card.color) : '?'}
+                                    </div>
                                     <div style={{
                                         fontSize: '18px',
                                         fontWeight: 'bold',
-                                        color: card.knownNumber ? cardStyle.color : '#999'
+                                        color: card.hintNumber === true ? cardStyle.color : '#999'
                                     }}>
-                                        {card.knownNumber ? card.number : '?'}
+                                        {card.hintNumber === true ? card.number : '?'}
                                     </div>
                                     {/* 提示標記 */}
-                                    {(card.knownColor || card.knownNumber) && (
+                                    {hasHint && (
                                         <div style={{
                                             position: 'absolute',
                                             top: '2px',
@@ -283,6 +272,25 @@ export default function PlayCardSystem({
                                             color: 'white'
                                         }}>
                                             !
+                                        </div>
+                                    )}
+                                    {/* 可放置標記 */}
+                                    {canPlace && playDirection === 'fireworks' && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '2px',
+                                            left: '2px',
+                                            width: '8px',
+                                            height: '8px',
+                                            background: '#4CAF50',
+                                            borderRadius: '50%',
+                                            fontSize: '8px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white'
+                                        }}>
+                                            ✓
                                         </div>
                                     )}
                                 </button>

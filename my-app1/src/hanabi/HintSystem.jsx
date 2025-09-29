@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { getApiUrl } from '../config/api';
-import { 
-  COLOR_OPTIONS, 
+import {
+  COLOR_OPTIONS,
   NUMBER_OPTIONS
 } from './gameData';
 
@@ -18,7 +18,7 @@ export default function HintSystem({
   onHintGiven,
   onClose,
   room,
-  currentRound = 1
+  currentRound
 }) {
   const [hintType, setHintType] = useState(HINT_TYPES.COLOR);
   const [selectedColor, setSelectedColor] = useState('');
@@ -30,7 +30,6 @@ export default function HintSystem({
   const availablePlayers = players.filter(player =>
     player.rank !== currentPlayerRank && !player.isSelf
   );
-
   // 處理提示提交
   const handleSubmit = async () => {
     if (!targetPlayer) {
@@ -46,7 +45,7 @@ export default function HintSystem({
       // 準備API請求數據
       const requestBody = {
         room: room,
-        round: currentRound,
+        round: currentRound + 1,
         data: {
           type: hintType === HINT_TYPES.COLOR ? 1 : 2,
           player: parseInt(targetPlayer),
@@ -379,12 +378,12 @@ export const processHint = (hintData, players) => {
     if (type === HINT_TYPES.COLOR) {
       return {
         ...card,
-        knownColor: card.color === value ? true : card.knownColor
+        hintColor: card.color === value ? true : card.hintColor
       };
     } else {
       return {
         ...card,
-        knownNumber: card.number === value ? true : card.knownNumber
+        hintNumber: card.number === value ? true : card.hintNumber
       };
     }
   });

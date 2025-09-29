@@ -18,6 +18,15 @@ export const COLOR_NUMBER_MAP = {
   'WHITE': 5
 };
 
+// 數字到顏色映射 (API 用)
+export const NUMBER_COLOR_MAP = {
+  1: 'RED',
+  2: 'GREEN',
+  3: 'BLUE',
+  4: 'YELLOW',
+  5: 'WHITE'
+};
+
 
 // 顏色中文名稱映射
 export const COLOR_CHINESE_MAP = {
@@ -33,8 +42,8 @@ export const COLOR_STYLE_MAP = {
   'RED': { backgroundColor: 'crimson', color: '#fff' },
   'GREEN': { backgroundColor: 'seagreen', color: '#fff' },
   'BLUE': { backgroundColor: 'royalblue', color: '#fff' },
-  'YELLOW': { backgroundColor: 'goldenrod', color: '#fff' },
-  'WHITE': { backgroundColor: 'lightgray', color: '#000' }
+  'YELLOW': { backgroundColor: 'goldenrod', color: '#000' },
+  'WHITE': { backgroundColor: 'white', color: '#000' }
 };
 
 // 顏色選項 (用於提示系統)
@@ -43,7 +52,7 @@ export const COLOR_OPTIONS = [
   { value: 'GREEN', label: '綠色', color: 'seagreen' },
   { value: 'BLUE', label: '藍色', color: 'royalblue' },
   { value: 'YELLOW', label: '黃色', color: 'goldenrod' },
-  { value: 'WHITE', label: '白色', color: 'lightgray' }
+  { value: 'WHITE', label: '白色', color: 'white' }
 ];
 
 // 數字選項 (用於提示系統)
@@ -55,14 +64,6 @@ export const ACTION_TYPES = {
   HINT_NUMBER: 2,   // 提示數字
   PLAY_CARD: 3,     // 出牌
   DISCARD_CARD: 4   // 棄牌
-};
-
-// 動作類型中文映射
-export const ACTION_TYPE_CHINESE_MAP = {
-  1: '提示顏色',
-  2: '提示數字',
-  3: '出牌到煙火',
-  4: '出牌到棄牌堆'
 };
 
 // 工具函數：將顏色轉換為數字
@@ -80,7 +81,13 @@ export const getColorChineseName = (color) => {
 export const getColorStyle = (color) => {
   return COLOR_STYLE_MAP[color] || { backgroundColor: '#ddd', color: '#999' };
 };
-
+// 動作類型中文映射
+export const ACTION_TYPE_CHINESE_MAP = {
+  1: '提示顏色',
+  2: '提示數字',
+  3: '出牌到煙火',
+  4: '出牌到棄牌堆'
+};
 // 工具函數：獲取動作類型中文名稱
 export const getActionTypeChineseName = (type) => {
   return ACTION_TYPE_CHINESE_MAP[type] || '未知動作';
