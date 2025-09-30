@@ -369,6 +369,7 @@ export default function DigitCodeGrid({
                   renderComparisonIcon={renderComparisonIcon}
                   isMobile={isMobile}
                   position="right"
+                  columnIndex={index % 3}
                 />
 
                 {/* 下方比較符號 */}
