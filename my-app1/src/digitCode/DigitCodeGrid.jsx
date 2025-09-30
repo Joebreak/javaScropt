@@ -35,8 +35,8 @@ export default function DigitCodeGrid({
     return null;
   };
 
-   // 處理相鄰位置比較 - 根據 list 中 type = 2 的記錄
-   const getAdjacentComparison = (digit1, digit2) => {
+  // 處理相鄰位置比較 - 根據 list 中 type = 2 的記錄
+  const getAdjacentComparison = (digit1, digit2) => {
     if (!list || !Array.isArray(list)) return null;
 
     const comparisonRecord = list.find(item =>
@@ -313,7 +313,7 @@ export default function DigitCodeGrid({
           }}>S</span>
         </div>
 
-        {[ 
+        {[
           { index: 0, label: "T" },
           { index: 1, label: "U" },
           { index: 2, label: "V" },
@@ -324,14 +324,6 @@ export default function DigitCodeGrid({
           const digitLabels = ["T", "U", "V", "W", "X", "Y"];
           const currentDigit = digitLabels[index];
 
-          console.log("a",index < 2); 
-          // 檢查相鄰位置的比較
-          const rightComparison = index < 2 ? getAdjacentComparison(currentDigit, digitLabels[index + 1]) : null; // T-U, U-V
-          const bottomComparison = index < 3 ? getAdjacentComparison(currentDigit, digitLabels[index + 3]) : null; // T-W, U-X, V-Y (上下關係)
-          const rightComparisonBottom = index >= 3 && index < 5 ? getAdjacentComparison(currentDigit, digitLabels[index + 1]) : null; // W-X, X-Y
-         
-          console.log("rightComparison",rightComparison);
-        
           // 檢查偶數奇數
           const evenOddCheck = getEvenOddCheck(currentDigit);
 
@@ -345,53 +337,51 @@ export default function DigitCodeGrid({
               onSegmentClick={handleSegmentClick}
               onNumberClick={handleNumberClick}
               renderEvenOddMark={renderEvenOddMark}
-              rightComparison={rightComparison}
-              rightComparisonBottom={rightComparisonBottom}
-              bottomComparison={bottomComparison}
               renderComparisonIcon={renderComparisonIcon}
             />
           );
         })}
 
         {/* 比較符號 - 使用模組化組件 */}
-        {[
-          { index: 0, label: "T" },
-          { index: 1, label: "U" },
-          { index: 2, label: "V" },
-          { index: 3, label: "W" },
-          { index: 4, label: "X" },
-          { index: 5, label: "Y" }
-        ].map(({ index, label }) => {
-          const digitLabels = ["T", "U", "V", "W", "X", "Y"];
-          const currentDigit = digitLabels[index];
+        {
+          [
+            { index: 0, label: "T" },
+            { index: 1, label: "U" },
+            { index: 2, label: "V" },
+            { index: 3, label: "W" },
+            { index: 4, label: "X" },
+            { index: 5, label: "Y" }
+          ].map(({ index, label }) => {
+            const digitLabels = ["T", "U", "V", "W", "X", "Y"];
+            const currentDigit = digitLabels[index];
 
-          // 檢查相鄰位置的比較
-          const rightComparison = index < 2 ? getAdjacentComparison(currentDigit, digitLabels[index + 1]) : null; // T-U, U-V
-          const bottomComparison = index < 3 ? getAdjacentComparison(currentDigit, digitLabels[index + 3]) : null; // T-W, U-X, V-Y (上下關係)
-          const rightComparisonBottom = index >= 3 && index < 5 ? getAdjacentComparison(currentDigit, digitLabels[index + 1]) : null; // W-X, X-Y
+            // 檢查相鄰位置的比較
+            const rightComparison = index < 2 ? getAdjacentComparison(currentDigit, digitLabels[index + 1]) : null; // T-U, U-V
+            const bottomComparison = index < 3 ? getAdjacentComparison(currentDigit, digitLabels[index + 3]) : null; // T-W, U-X, V-Y (上下關係)
+            const rightComparisonBottom = index >= 3 && index < 5 ? getAdjacentComparison(currentDigit, digitLabels[index + 1]) : null; // W-X, X-Y
 
-          return (
-            <div key={`comparison-${index}`}>
-              {/* 右側比較符號 */}
-              <ComparisonSymbols
-                rightComparison={rightComparison}
-                rightComparisonBottom={rightComparisonBottom}
-                renderComparisonIcon={renderComparisonIcon}
-                isMobile={isMobile}
-                position="right"
-              />
-              
-              {/* 下方比較符號 */}
-              <ComparisonSymbols
-                bottomComparison={bottomComparison}
-                renderComparisonIcon={renderComparisonIcon}
-                isMobile={isMobile}
-                position="bottom"
-                columnIndex={index % 3} // 0,1,2 對應 T/U/V 欄，讓 T-W、U-X、V-Y 分別對齊
-              />
-            </div>
-          );
-        })}
+            return (
+              <div key={`comparison-${index}`}>
+                {/* 右側比較符號 */}
+                <ComparisonSymbols
+                  rightComparison={rightComparison}
+                  rightComparisonBottom={rightComparisonBottom}
+                  renderComparisonIcon={renderComparisonIcon}
+                  isMobile={isMobile}
+                  position="right"
+                />
+
+                {/* 下方比較符號 */}
+                <ComparisonSymbols
+                  bottomComparison={bottomComparison}
+                  renderComparisonIcon={renderComparisonIcon}
+                  isMobile={isMobile}
+                  position="bottom"
+                  columnIndex={index % 3} // 0,1,2 對應 T/U/V 欄，讓 T-W、U-X、V-Y 分別對齊
+                />
+              </div>
+            );
+          })}
       </div>
     </div>
   );

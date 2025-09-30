@@ -11,8 +11,8 @@ export default function ComparisonSymbols({
   columnIndex // 0,1,2 對應 T/U/V 欄，用於 bottom 符號水平定位
 }) {
   const size = isMobile ? 12 : 16;
-  const rightOffset = isMobile ? "-12px" : "-16px";
-  const bottomOffset = isMobile ? "-12px" : "160px";
+  const rightOffset = isMobile ? "12px" : "-16px";
+  const bottomOffset = isMobile ? "12px" : "160px";
 
   // 依裝置與欄位決定水平位置，避免多個垂直符號重疊
   const leftPositionsMobile = ["20%", "50%", "80%"]; // T, U, V
