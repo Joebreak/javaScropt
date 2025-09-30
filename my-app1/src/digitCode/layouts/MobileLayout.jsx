@@ -16,11 +16,11 @@ export default function MobileLayout({
       {/* 位置標籤 - T~Y 符號 */}
       <div style={{
         position: "absolute",
-        top: -15,
-        left: -18,
-        fontSize: "12px",
+        top: -20,
+        left: -20,
+        fontSize: "20px",
         fontWeight: "bold",
-        color: "#666",
+        color: "#0000ff",
         pointerEvents: "none",
         zIndex: 20
       }}>

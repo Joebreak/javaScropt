@@ -10,7 +10,7 @@ export default function SegmentDisplay({ digitIndex, isMobileView, evenOddCheck,
   // 獲取段顏色的函數
   const getSegmentColor = (segment) => {
     const state = getSegmentState(segment);
-    if (state === 1) return "#27ae60"; // 綠色 - 已標記
+    if (state === 1) return "#2c3e50"; // 與上方數位示例一致的深色 - 已標記
     if (state === -1) return "#e74c3c"; // 紅色 - 一定不是
     return "#d4af37"; // 金色邊框 - 未標記（在米色背景上更明顯）
   };
@@ -18,7 +18,7 @@ export default function SegmentDisplay({ digitIndex, isMobileView, evenOddCheck,
   // 獲取段填充顏色的函數
   const getSegmentFillColor = (segment) => {
     const state = getSegmentState(segment);
-    if (state === 1) return "#27ae60"; // 綠色 - 已標記
+    if (state === 1) return "#2c3e50"; // 與上方數位示例一致的深色 - 已標記
     if (state === -1) return "#e74c3c"; // 紅色 - 一定不是
     return "#f5f5dc"; // 米色 - 未標記（實心但較淡）
   };
@@ -187,12 +187,12 @@ export default function SegmentDisplay({ digitIndex, isMobileView, evenOddCheck,
               // 偶數：顯示在 a-g 段下方
               top: "15%",
               left: "50%",
-              transform: "translateX(-50%) translateY(4px)",
+              transform: "translateX(-50%) translateY(8px)",
             } : {
               // 奇數：顯示在 a-g 段上方
               top: "0%",
               left: "50%",
-              transform: "translateX(-50%) translateY(-4px)",
+              transform: "translateX(-50%) translateY(95px)",
             })
           } : {
             // 網頁版位置

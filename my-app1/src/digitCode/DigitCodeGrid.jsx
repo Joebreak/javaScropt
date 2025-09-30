@@ -35,8 +35,8 @@ export default function DigitCodeGrid({
     return null;
   };
 
-  // 處理相鄰位置比較 - 根據 list 中 type = 2 的記錄
-  const getAdjacentComparison = (digit1, digit2) => {
+   // 處理相鄰位置比較 - 根據 list 中 type = 2 的記錄
+   const getAdjacentComparison = (digit1, digit2) => {
     if (!list || !Array.isArray(list)) return null;
 
     const comparisonRecord = list.find(item =>
@@ -171,9 +171,9 @@ export default function DigitCodeGrid({
       <div style={{
         position: "relative",
         display: "grid",
-        gridTemplateColumns: "repeat(3, auto)",
+        gridTemplateColumns: "repeat(3, 1fr)",
         gridTemplateRows: "repeat(2, auto)",
-        columnGap: isMobile ? "30px" : "40px",
+        columnGap: isMobile ? "40px" : "50px",
         rowGap: isMobile ? "12px" : "16px",
         justifyContent: "center",
         alignItems: "center",
@@ -181,90 +181,93 @@ export default function DigitCodeGrid({
         margin: "0 auto"
       }}>
         {/* 行標籤 - A~I (上方，對齊到網格行) */}
-        {/* A B C - 第一列 */}
         <div style={{
           position: "absolute",
           top: isMobile ? "-15px" : "0px",
-          left: isMobile ? "28%" : "25%",
-          transform: "translateX(-50%)",
+          left: "0",
+          right: "0",
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          columnGap: isMobile ? "40px" : "50px",
           zIndex: 10,
           pointerEvents: "none"
         }}>
-          <span style={{
-            fontSize: isMobile ? "15px" : "12px",
-            fontWeight: "bold",
-            color: "#666",
-            wordSpacing: isMobile ? "8px" : "10px"
-          }}>A B C</span>
-        </div>
-        {/* D E F - 第二列 */}
-        <div style={{
-          position: "absolute",
-          top: isMobile ? "-15px" : "0px",
-          left: isMobile ? "50%" : "46%",
-          transform: "translateX(-50%)",
-          zIndex: 10,
-          pointerEvents: "none"
-        }}>
-          <span style={{
-            fontSize: isMobile ? "10px" : "12px",
-            fontWeight: "bold",
-            color: "#666",
-            wordSpacing: isMobile ? "8px" : "10px"
-          }}>D E F</span>
-        </div>
-        {/* G H I - 第三列 */}
-        <div style={{
-          position: "absolute",
-          top: isMobile ? "-15px" : "0px",
-          left: isMobile ? "72%" : "66%",
-          transform: "translateX(-50%)",
-          zIndex: 10,
-          pointerEvents: "none"
-        }}>
-          <span style={{
-            fontSize: isMobile ? "10px" : "12px",
-            fontWeight: "bold",
-            color: "#666",
-            wordSpacing: isMobile ? "8px" : "10px"
-          }}>G H I</span>
+          {/* A B C - 第一列 */}
+          <div style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+          }}>
+            <span style={{
+              fontSize: isMobile ? "15px" : "12px",
+              fontWeight: "bold",
+              color: "#666",
+              wordSpacing: isMobile ? "22px" : "10px"
+            }}>A B C</span>
+          </div>
+          {/* D E F - 第二列 */}
+          <div style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+          }}>
+            <span style={{
+              fontSize: isMobile ? "15px" : "12px",
+              fontWeight: "bold",
+              color: "#666",
+              wordSpacing: isMobile ? "22px" : "10px"
+            }}>D E F</span>
+          </div>
+          {/* G H I - 第三列 */}
+          <div style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+          }}>
+            <span style={{
+              fontSize: isMobile ? "15px" : "12px",
+              fontWeight: "bold",
+              color: "#666",
+              wordSpacing: isMobile ? "22px" : "10px"
+            }}>G H I</span>
+          </div>
         </div>
 
         {/* 列標籤 - J~N (左側，對齊到網格列) */}
         <div style={{
           position: "absolute",
-          top: isMobile ? "60px" : "20px",
-          left: isMobile ? "0px" : "150px",
+          top: isMobile ? "1px" : "20px",
+          left: isMobile ? "-15px" : "150px",
           display: "flex",
           flexDirection: "column",
-          gap: isMobile ? "2px" : "5px",
+          gap: isMobile ? "15px" : "5px",
           alignItems: "flex-start",
           textAlign: "left",
           zIndex: 10,
           pointerEvents: "none"
         }}>
           <span style={{
-            fontSize: isMobile ? "10px" : "12px",
+            fontSize: isMobile ? "15px" : "12px",
             fontWeight: "bold",
             color: "#666"
           }}>J</span>
           <span style={{
-            fontSize: isMobile ? "10px" : "12px",
+            fontSize: isMobile ? "15px" : "12px",
             fontWeight: "bold",
             color: "#666"
           }}>K</span>
           <span style={{
-            fontSize: isMobile ? "10px" : "12px",
+            fontSize: isMobile ? "15px" : "12px",
             fontWeight: "bold",
             color: "#666"
           }}>L</span>
           <span style={{
-            fontSize: isMobile ? "10px" : "12px",
+            fontSize: isMobile ? "15px" : "12px",
             fontWeight: "bold",
             color: "#666"
           }}>M</span>
           <span style={{
-            fontSize: isMobile ? "10px" : "12px",
+            fontSize: isMobile ? "15px" : "12px",
             fontWeight: "bold",
             color: "#666"
           }}>N</span>
@@ -273,38 +276,38 @@ export default function DigitCodeGrid({
         {/* 列標籤 - O~S (左側，對齊到網格列) */}
         <div style={{
           position: "absolute",
-          top: isMobile ? "201px" : "174px",
-          left: isMobile ? "66px" : "150px",
+          top: isMobile ? "350px" : "174px",
+          left: isMobile ? "-15px" : "150px",
           display: "flex",
           flexDirection: "column",
-          gap: isMobile ? "2px" : "5px",
+          gap: isMobile ? "15px" : "5px",
           alignItems: "flex-start",
           textAlign: "left",
           zIndex: 10,
           pointerEvents: "none"
         }}>
           <span style={{
-            fontSize: isMobile ? "10px" : "12px",
+            fontSize: isMobile ? "15px" : "12px",
             fontWeight: "bold",
             color: "#666"
           }}>O</span>
           <span style={{
-            fontSize: isMobile ? "10px" : "12px",
+            fontSize: isMobile ? "15px" : "12px",
             fontWeight: "bold",
             color: "#666"
           }}>P</span>
           <span style={{
-            fontSize: isMobile ? "10px" : "12px",
+            fontSize: isMobile ? "15px" : "12px",
             fontWeight: "bold",
             color: "#666"
           }}>Q</span>
           <span style={{
-            fontSize: isMobile ? "10px" : "12px",
+            fontSize: isMobile ? "15px" : "12px",
             fontWeight: "bold",
             color: "#666"
           }}>R</span>
           <span style={{
-            fontSize: isMobile ? "10px" : "12px",
+            fontSize: isMobile ? "15px" : "12px",
             fontWeight: "bold",
             color: "#666"
           }}>S</span>
@@ -321,11 +324,14 @@ export default function DigitCodeGrid({
           const digitLabels = ["T", "U", "V", "W", "X", "Y"];
           const currentDigit = digitLabels[index];
 
+          console.log("a",index < 2); 
           // 檢查相鄰位置的比較
           const rightComparison = index < 2 ? getAdjacentComparison(currentDigit, digitLabels[index + 1]) : null; // T-U, U-V
           const bottomComparison = index < 3 ? getAdjacentComparison(currentDigit, digitLabels[index + 3]) : null; // T-W, U-X, V-Y (上下關係)
           const rightComparisonBottom = index >= 3 && index < 5 ? getAdjacentComparison(currentDigit, digitLabels[index + 1]) : null; // W-X, X-Y
-          
+         
+          console.log("rightComparison",rightComparison);
+        
           // 檢查偶數奇數
           const evenOddCheck = getEvenOddCheck(currentDigit);
 
@@ -400,7 +406,7 @@ function DigitDisplayGrid() {
   if (isMobile) {
     // 手機版：分兩行顯示
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "center" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px", alignItems: "center" }}>
         {/* 第一行：0-4 */}
         <div style={{
           display: "flex",
