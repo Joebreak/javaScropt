@@ -183,7 +183,7 @@ export default function DigitCodeGrid({
         {/* 行標籤 - A~I (上方，對齊到網格行) */}
         <div style={{
           position: "absolute",
-          top: isMobile ? "-15px" : "0px",
+          top: isMobile ? "-20px" : "0px",
           left: "0",
           right: "0",
           display: "grid",
@@ -202,7 +202,7 @@ export default function DigitCodeGrid({
               fontSize: isMobile ? "15px" : "12px",
               fontWeight: "bold",
               color: "#666",
-              wordSpacing: isMobile ? "22px" : "10px"
+              wordSpacing: isMobile ? "18px" : "10px"
             }}>A B C</span>
           </div>
           {/* D E F - 第二列 */}
@@ -215,7 +215,7 @@ export default function DigitCodeGrid({
               fontSize: isMobile ? "15px" : "12px",
               fontWeight: "bold",
               color: "#666",
-              wordSpacing: isMobile ? "22px" : "10px"
+              wordSpacing: isMobile ? "18px" : "10px"
             }}>D E F</span>
           </div>
           {/* G H I - 第三列 */}
@@ -228,7 +228,7 @@ export default function DigitCodeGrid({
               fontSize: isMobile ? "15px" : "12px",
               fontWeight: "bold",
               color: "#666",
-              wordSpacing: isMobile ? "22px" : "10px"
+              wordSpacing: isMobile ? "18px" : "10px"
             }}>G H I</span>
           </div>
         </div>
@@ -240,7 +240,7 @@ export default function DigitCodeGrid({
           left: isMobile ? "-15px" : "150px",
           display: "flex",
           flexDirection: "column",
-          gap: isMobile ? "15px" : "5px",
+          gap: isMobile ? "5px" : "5px",
           alignItems: "flex-start",
           textAlign: "left",
           zIndex: 10,
@@ -276,11 +276,11 @@ export default function DigitCodeGrid({
         {/* 列標籤 - O~S (左側，對齊到網格列) */}
         <div style={{
           position: "absolute",
-          top: isMobile ? "360px" : "174px",
+          top: isMobile ? "303px" : "174px",
           left: isMobile ? "-15px" : "150px",
           display: "flex",
           flexDirection: "column",
-          gap: isMobile ? "15px" : "5px",
+          gap: isMobile ? "6px" : "5px",
           alignItems: "flex-start",
           textAlign: "left",
           zIndex: 10,

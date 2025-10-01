@@ -21,10 +21,10 @@ export default function SegmentDisplay({ digitIndex, isMobileView, evenOddCheck,
   
   // 段的大小配置
   const segmentConfig = {
-    horizontalWidth: isMobileView ? 48 : 60, // 橫段寬度
-    horizontalHeight: isMobileView ? 5 : 6, // 橫段高度
+    horizontalWidth: isMobileView ? 49 : 60, // 橫段寬度
+    horizontalHeight: isMobileView ? 4 : 6, // 橫段高度
     verticalWidth: isMobileView ? 4 : 6, // 豎段寬度
-    verticalHeight: isMobileView ? 40 : 50, // 豎段高度
+    verticalHeight: isMobileView ? 36 : 50, // 豎段高度
     borderRadius: isMobileView ? 2 : 3 // 圓角
   };
 
@@ -77,7 +77,7 @@ export default function SegmentDisplay({ digitIndex, isMobileView, evenOddCheck,
           onClick={() => onSegmentClick(`c${digitIndex}`)}
           style={{
             position: 'absolute',
-            top: isMobileView ? '55px' : '70px',
+            top: isMobileView ? '53px' : '70px',
             right: isMobileView ? '8px' : '12px',
             width: segmentConfig.verticalWidth,
             height: segmentConfig.verticalHeight,
@@ -162,12 +162,12 @@ export default function SegmentDisplay({ digitIndex, isMobileView, evenOddCheck,
             // 手機版位置
             ...(evenOddCheck === 'even' ? {
               // 偶數：顯示在 a-g 段下方
-              top: "15%",
+              top: "10%",
               left: "50%",
               transform: "translateX(-50%) translateY(8px)",
             } : {
               // 奇數：顯示在 a-g 段上方
-              top: "0%",
+              top: "-35%",
               left: "50%",
               transform: "translateX(-50%) translateY(95px)",
             })
