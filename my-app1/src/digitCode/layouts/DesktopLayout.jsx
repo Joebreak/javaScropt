@@ -10,6 +10,7 @@ export default function DesktopLayout({
   onSegmentClick, 
   onNumberClick, 
   renderEvenOddMark,
+  list = []
 }) {
   return (
     <div style={{ textAlign: "center", position: "relative", display: "flex", alignItems: "center", gap: "12px" }}>
@@ -36,6 +37,7 @@ export default function DesktopLayout({
           selectedSegments={selectedSegments}
           onSegmentClick={onSegmentClick}
           renderEvenOddMark={renderEvenOddMark}
+          list={list}
         />
       </div>
 

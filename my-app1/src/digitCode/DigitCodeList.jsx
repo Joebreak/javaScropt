@@ -29,7 +29,19 @@ export default function DigitCodeList({ data }) {
                   <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center", fontWeight: "bold", color: "#666" }}>{item.round}</td>
                   <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center" }}>{item.type}</td>
                   <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center" }}>{item.in}</td>
-                  <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center" }}>{item.out}</td>
+                  <td style={{ padding: "12px 8px", borderTop: "1px solid #eaeaea", textAlign: "center" }}>
+                    {item.type === 4 ? (
+                      <span style={{
+                        fontSize: '20px',
+                        fontWeight: 'bold',
+                        color: item.out ? '#28a745' : '#dc3545'
+                      }}>
+                        {item.out ? 'O' : 'X'}
+                      </span>
+                    ) : (
+                      item.out
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

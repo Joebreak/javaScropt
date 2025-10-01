@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { getApiUrl } from '../config/api';
 
 // 位置對應關係和要檢查的段
@@ -17,60 +17,58 @@ const positionMapping = {
     'L': { digits: ['T', 'U', 'V'], segments: ['g'] },
     'M': { digits: ['T', 'U', 'V'], segments: ['c', 'e'] },
     'N': { digits: ['T', 'U', 'V'], segments: ['d'] },
-     'O': { digits: ['W', 'X', 'Y'], segments: ['a'] },
-     'P': { digits: ['W', 'X', 'Y'], segments: ['b', 'f'] },
-     'Q': { digits: ['W', 'X', 'Y'], segments: ['g'] },
-     'R': { digits: ['W', 'X', 'Y'], segments: ['c', 'e'] },
-     'S': { digits: ['W', 'X', 'Y'], segments: ['d'] }
+    'O': { digits: ['W', 'X', 'Y'], segments: ['a'] },
+    'P': { digits: ['W', 'X', 'Y'], segments: ['b', 'f'] },
+    'Q': { digits: ['W', 'X', 'Y'], segments: ['g'] },
+    'R': { digits: ['W', 'X', 'Y'], segments: ['c', 'e'] },
+    'S': { digits: ['W', 'X', 'Y'], segments: ['d'] }
 };
 
-// 問題1：位置選擇
-export default function Question1Modal({
+// 問題4：X + Y 座標選擇
+export default function Question4Modal({
     isOpen,
     onClose,
     onConfirm,
-    initialPosition = 'A',
+    initialXPosition = 'A',
+    initialYPosition = 'K',
     gameData
 }) {
-    const [selectedPosition, setSelectedPosition] = useState(initialPosition);
+    const [selectedXPosition, setSelectedXPosition] = useState(initialXPosition);
+    const [selectedYPosition, setSelectedYPosition] = useState(initialYPosition);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [selectedRange, setSelectedRange] = useState('A-I'); // 追蹤當前選中的範圍
 
     // 位置範圍選項 - 使用 useMemo 優化
     const positionRanges = useMemo(() => [
         {
             range: 'A-I',
-            label: 'A~I',
+            label: 'X座標 (A~I)',
             positions: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'],
             description: 'A B C D E F G H I'
         },
         {
             range: 'J-S',
-            label: 'J~S',
+            label: 'Y座標 (J~S)',
             positions: ['J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S'],
             description: 'J K L M N O P Q R S'
         }
     ], []);
 
-    // 初始化時確保範圍和位置一致
+    // 初始化時確保位置選擇
     useEffect(() => {
-        if (initialPosition) {
-            // 根據初始位置確定範圍
-            const range = positionRanges.find(r => r.positions.includes(initialPosition));
-            if (range) {
-                setSelectedRange(range.range);
-            }
+        if (initialXPosition) {
+            setSelectedXPosition(initialXPosition);
         } else {
-            // 如果沒有初始位置，預設選中 A-I 範圍的第一個位置
-            setSelectedPosition('A');
-            setSelectedRange('A-I');
+            setSelectedXPosition('A');
         }
-    }, [initialPosition, positionRanges]);
+        if (initialYPosition) {
+            setSelectedYPosition(initialYPosition);
+        } else {
+            setSelectedYPosition('K');
+        }
+    }, [initialXPosition, initialYPosition]);
 
-    // 當前選中的範圍
-    const currentRange = positionRanges.find(r => r.range === selectedRange) || positionRanges[0];
 
-    // 解析遊戲答案數據 - 參考 Question2Modal
+    // 解析遊戲答案數據 - 參考 Question1Modal
     const parseGameData = (data) => {
         if (!data || !Array.isArray(data)) return null;
 
@@ -86,35 +84,92 @@ export default function Question1Modal({
         };
     };
 
-    // 計算指定段個數的函數
-    const calculateSegmentCount = (position) => {
-        if (!gameData.answerData) return 0;
+    // 檢查是否有段交集（配置層面）
+    const hasSegmentIntersection = () => {
+        if (!selectedXPosition || !selectedYPosition) return false;
+
+        const xPositionData = positionMapping[selectedXPosition];
+        const yPositionData = positionMapping[selectedYPosition];
+
+        if (!xPositionData || !yPositionData) return false;
+
+        const xSegments = xPositionData.segments;
+        const ySegments = yPositionData.segments;
+
+        // 檢查是否有共同的段
+        return xSegments.some(segment => ySegments.includes(segment));
+    };
+
+    // 檢查 Y 座標是否與當前 X 座標有段交集
+    const hasYIntersectionWithX = useCallback((yPosition) => {
+        if (!selectedXPosition || !yPosition) return false;
+
+        const xPositionData = positionMapping[selectedXPosition];
+        const yPositionData = positionMapping[yPosition];
+
+        if (!xPositionData || !yPositionData) return false;
+
+        const xSegments = xPositionData.segments;
+        const ySegments = yPositionData.segments;
+
+        // 檢查是否有共同的段
+        return xSegments.some(segment => ySegments.includes(segment));
+    }, [selectedXPosition]);
+
+    // 當 X 座標改變時，檢查當前 Y 座標是否還有交集
+    useEffect(() => {
+        if (selectedXPosition && selectedYPosition) {
+            if (!hasYIntersectionWithX(selectedYPosition)) {
+                // 如果當前 Y 座標與新的 X 座標沒有交集，清除 Y 座標選擇
+                setSelectedYPosition('');
+            }
+        }
+    }, [selectedXPosition, selectedYPosition, hasYIntersectionWithX]);
+
+    // 檢查實際數字是否有段交集（基於真實遊戲數據）
+    // 返回 null（無配置交集）、true（有實際交集）、false（有配置交集但無實際交集）
+    const hasActualSegmentIntersection = () => {
+        if (!gameData.answerData) return null;
+        if (!selectedXPosition || !selectedYPosition) return null;
+
+        const xPositionData = positionMapping[selectedXPosition];
+        const yPositionData = positionMapping[selectedYPosition];
+
+        if (!xPositionData || !yPositionData) return null;
 
         // 解析真實答案數據
         const parsedData = parseGameData(gameData.answerData);
-        if (!parsedData) return 0;
+        if (!parsedData) return null;
 
-        const positionData = positionMapping[position];
-        if (!positionData) return 0;
+        // 找出共同的段
+        const commonSegments = xPositionData.segments.filter(segment => yPositionData.segments.includes(segment));
 
-        const { digits, segments } = positionData;
-        let totalCount = 0;
+        // 如果沒有配置交集，返回 null
+        if (commonSegments.length === 0) {
+            return null;
+        }
 
-        digits.forEach(digit => {
-            // 從解析後的數據中獲取真實數字
-            const number = parsedData[digit];
-            if (number !== undefined) {
-                // 計算該數字的指定段個數
-                const segmentCount = getSegmentCount(number, segments);
-                totalCount += segmentCount;
+        // 檢查這些共同段是否在實際數字中存在
+        for (const segment of commonSegments) {
+            // 找出 X 和 Y 座標共同的數字位置
+            const commonDigits = xPositionData.digits.filter(digit => yPositionData.digits.includes(digit));
+
+            // 檢查共同的數字位置中是否有這個段
+            for (const digit of commonDigits) {
+                const number = parsedData[digit];
+                if (number === undefined) continue;
+
+                const digitSegments = getDigitSegments(number);
+                return digitSegments.includes(segment);
             }
-        });
+        }
 
-        return totalCount;
+        // 有配置交集但沒有實際交集
+        return false;
     };
 
-    // 根據數字計算指定段個數
-    const getSegmentCount = (number, targetSegments) => {
+    // 根據數字獲取段
+    const getDigitSegments = (number) => {
         const digitSegments = {
             0: ['a', 'b', 'c', 'd', 'e', 'f'],
             1: ['b', 'c'],
@@ -127,32 +182,41 @@ export default function Question1Modal({
             8: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
             9: ['a', 'b', 'c', 'd', 'f', 'g']
         };
-
-        const segments = digitSegments[number] || [];
-        return segments.filter(seg => targetSegments.includes(seg)).length;
+        return digitSegments[number] || [];
     };
 
     // 處理提交到API
     const handleConfirm = async () => {
-        if (!selectedPosition) {
-            alert("請選擇位置");
+        if (!selectedXPosition || !selectedYPosition) {
+            alert("請選擇 X 和 Y 座標");
+            return;
+        }
+
+        if (!hasSegmentIntersection()) {
+            alert("X 和 Y 座標沒有共同的段，無法提交");
             return;
         }
 
         setIsSubmitting(true);
 
         try {
-            // 計算指定段個數
-            const segmentCount = calculateSegmentCount(selectedPosition);
+            // 檢查實際數字是否有段交集（是否有亮起的段）
+            const actualIntersection = hasActualSegmentIntersection();
+
+            // 如果沒有配置交集，不應該到達這裡（按鈕應該被禁用）
+            if (actualIntersection === null) {
+                alert("X 和 Y 座標沒有共同的段，無法提交");
+                return;
+            }
 
             // 準備API請求數據
             const requestBody = {
                 room: gameData.room,
                 round: gameData.currentRound,
                 data: {
-                    type: 1, // 問題1的類型
-                    in: selectedPosition,
-                    out: segmentCount
+                    type: 4, // 問題4的類型
+                    in: `${selectedXPosition}+${selectedYPosition}`, // X+Y 座標組合
+                    out: actualIntersection // true 或 false
                 }
             };
 
@@ -170,8 +234,9 @@ export default function Question1Modal({
                 // 通知父組件更新畫面
                 if (onConfirm) {
                     onConfirm({
-                        selectedPosition,
-                        positionRange: currentRange.range,
+                        selectedXPosition,
+                        selectedYPosition,
+                        hasActualIntersection: actualIntersection,
                         needsRefresh: true // 標記需要更新畫面
                     });
                 }
@@ -180,7 +245,7 @@ export default function Question1Modal({
                 throw new Error('API 調用失敗');
             }
         } catch (error) {
-            console.error('問題1提交失敗:', error);
+            console.error('問題4提交失敗:', error);
             alert('提交失敗，請重試');
         } finally {
             setIsSubmitting(false);
@@ -188,7 +253,8 @@ export default function Question1Modal({
     };
 
     const handleCancel = () => {
-        setSelectedPosition(initialPosition);
+        setSelectedXPosition(initialXPosition);
+        setSelectedYPosition(initialYPosition);
         onClose();
     };
 
@@ -212,7 +278,7 @@ export default function Question1Modal({
                 padding: '30px',
                 borderRadius: '12px',
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-                maxWidth: '500px',
+                maxWidth: '600px',
                 width: '90%',
                 maxHeight: '80vh',
                 overflow: 'auto'
@@ -224,61 +290,10 @@ export default function Question1Modal({
                     fontWeight: 'bold',
                     textAlign: 'center'
                 }}>
-                    問題1：位置設定
+                    問題4：X + Y 座標設定
                 </h2>
 
-                {/* 範圍選擇 */}
-                <div style={{ marginBottom: '25px' }}>
-                    <h3 style={{
-                        margin: '0 0 15px 0',
-                        color: '#495057',
-                        fontSize: '16px',
-                        fontWeight: '600'
-                    }}>
-                        選擇位置範圍：
-                    </h3>
-                    <div style={{
-                        display: 'flex',
-                        gap: '15px',
-                        justifyContent: 'center',
-                        marginBottom: '20px'
-                    }}>
-                        {positionRanges.map(range => (
-                            <button
-                                key={range.range}
-                                onClick={() => {
-                                    // 切換範圍時，更新範圍狀態並選中該範圍的第一個位置
-                                    setSelectedRange(range.range);
-                                    setSelectedPosition(range.positions[0]);
-                                }}
-                                style={{
-                                    padding: '12px 20px',
-                                    border: currentRange.range === range.range ? '2px solid #3498db' : '2px solid #e9ecef',
-                                    borderRadius: '8px',
-                                    backgroundColor: currentRange.range === range.range ? '#e3f2fd' : '#f8f9fa',
-                                    color: currentRange.range === range.range ? '#1976d2' : '#495057',
-                                    fontSize: '14px',
-                                    fontWeight: 'bold',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease',
-                                    textAlign: 'center'
-                                }}
-                            >
-                                {range.label}<br />
-                                <span style={{
-                                    fontSize: '10px',
-                                    fontWeight: 'normal',
-                                    display: 'block',
-                                    marginTop: '4px'
-                                }}>
-                                    {range.description}
-                                </span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* 具體位置選擇 */}
+                {/* X 座標選擇 (A-I) */}
                 <div style={{ marginBottom: '30px' }}>
                     <h3 style={{
                         margin: '0 0 15px 0',
@@ -286,7 +301,7 @@ export default function Question1Modal({
                         fontSize: '16px',
                         fontWeight: '600'
                     }}>
-                        選擇具體位置：
+                        選擇 X 座標 (A~I)：
                     </h3>
                     <div style={{
                         display: 'flex',
@@ -296,14 +311,12 @@ export default function Question1Modal({
                         margin: '0 auto'
                     }}>
                         {(() => {
-                            const positions = currentRange.positions;
+                            const positions = positionRanges[0].positions; // A-I
                             const rows = [];
 
-                            // 根據範圍決定每排的數量
-                            const itemsPerRow = currentRange.range === 'J-S' ? 5 : 3;
-
-                            for (let i = 0; i < positions.length; i += itemsPerRow) {
-                                const row = positions.slice(i, i + itemsPerRow);
+                            // 每3個一排分組
+                            for (let i = 0; i < positions.length; i += 3) {
+                                const row = positions.slice(i, i + 3);
                                 rows.push(row);
                             }
 
@@ -316,13 +329,13 @@ export default function Question1Modal({
                                     {row.map(position => (
                                         <button
                                             key={position}
-                                            onClick={() => setSelectedPosition(position)}
+                                            onClick={() => setSelectedXPosition(position)}
                                             style={{
                                                 padding: '12px 8px',
-                                                border: selectedPosition === position ? '2px solid #28a745' : '2px solid #e9ecef',
+                                                border: selectedXPosition === position ? '2px solid #28a745' : '2px solid #e9ecef',
                                                 borderRadius: '8px',
-                                                backgroundColor: selectedPosition === position ? '#d4edda' : '#f8f9fa',
-                                                color: selectedPosition === position ? '#155724' : '#495057',
+                                                backgroundColor: selectedXPosition === position ? '#d4edda' : '#f8f9fa',
+                                                color: selectedXPosition === position ? '#155724' : '#495057',
                                                 fontSize: '16px',
                                                 fontWeight: 'bold',
                                                 cursor: 'pointer',
@@ -340,15 +353,99 @@ export default function Question1Modal({
                     </div>
                 </div>
 
-                {/* a-g 七段顯示器面板 - 根據當前範圍顯示對應的段 */}
-                {selectedPosition && currentRange.positions.includes(selectedPosition) && (() => {
-                    const positionData = positionMapping[selectedPosition];
-                    if (!positionData) return null;
+                {/* Y 座標選擇 (J-S) */}
+                <div style={{ marginBottom: '30px' }}>
+                    <h3 style={{
+                        margin: '0 0 15px 0',
+                        color: '#495057',
+                        fontSize: '16px',
+                        fontWeight: '600'
+                    }}>
+                        選擇 Y 座標 (J~S)：
+                    </h3>
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        maxWidth: '400px',
+                        margin: '0 auto'
+                    }}>
+                        {(() => {
+                            const positions = positionRanges[1].positions; // J-S
+                            const rows = [];
 
-                    const { segments } = positionData;
+                            // 每5個一排分組
+                            for (let i = 0; i < positions.length; i += 5) {
+                                const row = positions.slice(i, i + 5);
+                                rows.push(row);
+                            }
 
+                            return rows.map((row, rowIndex) => (
+                                <div key={rowIndex} style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    gap: '8px'
+                                }}>
+                                    {row.map(position => {
+                                        const hasIntersection = hasYIntersectionWithX(position);
+                                        const isSelected = selectedYPosition === position;
+
+                                        return (
+                                            <button
+                                                key={position}
+                                                onClick={() => hasIntersection && setSelectedYPosition(position)}
+                                                disabled={!hasIntersection}
+                                                style={{
+                                                    padding: '12px 8px',
+                                                    border: isSelected ? '2px solid #28a745' :
+                                                        hasIntersection ? '2px solid #e9ecef' : '2px solid #d6d6d6',
+                                                    borderRadius: '8px',
+                                                    backgroundColor: isSelected ? '#d4edda' :
+                                                        hasIntersection ? '#f8f9fa' : '#e9ecef',
+                                                    color: isSelected ? '#155724' :
+                                                        hasIntersection ? '#495057' : '#6c757d',
+                                                    fontSize: '16px',
+                                                    fontWeight: 'bold',
+                                                    cursor: hasIntersection ? 'pointer' : 'not-allowed',
+                                                    transition: 'all 0.2s ease',
+                                                    textAlign: 'center',
+                                                    minWidth: '50px',
+                                                    opacity: hasIntersection ? 1 : 0.5
+                                                }}
+                                            >
+                                                {position}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            ));
+                        })()}
+                    </div>
+                </div>
+
+                {/* 七段顯示器面板 - 顯示 X 和 Y 座標的段 */}
+                {selectedXPosition && selectedYPosition && (() => {
+                    const xPositionData = positionMapping[selectedXPosition];
+                    const yPositionData = positionMapping[selectedYPosition];
+                    if (!xPositionData || !yPositionData) return null;
+
+                    const xSegments = xPositionData.segments;
+                    const ySegments = yPositionData.segments;
+
+                    const commonDigits = xPositionData.digits.filter(digit => yPositionData.digits.includes(digit));
                     return (
                         <div style={{ marginBottom: '30px' }}>
+                            <p style={{
+                                margin: '10px 0 0 0',
+                                color: '#6c757d',
+                                fontSize: '16px',
+                                textAlign: 'center'
+                            }}>
+                                <strong>實際交集：</strong>
+                                {(() => {
+                                    return commonDigits.length > 0 ? commonDigits.join('、') : '無';
+                                })()}
+                            </p>
                             <h3 style={{
                                 margin: '0 0 15px 0',
                                 color: '#495057',
@@ -356,9 +453,8 @@ export default function Question1Modal({
                                 fontWeight: '600',
                                 textAlign: 'center'
                             }}>
-                                七段顯示器面板 ({currentRange.range} 範圍)：
+                                七段顯示器面板 (X+Y 座標)：
                             </h3>
-
                             {/* 七段顯示器 */}
                             <div style={{
                                 display: 'flex',
@@ -382,7 +478,7 @@ export default function Question1Modal({
                                         left: '25px',
                                         width: '90px',
                                         height: '8px',
-                                        backgroundColor: segments.includes('a') ? '#00ff00' : '#333',
+                                        backgroundColor: (xSegments.includes('a') && ySegments.includes('a')) ? '#00ff00' : '#333',
                                         borderRadius: '4px',
                                         transition: 'all 0.3s ease'
                                     }} />
@@ -394,7 +490,7 @@ export default function Question1Modal({
                                         right: '15px',
                                         width: '8px',
                                         height: '70px',
-                                        backgroundColor: segments.includes('b') ? '#00ff00' : '#333',
+                                        backgroundColor: (xSegments.includes('b') && ySegments.includes('b')) ? '#00ff00' : '#333',
                                         borderRadius: '4px',
                                         transition: 'all 0.3s ease'
                                     }} />
@@ -406,7 +502,7 @@ export default function Question1Modal({
                                         right: '15px',
                                         width: '8px',
                                         height: '70px',
-                                        backgroundColor: segments.includes('c') ? '#00ff00' : '#333',
+                                        backgroundColor: (xSegments.includes('c') && ySegments.includes('c')) ? '#00ff00' : '#333',
                                         borderRadius: '4px',
                                         transition: 'all 0.3s ease'
                                     }} />
@@ -418,7 +514,7 @@ export default function Question1Modal({
                                         left: '25px',
                                         width: '90px',
                                         height: '8px',
-                                        backgroundColor: segments.includes('d') ? '#00ff00' : '#333',
+                                        backgroundColor: (xSegments.includes('d') && ySegments.includes('d')) ? '#00ff00' : '#333',
                                         borderRadius: '4px',
                                         transition: 'all 0.3s ease'
                                     }} />
@@ -430,7 +526,7 @@ export default function Question1Modal({
                                         left: '15px',
                                         width: '8px',
                                         height: '70px',
-                                        backgroundColor: segments.includes('e') ? '#00ff00' : '#333',
+                                        backgroundColor: (xSegments.includes('e') && ySegments.includes('e')) ? '#00ff00' : '#333',
                                         borderRadius: '4px',
                                         transition: 'all 0.3s ease'
                                     }} />
@@ -442,7 +538,7 @@ export default function Question1Modal({
                                         left: '15px',
                                         width: '8px',
                                         height: '70px',
-                                        backgroundColor: segments.includes('f') ? '#00ff00' : '#333',
+                                        backgroundColor:  (xSegments.includes('f') && ySegments.includes('f')) ? '#00ff00' : '#333',
                                         borderRadius: '4px',
                                         transition: 'all 0.3s ease'
                                     }} />
@@ -454,25 +550,15 @@ export default function Question1Modal({
                                         left: '25px',
                                         width: '90px',
                                         height: '8px',
-                                        backgroundColor: segments.includes('g') ? '#00ff00' : '#333',
+                                        backgroundColor: (xSegments.includes('g') && ySegments.includes('g')) ? '#00ff00' : '#333',
                                         borderRadius: '4px',
                                         transition: 'all 0.3s ease'
                                     }} />
                                 </div>
                             </div>
-
-                            <p style={{
-                                margin: '10px 0 0 0',
-                                color: '#6c757d',
-                                fontSize: '12px',
-                                textAlign: 'center'
-                            }}>
-                                {`位置 ${selectedPosition} 檢查 ${positionData.digits.join('、')} 的 ${positionData.segments.join('+')} 段`}
-                            </p>
                         </div>
                     );
                 })()}
-
 
                 {/* 按鈕區域 */}
                 <div style={{
@@ -498,21 +584,21 @@ export default function Question1Modal({
                     </button>
                     <button
                         onClick={handleConfirm}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || !hasSegmentIntersection()}
                         style={{
                             padding: '12px 24px',
                             border: '2px solid #28a745',
                             borderRadius: '8px',
-                            backgroundColor: isSubmitting ? '#6c757d' : '#28a745',
+                            backgroundColor: (isSubmitting || !hasSegmentIntersection()) ? '#6c757d' : '#28a745',
                             color: 'white',
                             fontSize: '16px',
                             fontWeight: '600',
-                            cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                            cursor: (isSubmitting || !hasSegmentIntersection()) ? 'not-allowed' : 'pointer',
                             transition: 'all 0.2s ease',
-                            opacity: isSubmitting ? 0.7 : 1
+                            opacity: (isSubmitting || !hasSegmentIntersection()) ? 0.7 : 1
                         }}
                     >
-                        {isSubmitting ? '提交中...' : '確認提交'}
+                        {isSubmitting ? '提交中...' : (!hasSegmentIntersection() ? '無段交集' : '確認提交')}
                     </button>
                 </div>
             </div>

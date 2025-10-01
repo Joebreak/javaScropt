@@ -6,6 +6,7 @@ import { useDigitCodeData } from "./useDigitCodeData";
 import Question1Modal from "./Question1Modal";
 import Question2Modal from "./Question2Modal";
 import Question3Modal from "./Question3Modal";
+import Question4Modal from "./Question4Modal";
 
 export default function DigitCodeRoom() {
   const location = useLocation();
@@ -32,6 +33,9 @@ export default function DigitCodeRoom() {
   
   // 問題3彈跳視窗狀態
   const [showQuestion3Modal, setShowQuestion3Modal] = useState(false);
+  
+  // 問題4彈跳視窗狀態
+  const [showQuestion4Modal, setShowQuestion4Modal] = useState(false);
 
   // 問題1設定狀態
   const [question1Settings, setQuestion1Settings] = useState({
@@ -56,7 +60,6 @@ export default function DigitCodeRoom() {
 
   // 處理問題1提交
   const handleQuestion1Submit = (questionData) => {
-    console.log('問題1提交結果:', questionData);
     setQuestion1Settings(questionData);
     
     // 如果標記需要更新畫面，則重新獲取數據
@@ -67,7 +70,6 @@ export default function DigitCodeRoom() {
 
   // 處理問題2提交
   const handleQuestion2Submit = (questionData) => {
-    console.log('問題2提交結果:', questionData);
     
     // 如果標記需要更新畫面，則重新獲取數據
     if (questionData.needsRefresh) {
@@ -77,7 +79,15 @@ export default function DigitCodeRoom() {
 
   // 處理問題3提交
   const handleQuestion3Submit = (questionData) => {
-    console.log('問題3提交結果:', questionData);
+    
+    // 如果標記需要更新畫面，則重新獲取數據
+    if (questionData.needsRefresh) {
+      refresh();
+    }
+  };
+
+  // 處理問題4提交
+  const handleQuestion4Submit = (questionData) => {
     
     // 如果標記需要更新畫面，則重新獲取數據
     if (questionData.needsRefresh) {
@@ -200,7 +210,7 @@ export default function DigitCodeRoom() {
             </button>
             
             <button
-              onClick={() => {/* TODO: 處理問題4 */}}
+              onClick={() => setShowQuestion4Modal(true)}
               style={{
                 padding: "12px 20px",
                 fontSize: "16px",
@@ -298,6 +308,14 @@ export default function DigitCodeRoom() {
         isOpen={showQuestion3Modal}
         onClose={() => setShowQuestion3Modal(false)}
         onSubmit={handleQuestion3Submit}
+        gameData={gameData}
+      />
+
+      {/* 問題4彈跳視窗 */}
+      <Question4Modal
+        isOpen={showQuestion4Modal}
+        onClose={() => setShowQuestion4Modal(false)}
+        onConfirm={handleQuestion4Submit}
         gameData={gameData}
       />
     </div>

@@ -10,6 +10,7 @@ export default function MobileLayout({
   onSegmentClick, 
   onNumberClick, 
   renderEvenOddMark,
+  list = []
 }) {
   return (
     <div style={{ textAlign: "center", position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -36,6 +37,7 @@ export default function MobileLayout({
           selectedSegments={selectedSegments}
           onSegmentClick={onSegmentClick}
           renderEvenOddMark={renderEvenOddMark}
+          list={list}
         />
       </div>
 

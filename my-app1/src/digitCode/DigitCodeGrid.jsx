@@ -338,6 +338,7 @@ export default function DigitCodeGrid({
               onNumberClick={handleNumberClick}
               renderEvenOddMark={renderEvenOddMark}
               renderComparisonIcon={renderComparisonIcon}
+              list={list}
             />
           );
         })}
