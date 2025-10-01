@@ -92,7 +92,6 @@ export default function DigitCodeRoom() {
 
   // 處理問題4提交
   const handleQuestion4Submit = (questionData) => {
-    
     // 如果標記需要更新畫面，則重新獲取數據
     if (questionData.needsRefresh) {
       refresh();
@@ -102,10 +101,49 @@ export default function DigitCodeRoom() {
   // 處理答案提交
   const handleAnswerSubmit = (result) => {
     // 刷新遊戲數據以獲取最新結果
-    refresh();
+    if (result.needsRefresh) {
+      refresh();
+    }
+  };
+
+  // 清除網格 - 清除所有 -1 和 1 狀態（包括段標記和數字標記）
+  const handleClearGrid = () => {
+    const clearedSelections = {};
     
-    // 可以在這裡添加額外的處理邏輯，比如顯示成功/失敗訊息
-    console.log('答案提交結果:', result);
+    // 1. 清除段標記（a-g 段）
+    for (let digitIndex = 0; digitIndex < 6; digitIndex++) {
+      const segments = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+      segments.forEach(segment => {
+        const key = `${segment}${digitIndex}`;
+        const currentState = userSelections[key];
+        // 只清除 -1 和 1 狀態，保留 2 和 -2（問題4的狀態）
+        if (currentState === 1 || currentState === -1) {
+          clearedSelections[key] = 0;
+        }
+      });
+    }
+    // 2. 清除數字標記（0-9 數字）
+    // 數字標記的 key 格式是 "num0-0", "num0-1" 等
+    for (let digitIndex = 0; digitIndex < 6; digitIndex++) {
+      for (let number = 0; number <= 9; number++) {
+        const key = `num${digitIndex}-${number}`;
+        const currentState = userSelections[key];
+        // 只清除 -1 和 1 狀態，保留其他狀態
+        if (currentState === 1 || currentState === -1) {
+          clearedSelections[key] = 0;
+        }
+      }
+    }
+    // 更新狀態並保存到 localStorage
+    setUserSelections(prev => {
+      const updatedSelections = {
+        ...prev,
+        ...clearedSelections
+      };
+      // 保存到 localStorage
+      localStorage.setItem(`digitCode_selections_${room}`, JSON.stringify(updatedSelections));
+      return updatedSelections;
+    });
   };
 
   useEffect(() => {
@@ -146,7 +184,7 @@ export default function DigitCodeRoom() {
             transition: "all 0.3s ease"
           }}
         >
-          🔄 
+          🔄 重新整理
         </button>
       </div>
 
@@ -270,33 +308,61 @@ export default function DigitCodeRoom() {
         <DigitCodeList data={data} />
       )}
 
-      {/* 返回首頁按鈕 */}
+      {/* 返回首頁和清除網格按鈕 */}
       <div style={{ textAlign: "center", padding: "20px 0" }}>
-        <button
-          onClick={() => navigate("/")}
-          style={{
-            padding: "12px 32px",
-            fontSize: "16px",
-            background: "#ff7043",
-            color: "#fff",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontWeight: "bold",
-            boxShadow: "0 4px 12px rgba(255, 112, 67, 0.3)",
-            transition: "all 0.3s ease"
-          }}
-          onMouseOver={(e) => {
-            e.target.style.background = "#ff5722";
-            e.target.style.transform = "translateY(-2px)";
-          }}
-          onMouseOut={(e) => {
-            e.target.style.background = "#ff7043";
-            e.target.style.transform = "translateY(0)";
-          }}
-        >
-          返回首頁
-        </button>
+        <div style={{ display: "flex", justifyContent: "center", gap: "16px", flexWrap: "wrap" }}>
+          <button
+            onClick={handleClearGrid}
+            style={{
+              padding: "12px 24px",
+              fontSize: "16px",
+              background: "#dc3545",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: "bold",
+              boxShadow: "0 4px 12px rgba(220, 53, 69, 0.3)",
+              transition: "all 0.3s ease"
+            }}
+            onMouseOver={(e) => {
+              e.target.style.background = "#c82333";
+              e.target.style.transform = "translateY(-2px)";
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = "#dc3545";
+              e.target.style.transform = "translateY(0)";
+            }}
+          >
+            🗑️ 清除網格
+          </button>
+          
+          <button
+            onClick={() => navigate("/")}
+            style={{
+              padding: "12px 32px",
+              fontSize: "16px",
+              background: "#ff7043",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: "bold",
+              boxShadow: "0 4px 12px rgba(255, 112, 67, 0.3)",
+              transition: "all 0.3s ease"
+            }}
+            onMouseOver={(e) => {
+              e.target.style.background = "#ff5722";
+              e.target.style.transform = "translateY(-2px)";
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = "#ff7043";
+              e.target.style.transform = "translateY(0)";
+            }}
+          >
+            返回首頁
+          </button>
+        </div>
       </div>
 
       {/* 問題1彈跳視窗 */}
