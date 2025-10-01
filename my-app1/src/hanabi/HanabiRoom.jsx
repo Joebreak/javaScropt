@@ -19,7 +19,7 @@ export default function HanabiRoom() {
     data,
     loading,
     refresh
-  } = useDigitCodeData(0, room, rank);
+  } = useDigitCodeData(10000, room, rank);
 
   // 從 DigitCodeRoom 添加的邏輯
   const lastRound = data?.list?.length ? data.list[0]?.round : 0;
