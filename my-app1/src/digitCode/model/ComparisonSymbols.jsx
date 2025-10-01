@@ -11,13 +11,13 @@ export default function ComparisonSymbols({
   columnIndex // 0,1,2 對應 T/U/V 欄，用於 bottom 符號水平定位，以及 right 區分 T-U / U-V
 }) {
   const size = isMobile ? 20 : 16;
-  const bottomOffset = isMobile ? "12px" : "160px";
+  const bottomOffset = isMobile ? "335px" : "160px";
 
   // 依裝置與欄位決定水平位置，避免多個垂直符號重疊
 
   const computedLeft = (() => {
     if (typeof columnIndex !== "number") return isMobile ? "50%" : "50%";
-    const mobile = ["20%", "50%", "80%"]; // T, U, V
+    const mobile = ["13%", "50%", "86%"]; // T, U, V
     const desktop = ["20%", "50%", "80%"];
     const list = isMobile ? mobile : desktop;
     return list[Math.max(0, Math.min(2, columnIndex))];
@@ -81,7 +81,7 @@ export default function ComparisonSymbols({
         {bottomComparison && (
           <div style={{
             position: "absolute",
-            bottom: bottomOffset,
+            top: bottomOffset,
             left: computedLeft,
             transform: "translateX(-50%)",
             zIndex: 10,

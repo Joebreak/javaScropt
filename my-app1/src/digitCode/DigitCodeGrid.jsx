@@ -174,7 +174,7 @@ export default function DigitCodeGrid({
         gridTemplateColumns: "repeat(3, 1fr)",
         gridTemplateRows: "repeat(2, auto)",
         columnGap: isMobile ? "40px" : "50px",
-        rowGap: isMobile ? "12px" : "16px",
+        rowGap: isMobile ? "30px" : "16px",
         justifyContent: "center",
         alignItems: "center",
         maxWidth: isMobile ? "100%" : "800px",
@@ -276,7 +276,7 @@ export default function DigitCodeGrid({
         {/* 列標籤 - O~S (左側，對齊到網格列) */}
         <div style={{
           position: "absolute",
-          top: isMobile ? "350px" : "174px",
+          top: isMobile ? "360px" : "174px",
           left: isMobile ? "-15px" : "150px",
           display: "flex",
           flexDirection: "column",
