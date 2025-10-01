@@ -7,6 +7,7 @@ import Question1Modal from "./Question1Modal";
 import Question2Modal from "./Question2Modal";
 import Question3Modal from "./Question3Modal";
 import Question4Modal from "./Question4Modal";
+import AnswerModal from "./AnswerModal";
 
 export default function DigitCodeRoom() {
   const location = useLocation();
@@ -36,6 +37,9 @@ export default function DigitCodeRoom() {
   
   // 問題4彈跳視窗狀態
   const [showQuestion4Modal, setShowQuestion4Modal] = useState(false);
+  
+  // 答案提交彈跳視窗狀態
+  const [showAnswerModal, setShowAnswerModal] = useState(false);
 
   // 問題1設定狀態
   const [question1Settings, setQuestion1Settings] = useState({
@@ -93,6 +97,15 @@ export default function DigitCodeRoom() {
     if (questionData.needsRefresh) {
       refresh();
     }
+  };
+
+  // 處理答案提交
+  const handleAnswerSubmit = (result) => {
+    // 刷新遊戲數據以獲取最新結果
+    refresh();
+    
+    // 可以在這裡添加額外的處理邏輯，比如顯示成功/失敗訊息
+    console.log('答案提交結果:', result);
   };
 
   useEffect(() => {
@@ -229,7 +242,7 @@ export default function DigitCodeRoom() {
             
             {/* 答題按鈕 */}
             <button
-              onClick={() => {/* TODO: 處理答題 */}}
+              onClick={() => setShowAnswerModal(true)}
               style={{
                 padding: "12px 20px",
                 fontSize: "16px",
@@ -316,6 +329,14 @@ export default function DigitCodeRoom() {
         isOpen={showQuestion4Modal}
         onClose={() => setShowQuestion4Modal(false)}
         onConfirm={handleQuestion4Submit}
+        gameData={gameData}
+      />
+
+      {/* 答案提交彈跳視窗 */}
+      <AnswerModal
+        isOpen={showAnswerModal}
+        onClose={() => setShowAnswerModal(false)}
+        onAnswerSubmit={handleAnswerSubmit}
         gameData={gameData}
       />
     </div>
