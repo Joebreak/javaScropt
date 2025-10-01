@@ -455,14 +455,8 @@ function DigitDisplayGrid() {
   }
 }
 
-// 單個數位顯示組件
-function DigitDisplay({ number, size = 24, showNumber = false }) {
-  const config = {
-    width: size * 2.5,
-    height: size * 4,
-    strokeWidth: size * 0.1
-  };
-
+// 單個數位顯示組件 - 使用 Question1Modal 的七段顯示器樣式
+function DigitDisplay({ number, size, showNumber = false }) {
   const digitSegments = {
     0: ['a', 'b', 'c', 'd', 'e', 'f'],
     1: ['b', 'c'],
@@ -476,87 +470,108 @@ function DigitDisplay({ number, size = 24, showNumber = false }) {
     9: ['a', 'b', 'c', 'd', 'f', 'g']
   };
 
-  const segmentPaths = {
-    a: { x: config.width * 0.1, y: config.height * 0.05, width: config.width * 0.8, height: config.height * 0.1 },
-    b: { x: config.width * 0.85, y: config.height * 0.1, width: config.width * 0.1, height: config.height * 0.4 },
-    c: { x: config.width * 0.85, y: config.height * 0.55, width: config.width * 0.1, height: config.height * 0.4 },
-    d: { x: config.width * 0.1, y: config.height * 0.9, width: config.width * 0.8, height: config.height * 0.1 },
-    e: { x: config.width * 0.05, y: config.height * 0.55, width: config.width * 0.1, height: config.height * 0.4 },
-    f: { x: config.width * 0.05, y: config.height * 0.1, width: config.width * 0.1, height: config.height * 0.4 },
-    g: { x: config.width * 0.1, y: config.height * 0.45, width: config.width * 0.8, height: config.height * 0.1 }
-  };
-
   const activeSegments = digitSegments[number] || [];
-
-  // 獲取段的顏色和填充
-  const getSegmentColor = (segment) => {
-    return activeSegments.includes(segment) ? "#2c3e50" : "#bdc3c7";
-  };
-
-  const getSegmentFill = (segment) => {
-    return activeSegments.includes(segment) ? "#2c3e50" : "#f5f5dc";
-  };
+  
+  // 根據 size 調整顯示器大小 - 響應式設計
+  const isMobile = window.innerWidth <= 768;
+  const displayWidth = isMobile ? size * 2 : size * 5; // 手機版更小
+  const displayHeight = isMobile ? size * 4 : size * 8.33; // 手機版更小
 
   return (
     <div style={{ position: "relative", display: "inline-block" }}>
-      <svg width={config.width} height={config.height}>
-        {/* 段 a */}
-        <path
-          d={`M${segmentPaths.a.x} ${segmentPaths.a.y} L${segmentPaths.a.x + segmentPaths.a.width} ${segmentPaths.a.y} L${segmentPaths.a.x + segmentPaths.a.width - 5} ${segmentPaths.a.y + segmentPaths.a.height} L${segmentPaths.a.x + 5} ${segmentPaths.a.y + segmentPaths.a.height} Z`}
-          stroke={getSegmentColor('a')}
-          strokeWidth={config.strokeWidth}
-          strokeLinecap="round"
-          fill={getSegmentFill('a')}
-        />
-        {/* 段 b */}
-        <path
-          d={`M${segmentPaths.b.x} ${segmentPaths.b.y} L${segmentPaths.b.x + segmentPaths.b.width} ${segmentPaths.b.y} L${segmentPaths.b.x + segmentPaths.b.width} ${segmentPaths.b.y + segmentPaths.b.height} L${segmentPaths.b.x} ${segmentPaths.b.y + segmentPaths.b.height - 5} Z`}
-          stroke={getSegmentColor('b')}
-          strokeWidth={config.strokeWidth}
-          strokeLinecap="round"
-          fill={getSegmentFill('b')}
-        />
-        {/* 段 c */}
-        <path
-          d={`M${segmentPaths.c.x} ${segmentPaths.c.y} L${segmentPaths.c.x + segmentPaths.c.width} ${segmentPaths.c.y} L${segmentPaths.c.x + segmentPaths.c.width} ${segmentPaths.c.y + segmentPaths.c.height} L${segmentPaths.c.x} ${segmentPaths.c.y + segmentPaths.c.height - 5} Z`}
-          stroke={getSegmentColor('c')}
-          strokeWidth={config.strokeWidth}
-          strokeLinecap="round"
-          fill={getSegmentFill('c')}
-        />
-        {/* 段 d */}
-        <path
-          d={`M${segmentPaths.d.x} ${segmentPaths.d.y} L${segmentPaths.d.x + segmentPaths.d.width} ${segmentPaths.d.y} L${segmentPaths.d.x + segmentPaths.d.width - 5} ${segmentPaths.d.y + segmentPaths.d.height} L${segmentPaths.d.x + 5} ${segmentPaths.d.y + segmentPaths.d.height} Z`}
-          stroke={getSegmentColor('d')}
-          strokeWidth={config.strokeWidth}
-          strokeLinecap="round"
-          fill={getSegmentFill('d')}
-        />
-        {/* 段 e */}
-        <path
-          d={`M${segmentPaths.e.x} ${segmentPaths.e.y} L${segmentPaths.e.x + segmentPaths.e.width} ${segmentPaths.e.y} L${segmentPaths.e.x + segmentPaths.e.width} ${segmentPaths.e.y + segmentPaths.e.height - 5} L${segmentPaths.e.x} ${segmentPaths.e.y + segmentPaths.e.height} Z`}
-          stroke={getSegmentColor('e')}
-          strokeWidth={config.strokeWidth}
-          strokeLinecap="round"
-          fill={getSegmentFill('e')}
-        />
-        {/* 段 f */}
-        <path
-          d={`M${segmentPaths.f.x} ${segmentPaths.f.y} L${segmentPaths.f.x + segmentPaths.f.width} ${segmentPaths.f.y} L${segmentPaths.f.x + segmentPaths.f.width} ${segmentPaths.f.y + segmentPaths.f.height - 5} L${segmentPaths.f.x} ${segmentPaths.f.y + segmentPaths.f.height} Z`}
-          stroke={getSegmentColor('f')}
-          strokeWidth={config.strokeWidth}
-          strokeLinecap="round"
-          fill={getSegmentFill('f')}
-        />
-        {/* 段 g */}
-        <path
-          d={`M${segmentPaths.g.x} ${segmentPaths.g.y} L${segmentPaths.g.x + segmentPaths.g.width} ${segmentPaths.g.y} L${segmentPaths.g.x + segmentPaths.g.width - 5} ${segmentPaths.g.y + segmentPaths.g.height} L${segmentPaths.g.x + 5} ${segmentPaths.g.y + segmentPaths.g.height} Z`}
-          stroke={getSegmentColor('g')}
-          strokeWidth={config.strokeWidth}
-          strokeLinecap="round"
-          fill={getSegmentFill('g')}
-        />
-      </svg>
+      <div style={{
+        position: 'relative',
+        width: displayWidth,
+        height: displayHeight,
+        backgroundColor: '#1a1a1a',
+        borderRadius: '8px',
+        padding: '10px',
+        boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+      }}>
+        {/* 段 a (頂部) */}
+        <div style={{
+          position: 'absolute',
+          top: isMobile ? '8px' : '15px',
+          left: isMobile ? '10px' : '20px',
+          width: isMobile ? '40px' : '80px',
+          height: isMobile ? '4px' : '8px',
+          backgroundColor: activeSegments.includes('a') ? '#00ff00' : '#333',
+          borderRadius: isMobile ? '2px' : '4px',
+          transition: 'all 0.3s ease'
+        }} />
+        
+        {/* 段 b (右上) */}
+        <div style={{
+          position: 'absolute',
+          top: isMobile ? '12px' : '25px',
+          right: isMobile ? '8px' : '15px',
+          width: isMobile ? '4px' : '8px',
+          height: isMobile ? '35px' : '70px',
+          backgroundColor: activeSegments.includes('b') ? '#00ff00' : '#333',
+          borderRadius: isMobile ? '2px' : '4px',
+          transition: 'all 0.3s ease'
+        }} />
+        
+        {/* 段 c (右下) */}
+        <div style={{
+          position: 'absolute',
+          top: isMobile ? '55px' : '105px',
+          right: isMobile ? '8px' : '15px',
+          width: isMobile ? '4px' : '8px',
+          height: isMobile ? '35px' : '70px',
+          backgroundColor: activeSegments.includes('c') ? '#00ff00' : '#333',
+          borderRadius: isMobile ? '2px' : '4px',
+          transition: 'all 0.3s ease'
+        }} />
+        
+        {/* 段 d (底部) */}
+        <div style={{
+          position: 'absolute',
+          bottom: isMobile ? '8px' : '15px',
+          left: isMobile ? '10px' : '20px',
+          width: isMobile ? '40px' : '80px',
+          height: isMobile ? '4px' : '8px',
+          backgroundColor: activeSegments.includes('d') ? '#00ff00' : '#333',
+          borderRadius: isMobile ? '2px' : '4px',
+          transition: 'all 0.3s ease'
+        }} />
+        
+        {/* 段 e (左下) */}
+        <div style={{
+          position: 'absolute',
+          top: isMobile ? '55px' : '105px',
+          left: isMobile ? '8px' : '15px',
+          width: isMobile ? '4px' : '8px',
+          height: isMobile ? '35px' : '70px',
+          backgroundColor: activeSegments.includes('e') ? '#00ff00' : '#333',
+          borderRadius: isMobile ? '2px' : '4px',
+          transition: 'all 0.3s ease'
+        }} />
+        
+        {/* 段 f (左上) */}
+        <div style={{
+          position: 'absolute',
+          top: isMobile ? '12px' : '25px',
+          left: isMobile ? '8px' : '15px',
+          width: isMobile ? '4px' : '8px',
+          height: isMobile ? '35px' : '70px',
+          backgroundColor: activeSegments.includes('f') ? '#00ff00' : '#333',
+          borderRadius: isMobile ? '2px' : '4px',
+          transition: 'all 0.3s ease'
+        }} />
+        
+        {/* 段 g (中間) */}
+        <div style={{
+          position: 'absolute',
+          top: isMobile ? '48px' : '95px',
+          left: isMobile ? '10px' : '20px',
+          width: isMobile ? '40px' : '80px',
+          height: isMobile ? '4px' : '8px',
+          backgroundColor: activeSegments.includes('g') ? '#00ff00' : '#333',
+          borderRadius: isMobile ? '2px' : '4px',
+          transition: 'all 0.3s ease'
+        }} />
+      </div>
       {showNumber && (
         <div style={{
           position: "absolute",

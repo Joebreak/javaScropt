@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import DigitCodeGrid from "./DigitCodeGrid";
 import DigitCodeList from "./DigitCodeList";
 import { useDigitCodeData } from "./useDigitCodeData";
+import Question1Modal from "./Question1Modal";
 import Question2Modal from "./Question2Modal";
 import Question3Modal from "./Question3Modal";
 
@@ -23,11 +24,20 @@ export default function DigitCodeRoom() {
     return saved ? JSON.parse(saved) : {};
   });
 
+  // 問題1彈跳視窗狀態
+  const [showQuestion1Modal, setShowQuestion1Modal] = useState(false);
+  
   // 問題2彈跳視窗狀態
   const [showQuestion2Modal, setShowQuestion2Modal] = useState(false);
   
   // 問題3彈跳視窗狀態
   const [showQuestion3Modal, setShowQuestion3Modal] = useState(false);
+
+  // 問題1設定狀態
+  const [question1Settings, setQuestion1Settings] = useState({
+    selectedPosition: 'A',
+    positionRange: 'A-I'
+  });
 
   // 從 API 數據獲取遊戲狀態
   const gameData = {
@@ -42,6 +52,17 @@ export default function DigitCodeRoom() {
     setUserSelections(selections);
     // 保存到 localStorage
     localStorage.setItem(`digitCode_selections_${room}`, JSON.stringify(selections));
+  };
+
+  // 處理問題1提交
+  const handleQuestion1Submit = (questionData) => {
+    console.log('問題1提交結果:', questionData);
+    setQuestion1Settings(questionData);
+    
+    // 如果標記需要更新畫面，則重新獲取數據
+    if (questionData.needsRefresh) {
+      refresh();
+    }
   };
 
   // 處理問題2提交
@@ -125,7 +146,7 @@ export default function DigitCodeRoom() {
           }}>
             {/* 4個問題按鈕 */}
             <button
-              onClick={() => {/* TODO: 處理問題1 */}}
+              onClick={() => setShowQuestion1Modal(true)}
               style={{
                 padding: "12px 20px",
                 fontSize: "16px",
@@ -254,6 +275,15 @@ export default function DigitCodeRoom() {
           返回首頁
         </button>
       </div>
+
+      {/* 問題1彈跳視窗 */}
+      <Question1Modal
+        isOpen={showQuestion1Modal}
+        onClose={() => setShowQuestion1Modal(false)}
+        onConfirm={handleQuestion1Submit}
+        initialPosition={question1Settings.selectedPosition}
+        gameData={gameData}
+      />
 
       {/* 問題2彈跳視窗 */}
       <Question2Modal

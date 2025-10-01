@@ -10,171 +10,148 @@ export default function SegmentDisplay({ digitIndex, isMobileView, evenOddCheck,
   // 獲取段顏色的函數
   const getSegmentColor = (segment) => {
     const state = getSegmentState(segment);
-    if (state === 1) return "#2c3e50"; // 與上方數位示例一致的深色 - 已標記
-    if (state === -1) return "#e74c3c"; // 紅色 - 一定不是
-    return "#d4af37"; // 金色邊框 - 未標記（在米色背景上更明顯）
+    if (state === 1) return "#00ff00";
+    if (state === -1) return "#e74c3c";
+    return "#333"; 
   };
 
-  // 獲取段填充顏色的函數
-  const getSegmentFillColor = (segment) => {
-    const state = getSegmentState(segment);
-    if (state === 1) return "#2c3e50"; // 與上方數位示例一致的深色 - 已標記
-    if (state === -1) return "#e74c3c"; // 紅色 - 一定不是
-    return "#f5f5dc"; // 米色 - 未標記（實心但較淡）
-  };
-
-  // 段配置
-  const config = {
-    width: isMobileView ? 90 : 60,
-    height: isMobileView ? 150 : 90,
-    strokeWidth: isMobileView ? 2 : 3
-  };
-
-  // 段路徑定義
-  const segmentPaths = {
-    a: { x: config.width * 0.1, y: config.height * 0.05, width: config.width * 0.8, height: config.height * 0.1 },
-    b: { x: config.width * 0.85, y: config.height * 0.1, width: config.width * 0.1, height: config.height * 0.4 },
-    c: { x: config.width * 0.85, y: config.height * 0.55, width: config.width * 0.1, height: config.height * 0.4 },
-    d: { x: config.width * 0.1, y: config.height * 0.9, width: config.width * 0.8, height: config.height * 0.1 },
-    e: { x: config.width * 0.05, y: config.height * 0.55, width: config.width * 0.1, height: config.height * 0.4 },
-    f: { x: config.width * 0.05, y: config.height * 0.1, width: config.width * 0.1, height: config.height * 0.4 },
-    g: { x: config.width * 0.1, y: config.height * 0.45, width: config.width * 0.8, height: config.height * 0.1 }
-  };
-
-  // 創建可點擊的矩形區域（比實際段更大，更容易點擊）
-  const createClickableArea = (segment) => {
-    const path = segmentPaths[segment];
-    const padding = isMobileView ? 8 : 5; // 增加點擊區域的邊距
-    
-    return {
-      x: Math.max(0, path.x - padding),
-      y: Math.max(0, path.y - padding),
-      width: Math.min(config.width - (path.x - padding), path.width + padding * 2),
-      height: Math.min(config.height - (path.y - padding), path.height + padding * 2)
-    };
+  // 七段顯示器配置 - 響應式設計
+  const displayWidth = isMobileView ? 60 : 80; // 手機版更小
+  const displayHeight = isMobileView ? 90 : 130; // 手機版更小
+  
+  // 段的大小配置
+  const segmentConfig = {
+    horizontalWidth: isMobileView ? 48 : 60, // 橫段寬度
+    horizontalHeight: isMobileView ? 5 : 6, // 橫段高度
+    verticalWidth: isMobileView ? 4 : 6, // 豎段寬度
+    verticalHeight: isMobileView ? 40 : 50, // 豎段高度
+    borderRadius: isMobileView ? 2 : 3 // 圓角
   };
 
   return (
     <div style={{ position: "relative" }}>
-      {/* a-g 段 SVG */}
-      <svg
-        width={config.width}
-        height={config.height}
-        style={{ cursor: "pointer" }}
-      >
-        {/* 段 a - 可點擊區域 */}
-        <rect
-          {...createClickableArea('a')}
-          fill="transparent"
+      {/* 七段顯示器面板 */}
+      <div style={{
+        position: 'relative',
+        width: displayWidth,
+        height: displayHeight,
+        backgroundColor: '#1a1a1a',
+        borderRadius: '8px',
+        padding: isMobileView ? '6px' : '8px',
+        boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+      }}>
+        {/* 段 a (頂部) */}
+        <div 
           onClick={() => onSegmentClick(`a${digitIndex}`)}
-          style={{ cursor: "pointer" }}
+          style={{
+            position: 'absolute',
+            top: isMobileView ? '8px' : '10px',
+            left: isMobileView ? '10px' : '15px',
+            width: segmentConfig.horizontalWidth,
+            height: segmentConfig.horizontalHeight,
+            backgroundColor: getSegmentColor('a'),
+            borderRadius: segmentConfig.borderRadius,
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
+          }} 
         />
-        {/* 段 a - 視覺顯示 */}
-        <path
-          d={`M${segmentPaths.a.x} ${segmentPaths.a.y} L${segmentPaths.a.x + segmentPaths.a.width} ${segmentPaths.a.y} L${segmentPaths.a.x + segmentPaths.a.width - 5} ${segmentPaths.a.y + segmentPaths.a.height} L${segmentPaths.a.x + 5} ${segmentPaths.a.y + segmentPaths.a.height} Z`}
-          stroke={getSegmentColor('a')}
-          strokeWidth={config.strokeWidth}
-          strokeLinecap="round"
-          fill={getSegmentFillColor('a')}
-          pointerEvents="none"
-        />
-        {/* 段 b - 可點擊區域 */}
-        <rect
-          {...createClickableArea('b')}
-          fill="transparent"
+        
+        {/* 段 b (右上) */}
+        <div 
           onClick={() => onSegmentClick(`b${digitIndex}`)}
-          style={{ cursor: "pointer" }}
+          style={{
+            position: 'absolute',
+            top: isMobileView ? '12px' : '16px',
+            right: isMobileView ? '8px' : '12px',
+            width: segmentConfig.verticalWidth,
+            height: segmentConfig.verticalHeight,
+            backgroundColor: getSegmentColor('b'),
+            borderRadius: segmentConfig.borderRadius,
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
+          }} 
         />
-        {/* 段 b - 視覺顯示 */}
-        <path
-          d={`M${segmentPaths.b.x} ${segmentPaths.b.y} L${segmentPaths.b.x + segmentPaths.b.width} ${segmentPaths.b.y} L${segmentPaths.b.x + segmentPaths.b.width} ${segmentPaths.b.y + segmentPaths.b.height} L${segmentPaths.b.x} ${segmentPaths.b.y + segmentPaths.b.height - 5} Z`}
-          stroke={getSegmentColor('b')}
-          strokeWidth={config.strokeWidth}
-          strokeLinecap="round"
-          fill={getSegmentFillColor('b')}
-          pointerEvents="none"
-        />
-        {/* 段 c - 可點擊區域 */}
-        <rect
-          {...createClickableArea('c')}
-          fill="transparent"
+        
+        {/* 段 c (右下) */}
+        <div 
           onClick={() => onSegmentClick(`c${digitIndex}`)}
-          style={{ cursor: "pointer" }}
+          style={{
+            position: 'absolute',
+            top: isMobileView ? '55px' : '70px',
+            right: isMobileView ? '8px' : '12px',
+            width: segmentConfig.verticalWidth,
+            height: segmentConfig.verticalHeight,
+            backgroundColor: getSegmentColor('c'),
+            borderRadius: segmentConfig.borderRadius,
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
+          }} 
         />
-        {/* 段 c - 視覺顯示 */}
-        <path
-          d={`M${segmentPaths.c.x} ${segmentPaths.c.y} L${segmentPaths.c.x + segmentPaths.c.width} ${segmentPaths.c.y} L${segmentPaths.c.x + segmentPaths.c.width} ${segmentPaths.c.y + segmentPaths.c.height} L${segmentPaths.c.x} ${segmentPaths.c.y + segmentPaths.c.height - 5} Z`}
-          stroke={getSegmentColor('c')}
-          strokeWidth={config.strokeWidth}
-          strokeLinecap="round"
-          fill={getSegmentFillColor('c')}
-          pointerEvents="none"
-        />
-        {/* 段 d - 可點擊區域 */}
-        <rect
-          {...createClickableArea('d')}
-          fill="transparent"
+        
+        {/* 段 d (底部) */}
+        <div 
           onClick={() => onSegmentClick(`d${digitIndex}`)}
-          style={{ cursor: "pointer" }}
+          style={{
+            position: 'absolute',
+            bottom: isMobileView ? '8px' : '10px',
+            left: isMobileView ? '10px' : '15px',
+            width: segmentConfig.horizontalWidth,
+            height: segmentConfig.horizontalHeight,
+            backgroundColor: getSegmentColor('d'),
+            borderRadius: segmentConfig.borderRadius,
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
+          }} 
         />
-        {/* 段 d - 視覺顯示 */}
-        <path
-          d={`M${segmentPaths.d.x} ${segmentPaths.d.y} L${segmentPaths.d.x + segmentPaths.d.width} ${segmentPaths.d.y} L${segmentPaths.d.x + segmentPaths.d.width - 5} ${segmentPaths.d.y + segmentPaths.d.height} L${segmentPaths.d.x + 5} ${segmentPaths.d.y + segmentPaths.d.height} Z`}
-          stroke={getSegmentColor('d')}
-          strokeWidth={config.strokeWidth}
-          strokeLinecap="round"
-          fill={getSegmentFillColor('d')}
-          pointerEvents="none"
-        />
-        {/* 段 e - 可點擊區域 */}
-        <rect
-          {...createClickableArea('e')}
-          fill="transparent"
+        
+        {/* 段 e (左下) */}
+        <div 
           onClick={() => onSegmentClick(`e${digitIndex}`)}
-          style={{ cursor: "pointer" }}
+          style={{
+            position: 'absolute',
+            top: isMobileView ? '55px' : '70px',
+            left: isMobileView ? '8px' : '12px',
+            width: segmentConfig.verticalWidth,
+            height: segmentConfig.verticalHeight,
+            backgroundColor: getSegmentColor('e'),
+            borderRadius: segmentConfig.borderRadius,
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
+          }} 
         />
-        {/* 段 e - 視覺顯示 */}
-        <path
-          d={`M${segmentPaths.e.x} ${segmentPaths.e.y} L${segmentPaths.e.x + segmentPaths.e.width} ${segmentPaths.e.y} L${segmentPaths.e.x + segmentPaths.e.width} ${segmentPaths.e.y + segmentPaths.e.height - 5} L${segmentPaths.e.x} ${segmentPaths.e.y + segmentPaths.e.height} Z`}
-          stroke={getSegmentColor('e')}
-          strokeWidth={config.strokeWidth}
-          strokeLinecap="round"
-          fill={getSegmentFillColor('e')}
-          pointerEvents="none"
-        />
-        {/* 段 f - 可點擊區域 */}
-        <rect
-          {...createClickableArea('f')}
-          fill="transparent"
+        
+        {/* 段 f (左上) */}
+        <div 
           onClick={() => onSegmentClick(`f${digitIndex}`)}
-          style={{ cursor: "pointer" }}
+          style={{
+            position: 'absolute',
+            top: isMobileView ? '12px' : '16px',
+            left: isMobileView ? '8px' : '12px',
+            width: segmentConfig.verticalWidth,
+            height: segmentConfig.verticalHeight,
+            backgroundColor: getSegmentColor('f'),
+            borderRadius: segmentConfig.borderRadius,
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
+          }} 
         />
-        {/* 段 f - 視覺顯示 */}
-        <path
-          d={`M${segmentPaths.f.x} ${segmentPaths.f.y} L${segmentPaths.f.x + segmentPaths.f.width} ${segmentPaths.f.y} L${segmentPaths.f.x + segmentPaths.f.width} ${segmentPaths.f.y + segmentPaths.f.height - 5} L${segmentPaths.f.x} ${segmentPaths.f.y + segmentPaths.f.height} Z`}
-          stroke={getSegmentColor('f')}
-          strokeWidth={config.strokeWidth}
-          strokeLinecap="round"
-          fill={getSegmentFillColor('f')}
-          pointerEvents="none"
-        />
-        {/* 段 g - 可點擊區域 */}
-        <rect
-          {...createClickableArea('g')}
-          fill="transparent"
+        
+        {/* 段 g (中間) */}
+        <div 
           onClick={() => onSegmentClick(`g${digitIndex}`)}
-          style={{ cursor: "pointer" }}
+          style={{
+            position: 'absolute',
+            top: isMobileView ? '48px' : '60px',
+            left: isMobileView ? '10px' : '15px',
+            width: segmentConfig.horizontalWidth,
+            height: segmentConfig.horizontalHeight,
+            backgroundColor: getSegmentColor('g'),
+            borderRadius: segmentConfig.borderRadius,
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
+          }} 
         />
-        {/* 段 g - 視覺顯示 */}
-        <path
-          d={`M${segmentPaths.g.x} ${segmentPaths.g.y} L${segmentPaths.g.x + segmentPaths.g.width} ${segmentPaths.g.y} L${segmentPaths.g.x + segmentPaths.g.width - 5} ${segmentPaths.g.y + segmentPaths.g.height} L${segmentPaths.g.x + 5} ${segmentPaths.g.y + segmentPaths.g.height} Z`}
-          stroke={getSegmentColor('g')}
-          strokeWidth={config.strokeWidth}
-          strokeLinecap="round"
-          fill={getSegmentFillColor('g')}
-          pointerEvents="none"
-        />
-      </svg>
+      </div>
 
       {/* 偶數奇數標記 - 根據手機/網頁版本和偶數奇數調整位置 */}
       {evenOddCheck && (
