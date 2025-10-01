@@ -174,7 +174,7 @@ export default function DigitCodeGrid({
         gridTemplateColumns: "repeat(3, 1fr)",
         gridTemplateRows: "repeat(2, auto)",
         columnGap: isMobile ? "40px" : "50px",
-        rowGap: isMobile ? "30px" : "16px",
+        rowGap: isMobile ? "30px" : "32px",
         justifyContent: "center",
         alignItems: "center",
         maxWidth: isMobile ? "100%" : "800px",
@@ -183,7 +183,7 @@ export default function DigitCodeGrid({
         {/* 行標籤 - A~I (上方，對齊到網格行) */}
         <div style={{
           position: "absolute",
-          top: isMobile ? "-20px" : "0px",
+          top: isMobile ? "-20px" : "-20px",
           left: "0",
           right: "0",
           display: "grid",
@@ -196,39 +196,48 @@ export default function DigitCodeGrid({
           <div style={{
             display: "flex",
             justifyContent: "center",
-            alignItems: "center"
+            alignItems: "center",
+            position: "relative"
           }}>
             <span style={{
               fontSize: isMobile ? "15px" : "12px",
               fontWeight: "bold",
               color: "#666",
-              wordSpacing: isMobile ? "18px" : "10px"
+              wordSpacing: isMobile ? "18px" : "20px",
+              position: "relative",
+              left: isMobile ? "0px" : "-75px"
             }}>A B C</span>
           </div>
           {/* D E F - 第二列 */}
           <div style={{
             display: "flex",
             justifyContent: "center",
-            alignItems: "center"
+            alignItems: "center",
+            position: "relative"
           }}>
             <span style={{
               fontSize: isMobile ? "15px" : "12px",
               fontWeight: "bold",
               color: "#666",
-              wordSpacing: isMobile ? "18px" : "10px"
+              wordSpacing: isMobile ? "18px" : "22px",
+              position: "relative",
+              left: isMobile ? "0px" : "-73px"
             }}>D E F</span>
           </div>
           {/* G H I - 第三列 */}
           <div style={{
             display: "flex",
             justifyContent: "center",
-            alignItems: "center"
+            alignItems: "center",
+            position: "relative"
           }}>
             <span style={{
               fontSize: isMobile ? "15px" : "12px",
               fontWeight: "bold",
               color: "#666",
-              wordSpacing: isMobile ? "18px" : "10px"
+              wordSpacing: isMobile ? "18px" : "22px",
+              position: "relative",
+              left: isMobile ? "0px" : "-73px"
             }}>G H I</span>
           </div>
         </div>
@@ -236,11 +245,11 @@ export default function DigitCodeGrid({
         {/* 列標籤 - J~N (左側，對齊到網格列) */}
         <div style={{
           position: "absolute",
-          top: isMobile ? "1px" : "20px",
-          left: isMobile ? "-15px" : "150px",
+          top: isMobile ? "1px" : "0px",
+          left: isMobile ? "-15px" : "-20px",
           display: "flex",
           flexDirection: "column",
-          gap: isMobile ? "5px" : "5px",
+          gap: isMobile ? "5px" : "16px",
           alignItems: "flex-start",
           textAlign: "left",
           zIndex: 10,
@@ -276,11 +285,11 @@ export default function DigitCodeGrid({
         {/* 列標籤 - O~S (左側，對齊到網格列) */}
         <div style={{
           position: "absolute",
-          top: isMobile ? "303px" : "174px",
-          left: isMobile ? "-15px" : "150px",
+          top: isMobile ? "303px" : "180px",
+          left: isMobile ? "-15px" : "-20px",
           display: "flex",
           flexDirection: "column",
-          gap: isMobile ? "6px" : "5px",
+          gap: isMobile ? "6px" : "18px",
           alignItems: "flex-start",
           textAlign: "left",
           zIndex: 10,
@@ -398,7 +407,7 @@ function DigitDisplayGrid() {
   if (isMobile) {
     // 手機版：分兩行顯示
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "16px", alignItems: "center" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "24px", alignItems: "center" }}>
         {/* 第一行：0-4 */}
         <div style={{
           display: "flex",

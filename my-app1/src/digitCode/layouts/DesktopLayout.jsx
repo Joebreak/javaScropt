@@ -17,11 +17,11 @@ export default function DesktopLayout({
       {/* 位置標籤 - T~Y 符號 */}
       <div style={{
         position: "absolute",
-        top: -10,
-        left: -20,
-        fontSize: "14px",
+        top: -15,
+        left: -25,
+        fontSize: "20px",
         fontWeight: "bold",
-        color: "#666",
+        color: "#0000ff",
         pointerEvents: "none",
         zIndex: 20
       }}>

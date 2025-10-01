@@ -173,8 +173,8 @@ export default function SegmentDisplay({ digitIndex, isMobileView, evenOddCheck,
           onClick={() => handleSegmentClick('d')}
           style={{
             position: 'absolute',
-            bottom: isMobileView ? '8px' : '10px',
-            left: isMobileView ? '10px' : '15px',
+            bottom: isMobileView ? '8px' : '15px',
+            left: isMobileView ? '10px' : '18px',
             width: segmentConfig.horizontalWidth,
             height: segmentConfig.horizontalHeight,
             backgroundColor: getSegmentColor('d'),
@@ -221,8 +221,8 @@ export default function SegmentDisplay({ digitIndex, isMobileView, evenOddCheck,
           onClick={() => handleSegmentClick('g')}
           style={{
             position: 'absolute',
-            top: isMobileView ? '48px' : '60px',
-            left: isMobileView ? '10px' : '15px',
+            top: isMobileView ? '48px' : '65px',
+            left: isMobileView ? '10px' : '18px',
             width: segmentConfig.horizontalWidth,
             height: segmentConfig.horizontalHeight,
             backgroundColor: getSegmentColor('g'),
