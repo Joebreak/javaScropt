@@ -97,6 +97,7 @@ function MinaRoom({
     setShowPositionSelector,
     showRadiateSelector,
     setShowRadiateSelector,
+    onClearGrid,
     onPositionConfirm,
     onRadiateConfirm,
     showExampleShapes = true,
@@ -252,12 +253,6 @@ function MinaRoom({
         });
     };
 
-    // 清空網格
-    const clearGrid = () => {
-        const emptyGrid = Array(8).fill().map(() => Array(10).fill(null));
-        setGrid(emptyGrid);
-        saveGridToStorage(emptyGrid);
-    };
 
 
     return (
@@ -1012,24 +1007,6 @@ function MinaRoom({
                     </div>
 
 
-                    {/* 操作按鈕 */}
-                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-                        <button
-                            onClick={clearGrid}
-                            style={{
-                                padding: '4px 8px',
-                                backgroundColor: '#ffc107',
-                                color: '#000',
-                                border: 'none',
-                                borderRadius: '3px',
-                                cursor: 'pointer',
-                                fontSize: '10px'
-                            }}
-                        >
-                            清空(全部)網格
-                        </button>
-
-                    </div>
                 </div>
             )}
 

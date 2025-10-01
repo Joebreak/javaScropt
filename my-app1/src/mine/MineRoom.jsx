@@ -53,6 +53,16 @@ export default function MinaRoom() {
     setShowShapeValidator(true);
   };
 
+  // 清空網格功能
+  const handleClearGrid = () => {
+    const emptyGrid = Array(8).fill().map(() => Array(10).fill(null));
+    localStorage.setItem(`roomGrid_${room}`, JSON.stringify(emptyGrid));
+    // 刷新頁面以更新網格
+    if (refresh) {
+      refresh();
+    }
+  };
+
   const handleShapeValidatorConfirm = () => {
     if (refresh) {
       refresh();
@@ -79,7 +89,7 @@ export default function MinaRoom() {
 
   useEffect(() => {
     if (room) {
-      document.title = `mina (房間號碼 ${room})`;
+      document.title = `mine (房間號碼 ${room})`;
     }
   }, [room]);
 
@@ -105,6 +115,7 @@ export default function MinaRoom() {
         onRadiateConfirm={handleRadiateConfirm}
         showExampleShapes={showExampleShapes}
         setShowExampleShapes={setShowExampleShapes}
+        onClearGrid={handleClearGrid}
         list={data?.list || []}
       />
 
@@ -248,22 +259,63 @@ export default function MinaRoom() {
 
       {/* 列表 */}
       {loading ? <div style={{ textAlign: "center" }}>⏳ 載入中...</div> : <RoomList data={data} />}
-      <button
-        onClick={() => navigate("/")}
-        style={{
-          display: "block",
-          margin: "0 auto",
-          padding: "0px 32px",
-          fontSize: 16,
-          background: "#ff7043",
-          color: "#fff",
-          border: "none",
-          borderRadius: 6,
-          cursor: "pointer",
-        }}
-      >
-        返回首頁
-      </button>
+      
+      {/* 返回首頁和清空網格按鈕 */}
+      <div style={{ textAlign: "center", padding: "20px 0" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: "16px", flexWrap: "wrap" }}>
+          <button
+            onClick={handleClearGrid}
+            style={{
+              padding: "12px 24px",
+              fontSize: "16px",
+              background: "#dc3545",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: "bold",
+              boxShadow: "0 4px 12px rgba(220, 53, 69, 0.3)",
+              transition: "all 0.3s ease"
+            }}
+            onMouseOver={(e) => {
+              e.target.style.background = "#c82333";
+              e.target.style.transform = "translateY(-2px)";
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = "#dc3545";
+              e.target.style.transform = "translateY(0)";
+            }}
+          >
+            🗑️ 清空(全部)網格
+          </button>
+          
+          <button
+            onClick={() => navigate("/")}
+            style={{
+              padding: "12px 32px",
+              fontSize: "16px",
+              background: "#ff7043",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: "bold",
+              boxShadow: "0 4px 12px rgba(255, 112, 67, 0.3)",
+              transition: "all 0.3s ease"
+            }}
+            onMouseOver={(e) => {
+              e.target.style.background = "#ff5722";
+              e.target.style.transform = "translateY(-2px)";
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = "#ff7043";
+              e.target.style.transform = "translateY(0)";
+            }}
+          >
+            返回首頁
+          </button>
+        </div>
+      </div>
 
       {/* 圖形驗證彈窗 */}
       <ShapeValidator
