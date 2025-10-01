@@ -11,7 +11,7 @@ export default function MinaRoom() {
   const { room, rank } = location.state || {};
 
   // 數據獲取
-  const { data, loading, refresh } = useRoomData(0, room);
+  const { data, loading, refresh } = useRoomData(30000, room);
   const lastRound = data?.list?.length ? data.list[0]?.round : 0;
   const remainder = data?.members ? Number(data.members) : 4;
   const showActionButtons = rank && lastRound !== undefined && Number(rank) === ((Number(lastRound) % remainder) + 1);
