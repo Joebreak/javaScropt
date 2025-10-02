@@ -18,7 +18,7 @@ export default function MobileLayout({
       <div style={{
         position: "absolute",
         top: -20,
-        left: -20,
+        left: -15,
         fontSize: "20px",
         fontWeight: "bold",
         color: "#0000ff",

@@ -17,7 +17,7 @@ export default function ComparisonSymbols({
 
   const computedLeft = (() => {
     if (typeof columnIndex !== "number") return isMobile ? "50%" : "50%";
-    const mobile = ["13%", "50%", "86%"]; // T, U, V
+    const mobile = ["50%", "50%", "50%"]; // T, U, V
     const desktop = ["20%", "50%", "80%"];
     const list = isMobile ? mobile : desktop;
     return list[Math.max(0, Math.min(2, columnIndex))];
@@ -27,7 +27,7 @@ export default function ComparisonSymbols({
   const rightLeftOffset = (() => {
     if (typeof columnIndex !== "number") return isMobile ? "96px" : "-16px";
     // index: 0 -> 第一個（T 或 W）; 1 -> 第二個（U 或 X）
-    const mobile = ["95px", "230px"];
+    const mobile = ["100px", "220px"];
     const desktop = ["-16px", "8px"];
     const list = isMobile ? mobile : desktop;
     return list[Math.max(0, Math.min(1, columnIndex))];
@@ -42,7 +42,7 @@ export default function ComparisonSymbols({
           <div style={{
             position: "absolute",
             left: rightLeftOffset,
-            top: "0%",
+            top: "-3%",
             transform: "translateY(200%)",
             zIndex: 10,
             opacity: 0.8,
@@ -59,7 +59,7 @@ export default function ComparisonSymbols({
           <div style={{
             position: "absolute",
             left: rightLeftOffset,
-            top: "50%",
+            top: "43%",
             transform: "translateY(200%)",
             zIndex: 10,
             opacity: 0.8,
@@ -80,15 +80,16 @@ export default function ComparisonSymbols({
         {/* 下方比較符號 */}
         {bottomComparison && (
           <div style={{
-            position: "absolute",
-            top: bottomOffset,
+            position: 'relative',
+            bottom: bottomOffset,
             left: computedLeft,
             transform: "translateX(-50%)",
             zIndex: 10,
             opacity: 0.8,
             background: "rgba(255, 255, 255, 0.9)",
-            padding: "2px",
-            borderRadius: "3px"
+            padding: "1px",
+            borderRadius: "2px",
+            display: "inline-block"
           }}>
             {renderComparisonIcon(bottomComparison, size, true)}
           </div>
