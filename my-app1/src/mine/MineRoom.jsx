@@ -10,11 +10,21 @@ export default function MinaRoom() {
   const navigate = useNavigate();
   const { room, rank } = location.state || {};
 
+  // 狀態來跟蹤 showActionButtons
+  const [showActionButtons, setShowActionButtons] = useState(false);
+  const [updateInterval, setUpdateInterval] = useState(30000);
+
   // 數據獲取
-  const { data, loading, refresh } = useRoomData(30000, room);
+  const { data, loading, refresh } = useRoomData(updateInterval, room);
   const lastRound = data?.list?.length ? data.list[0]?.round : 0;
   const remainder = data?.members ? Number(data.members) : 4;
-  const showActionButtons = rank && lastRound !== undefined && Number(rank) === ((Number(lastRound) % remainder) + 1);
+
+  // 當數據更新時重新計算 showActionButtons 和更新間隔
+  useEffect(() => {
+    const newShowActionButtons = rank && lastRound !== undefined && Number(rank) === ((Number(lastRound) % remainder) + 1);
+    setShowActionButtons(newShowActionButtons);
+    setUpdateInterval(newShowActionButtons ? 0 : 30000);
+  }, [rank, lastRound, remainder]);
 
   // 圖形控制狀態
   const [showShapeButtons, setShowShapeButtons] = useState(false);
