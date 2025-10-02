@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { getApiUrl } from '../config/api';
 
-export default function Question2Modal({ isOpen, onClose, onSubmit, gameData }) {
+export default function Question2Modal({ isOpen, onClose, onSubmit, gameData, list = [] }) {
   const [selectedPair, setSelectedPair] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -23,13 +23,13 @@ export default function Question2Modal({ isOpen, onClose, onSubmit, gameData }) 
 
   // 相鄰位置的選擇選項
   const adjacentPairs = [
-    { value: "T-U", label: "T - U (第1個與第2個數字)", digit1: "T", digit2: "U" },
-    { value: "U-V", label: "U - V (第2個與第3個數字)", digit1: "U", digit2: "V" },
-    { value: "W-X", label: "W - X (第4個與第5個數字)", digit1: "W", digit2: "X" },
-    { value: "X-Y", label: "X - Y (第5個與第6個數字)", digit1: "X", digit2: "Y" },
-    { value: "T-W", label: "T - W (第1個與第4個數字)", digit1: "T", digit2: "W" },
-    { value: "U-X", label: "U - X (第2個與第5個數字)", digit1: "U", digit2: "X" },
-    { value: "V-Y", label: "V - Y (第3個與第6個數字)", digit1: "V", digit2: "Y" },
+    { value: "T-U", digit1: "T", digit2: "U" },
+    { value: "U-V", digit1: "U", digit2: "V" },
+    { value: "T-W", digit1: "T", digit2: "W" },
+    { value: "U-X", digit1: "U", digit2: "X" },
+    { value: "V-Y", digit1: "V", digit2: "Y" },
+    { value: "W-X", digit1: "W", digit2: "X" },
+    { value: "X-Y", digit1: "X", digit2: "Y" },
   ];
 
   // 比較兩個數字的大小關係
@@ -48,6 +48,22 @@ export default function Question2Modal({ isOpen, onClose, onSubmit, gameData }) 
       return `${digit1} = ${digit2}`;
     }
   };
+
+  // 檢查哪些選項已經被使用過（type: 2 的記錄）
+  const getUsedPairs = () => {
+    if (!list || !Array.isArray(list)) return [];
+
+    const usedPairs = [];
+    list.forEach(item => {
+      if (item.type === 2 && item.in) {
+        usedPairs.push(item.in);
+      }
+    });
+
+    return usedPairs;
+  };
+
+  const usedPairs = getUsedPairs();
 
   // 處理提交
   const handleSubmit = async () => {
@@ -182,44 +198,369 @@ export default function Question2Modal({ isOpen, onClose, onSubmit, gameData }) 
             選擇要比較的相鄰數字位置:
           </label>
 
-          {/* 按鈕選擇區域 */}
+          {/* 按鈕選擇區域 - 5格佈局比較網格 */}
           <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "10px"
+            display: "flex",
+            flexDirection: "column",
+            gap: "20px",
+            maxWidth: "600px",
+            margin: "0 auto"
           }}>
-            {adjacentPairs.map(pair => (
+            {/* 第一排：T U V (5格佈局) */}
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr",
+              gap: "10px",
+              alignItems: "center"
+            }}>
+              <div style={{
+                padding: "12px",
+                textAlign: "center",
+                fontSize: "18px",
+                fontWeight: "bold",
+                color: "#333",
+                background: "#f8f9fa",
+                borderRadius: "8px"
+              }}>
+                T
+              </div>
+              
               <button
-                key={pair.value}
-                onClick={() => setSelectedPair(pair.value)}
+                onClick={() => {
+                  const pair = adjacentPairs.find(p => p.value === "T-U");
+                  if (pair && !usedPairs.includes(pair.value)) {
+                    setSelectedPair(pair.value);
+                  }
+                }}
+                disabled={usedPairs.includes("T-U")}
+                style={{
+                  padding: "8px 12px",
+                  fontSize: "12px",
+                  fontWeight: "bold",
+                  background: usedPairs.includes("T-U")
+                    ? "#f8d7da"
+                    : selectedPair === "T-U"
+                      ? "#4CAF50"
+                      : "#f0f0f0",
+                  color: usedPairs.includes("T-U")
+                    ? "#721c24"
+                    : selectedPair === "T-U"
+                      ? "white"
+                      : "#333",
+                  border: usedPairs.includes("T-U")
+                    ? "2px solid #dc3545"
+                    : selectedPair === "T-U"
+                      ? "2px solid #4CAF50"
+                      : "2px solid #ddd",
+                  borderRadius: "6px",
+                  cursor: usedPairs.includes("T-U") ? "not-allowed" : "pointer",
+                  transition: "all 0.3s ease",
+                  opacity: usedPairs.includes("T-U") ? 0.6 : 1
+                }}
+              >
+                T-U
+              </button>
+              
+              <div style={{
+                padding: "12px",
+                textAlign: "center",
+                fontSize: "18px",
+                fontWeight: "bold",
+                color: "#333",
+                background: "#f8f9fa",
+                borderRadius: "8px"
+              }}>
+                U
+              </div>
+              
+              <button
+                onClick={() => {
+                  const pair = adjacentPairs.find(p => p.value === "U-V");
+                  if (pair && !usedPairs.includes(pair.value)) {
+                    setSelectedPair(pair.value);
+                  }
+                }}
+                disabled={usedPairs.includes("U-V")}
+                style={{
+                  padding: "8px 12px",
+                  fontSize: "12px",
+                  fontWeight: "bold",
+                  background: usedPairs.includes("U-V")
+                    ? "#f8d7da"
+                    : selectedPair === "U-V"
+                      ? "#4CAF50"
+                      : "#f0f0f0",
+                  color: usedPairs.includes("U-V")
+                    ? "#721c24"
+                    : selectedPair === "U-V"
+                      ? "white"
+                      : "#333",
+                  border: usedPairs.includes("U-V")
+                    ? "2px solid #dc3545"
+                    : selectedPair === "U-V"
+                      ? "2px solid #4CAF50"
+                      : "2px solid #ddd",
+                  borderRadius: "6px",
+                  cursor: usedPairs.includes("U-V") ? "not-allowed" : "pointer",
+                  transition: "all 0.3s ease",
+                  opacity: usedPairs.includes("U-V") ? 0.6 : 1
+                }}
+              >
+                U-V
+              </button>
+              
+              <div style={{
+                padding: "12px",
+                textAlign: "center",
+                fontSize: "18px",
+                fontWeight: "bold",
+                color: "#333",
+                background: "#f8f9fa",
+                borderRadius: "8px"
+              }}>
+                V
+              </div>
+            </div>
+
+            {/* 中間：T-W, U-X, V-Y 垂直比較 */}
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr",
+              gap: "10px",
+              alignItems: "center"
+            }}>
+              <button
+                onClick={() => {
+                  const pair = adjacentPairs.find(p => p.value === "T-W");
+                  if (pair && !usedPairs.includes(pair.value)) {
+                    setSelectedPair(pair.value);
+                  }
+                }}
+                disabled={usedPairs.includes("T-W")}
                 style={{
                   padding: "12px 16px",
                   fontSize: "14px",
                   fontWeight: "bold",
-                  background: selectedPair === pair.value ? "#4CAF50" : "#f0f0f0",
-                  color: selectedPair === pair.value ? "white" : "#333",
-                  border: selectedPair === pair.value ? "2px solid #4CAF50" : "2px solid #ddd",
+                  background: usedPairs.includes("T-W")
+                    ? "#f8d7da"
+                    : selectedPair === "T-W"
+                      ? "#4CAF50"
+                      : "#f0f0f0",
+                  color: usedPairs.includes("T-W")
+                    ? "#721c24"
+                    : selectedPair === "T-W"
+                      ? "white"
+                      : "#333",
+                  border: usedPairs.includes("T-W")
+                    ? "2px solid #dc3545"
+                    : selectedPair === "T-W"
+                      ? "2px solid #4CAF50"
+                      : "2px solid #ddd",
                   borderRadius: "8px",
-                  cursor: "pointer",
+                  cursor: usedPairs.includes("T-W") ? "not-allowed" : "pointer",
                   transition: "all 0.3s ease",
-                  textAlign: "left"
-                }}
-                onMouseOver={(e) => {
-                  if (selectedPair !== pair.value) {
-                    e.target.style.background = "#e0e0e0";
-                    e.target.style.borderColor = "#bbb";
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (selectedPair !== pair.value) {
-                    e.target.style.background = "#f0f0f0";
-                    e.target.style.borderColor = "#ddd";
-                  }
+                  opacity: usedPairs.includes("T-W") ? 0.6 : 1,
+                  textAlign: "center"
                 }}
               >
-                {pair.label}
+                T-W
               </button>
-            ))}
+              
+              <div></div>
+              
+              <button
+                onClick={() => {
+                  const pair = adjacentPairs.find(p => p.value === "U-X");
+                  if (pair && !usedPairs.includes(pair.value)) {
+                    setSelectedPair(pair.value);
+                  }
+                }}
+                disabled={usedPairs.includes("U-X")}
+                style={{
+                  padding: "12px 16px",
+                  fontSize: "14px",
+                  fontWeight: "bold",
+                  background: usedPairs.includes("U-X")
+                    ? "#f8d7da"
+                    : selectedPair === "U-X"
+                      ? "#4CAF50"
+                      : "#f0f0f0",
+                  color: usedPairs.includes("U-X")
+                    ? "#721c24"
+                    : selectedPair === "U-X"
+                      ? "white"
+                      : "#333",
+                  border: usedPairs.includes("U-X")
+                    ? "2px solid #dc3545"
+                    : selectedPair === "U-X"
+                      ? "2px solid #4CAF50"
+                      : "2px solid #ddd",
+                  borderRadius: "8px",
+                  cursor: usedPairs.includes("U-X") ? "not-allowed" : "pointer",
+                  transition: "all 0.3s ease",
+                  opacity: usedPairs.includes("U-X") ? 0.6 : 1,
+                  textAlign: "center"
+                }}
+              >
+                U-X
+              </button>
+              
+              <div></div>
+              
+              <button
+                onClick={() => {
+                  const pair = adjacentPairs.find(p => p.value === "V-Y");
+                  if (pair && !usedPairs.includes(pair.value)) {
+                    setSelectedPair(pair.value);
+                  }
+                }}
+                disabled={usedPairs.includes("V-Y")}
+                style={{
+                  padding: "12px 16px",
+                  fontSize: "14px",
+                  fontWeight: "bold",
+                  background: usedPairs.includes("V-Y")
+                    ? "#f8d7da"
+                    : selectedPair === "V-Y"
+                      ? "#4CAF50"
+                      : "#f0f0f0",
+                  color: usedPairs.includes("V-Y")
+                    ? "#721c24"
+                    : selectedPair === "V-Y"
+                      ? "white"
+                      : "#333",
+                  border: usedPairs.includes("V-Y")
+                    ? "2px solid #dc3545"
+                    : selectedPair === "V-Y"
+                      ? "2px solid #4CAF50"
+                      : "2px solid #ddd",
+                  borderRadius: "8px",
+                  cursor: usedPairs.includes("V-Y") ? "not-allowed" : "pointer",
+                  transition: "all 0.3s ease",
+                  opacity: usedPairs.includes("V-Y") ? 0.6 : 1,
+                  textAlign: "center"
+                }}
+              >
+                V-Y
+              </button>
+            </div>
+
+            {/* 第二排：W X Y (5格佈局) */}
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr",
+              gap: "10px",
+              alignItems: "center"
+            }}>
+              <div style={{
+                padding: "12px",
+                textAlign: "center",
+                fontSize: "18px",
+                fontWeight: "bold",
+                color: "#333",
+                background: "#f8f9fa",
+                borderRadius: "8px"
+              }}>
+                W
+              </div>
+              
+              <button
+                onClick={() => {
+                  const pair = adjacentPairs.find(p => p.value === "W-X");
+                  if (pair && !usedPairs.includes(pair.value)) {
+                    setSelectedPair(pair.value);
+                  }
+                }}
+                disabled={usedPairs.includes("W-X")}
+                style={{
+                  padding: "8px 12px",
+                  fontSize: "12px",
+                  fontWeight: "bold",
+                  background: usedPairs.includes("W-X")
+                    ? "#f8d7da"
+                    : selectedPair === "W-X"
+                      ? "#4CAF50"
+                      : "#f0f0f0",
+                  color: usedPairs.includes("W-X")
+                    ? "#721c24"
+                    : selectedPair === "W-X"
+                      ? "white"
+                      : "#333",
+                  border: usedPairs.includes("W-X")
+                    ? "2px solid #dc3545"
+                    : selectedPair === "W-X"
+                      ? "2px solid #4CAF50"
+                      : "2px solid #ddd",
+                  borderRadius: "6px",
+                  cursor: usedPairs.includes("W-X") ? "not-allowed" : "pointer",
+                  transition: "all 0.3s ease",
+                  opacity: usedPairs.includes("W-X") ? 0.6 : 1
+                }}
+              >
+                W-X
+              </button>
+              
+              <div style={{
+                padding: "12px",
+                textAlign: "center",
+                fontSize: "18px",
+                fontWeight: "bold",
+                color: "#333",
+                background: "#f8f9fa",
+                borderRadius: "8px"
+              }}>
+                X
+              </div>
+              
+              <button
+                onClick={() => {
+                  const pair = adjacentPairs.find(p => p.value === "X-Y");
+                  if (pair && !usedPairs.includes(pair.value)) {
+                    setSelectedPair(pair.value);
+                  }
+                }}
+                disabled={usedPairs.includes("X-Y")}
+                style={{
+                  padding: "8px 12px",
+                  fontSize: "12px",
+                  fontWeight: "bold",
+                  background: usedPairs.includes("X-Y")
+                    ? "#f8d7da"
+                    : selectedPair === "X-Y"
+                      ? "#4CAF50"
+                      : "#f0f0f0",
+                  color: usedPairs.includes("X-Y")
+                    ? "#721c24"
+                    : selectedPair === "X-Y"
+                      ? "white"
+                      : "#333",
+                  border: usedPairs.includes("X-Y")
+                    ? "2px solid #dc3545"
+                    : selectedPair === "X-Y"
+                      ? "2px solid #4CAF50"
+                      : "2px solid #ddd",
+                  borderRadius: "6px",
+                  cursor: usedPairs.includes("X-Y") ? "not-allowed" : "pointer",
+                  transition: "all 0.3s ease",
+                  opacity: usedPairs.includes("X-Y") ? 0.6 : 1
+                }}
+              >
+                X-Y
+              </button>
+              
+              <div style={{
+                padding: "12px",
+                textAlign: "center",
+                fontSize: "18px",
+                fontWeight: "bold",
+                color: "#333",
+                background: "#f8f9fa",
+                borderRadius: "8px"
+              }}>
+                Y
+              </div>
+            </div>
+
           </div>
         </div>
 
