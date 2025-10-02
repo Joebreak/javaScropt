@@ -372,6 +372,7 @@ export default function DigitCodeRoom() {
         onConfirm={handleQuestion1Submit}
         initialPosition={question1Settings.selectedPosition}
         gameData={gameData}
+        list={data?.list || []}
       />
 
       {/* 問題2彈跳視窗 */}

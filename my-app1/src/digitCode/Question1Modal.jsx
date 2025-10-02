@@ -30,11 +30,19 @@ export default function Question1Modal({
     onClose,
     onConfirm,
     initialPosition = 'A',
-    gameData
+    gameData,
+    list = []
 }) {
     const [selectedPosition, setSelectedPosition] = useState(initialPosition);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedRange, setSelectedRange] = useState('A-I'); // 追蹤當前選中的範圍
+
+    // 從 list 中提取已使用的位置 (type: 1 的記錄)
+    const usedPositions = useMemo(() => {
+        return list
+            .filter(item => item.type === 1 && item.in)
+            .map(item => item.in);
+    }, [list]);
 
     // 位置範圍選項 - 使用 useMemo 優化
     const positionRanges = useMemo(() => [
@@ -278,207 +286,233 @@ export default function Question1Modal({
                     </div>
                 </div>
 
-                {/* 具體位置選擇 */}
-                <div style={{ marginBottom: '30px' }}>
-                    <h3 style={{
-                        margin: '0 0 15px 0',
-                        color: '#495057',
-                        fontSize: '16px',
-                        fontWeight: '600'
-                    }}>
-                        選擇具體位置：
-                    </h3>
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px',
-                        maxWidth: '400px',
-                        margin: '0 auto'
-                    }}>
-                        {(() => {
-                            const positions = currentRange.positions;
-                            const rows = [];
+                {/* 具體位置選擇和七段顯示器 - 水平排列 */}
+                <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'flex-start', 
+                    gap: '0px', 
+                    marginBottom: '30px',
+                    justifyContent: 'center'
+                }}>
+                    {/* 位置選擇區域 */}
+                    <div style={{ flex: '1', maxWidth: '400px' }}>
+                        <h3 style={{
+                            margin: '0 0 15px 0',
+                            color: '#495057',
+                            fontSize: '16px',
+                            fontWeight: '600'
+                        }}>
+                            選擇具體位置：
+                        </h3>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px'
+                        }}>
+                            {(() => {
+                                const positions = currentRange.positions;
+                                const rows = [];
 
-                            // 根據範圍決定每排的數量
-                            const itemsPerRow = currentRange.range === 'J-S' ? 5 : 3;
+                                // 根據範圍決定每排的數量
+                                const itemsPerRow = currentRange.range === 'J-S' ? 5 : 3;
 
-                            for (let i = 0; i < positions.length; i += itemsPerRow) {
-                                const row = positions.slice(i, i + itemsPerRow);
-                                rows.push(row);
-                            }
+                                for (let i = 0; i < positions.length; i += itemsPerRow) {
+                                    const row = positions.slice(i, i + itemsPerRow);
+                                    rows.push(row);
+                                }
 
-                            return rows.map((row, rowIndex) => (
-                                <div key={rowIndex} style={{
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    gap: '8px'
-                                }}>
-                                    {row.map(position => (
-                                        <button
-                                            key={position}
-                                            onClick={() => setSelectedPosition(position)}
-                                            style={{
-                                                padding: '12px 8px',
-                                                border: selectedPosition === position ? '2px solid #28a745' : '2px solid #e9ecef',
-                                                borderRadius: '8px',
-                                                backgroundColor: selectedPosition === position ? '#d4edda' : '#f8f9fa',
-                                                color: selectedPosition === position ? '#155724' : '#495057',
-                                                fontSize: '16px',
-                                                fontWeight: 'bold',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s ease',
-                                                textAlign: 'center',
-                                                minWidth: '50px'
-                                            }}
-                                        >
-                                            {position}
-                                        </button>
-                                    ))}
-                                </div>
-                            ));
-                        })()}
+                                return rows.map((row, rowIndex) => (
+                                    <div key={rowIndex} style={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        gap: '8px'
+                                    }}>
+                                    {row.map(position => {
+                                        const isUsed = usedPositions.includes(position);
+                                        const isSelected = selectedPosition === position;
+                                        
+                                        return (
+                                            <button
+                                                key={position}
+                                                onClick={() => !isUsed && setSelectedPosition(position)}
+                                                disabled={isUsed}
+                                                style={{
+                                                    padding: '12px 8px',
+                                                    border: isUsed 
+                                                        ? '2px solid #dc3545' 
+                                                        : isSelected 
+                                                            ? '2px solid #28a745' 
+                                                            : '2px solid #e9ecef',
+                                                    borderRadius: '8px',
+                                                    backgroundColor: isUsed 
+                                                        ? '#f8d7da' 
+                                                        : isSelected 
+                                                            ? '#d4edda' 
+                                                            : '#f8f9fa',
+                                                    color: isUsed 
+                                                        ? '#721c24' 
+                                                        : isSelected 
+                                                            ? '#155724' 
+                                                            : '#495057',
+                                                    fontSize: '16px',
+                                                    fontWeight: 'bold',
+                                                    cursor: isUsed ? 'not-allowed' : 'pointer',
+                                                    transition: 'all 0.2s ease',
+                                                    textAlign: 'center',
+                                                    minWidth: '50px',
+                                                    opacity: isUsed ? 0.6 : 1
+                                                }}
+                                            >
+                                                {position}
+                                            </button>
+                                        );
+                                    })}
+                                    </div>
+                                ));
+                            })()}
+                        </div>
                     </div>
-                </div>
 
-                {/* a-g 七段顯示器面板 - 根據當前範圍顯示對應的段 */}
-                {selectedPosition && currentRange.positions.includes(selectedPosition) && (() => {
-                    const positionData = positionMapping[selectedPosition];
-                    if (!positionData) return null;
+                    {/* 七段顯示器面板 - 右側 */}
+                    {selectedPosition && currentRange.positions.includes(selectedPosition) && (() => {
+                        const positionData = positionMapping[selectedPosition];
+                        if (!positionData) return null;
 
-                    const { segments } = positionData;
+                        const { segments } = positionData;
 
-                    return (
-                        <div style={{ marginBottom: '30px' }}>
-                            <h3 style={{
-                                margin: '0 0 15px 0',
-                                color: '#495057',
-                                fontSize: '16px',
-                                fontWeight: '600',
-                                textAlign: 'center'
-                            }}>
-                                七段顯示器面板 ({currentRange.range} 範圍)：
-                            </h3>
-
-                            {/* 七段顯示器 */}
-                            <div style={{
-                                display: 'flex',
-                                justifyContent: 'center',
+                        return (
+                            <div style={{ 
+                                display: 'flex', 
+                                flexDirection: 'column', 
                                 alignItems: 'center',
-                                marginBottom: '10px'
+                                gap: '10px',
+                                minWidth: '120px'
                             }}>
+                                <h4 style={{
+                                    margin: '0',
+                                    color: '#495057',
+                                    fontSize: '14px',
+                                    fontWeight: '600'
+                                }}>
+                                    七段顯示 ({currentRange.range})
+                                </h4>
+
+                                {/* 七段顯示器 */}
                                 <div style={{
                                     position: 'relative',
-                                    width: '120px',
-                                    height: '200px',
+                                    width: '80px',
+                                    height: '130px',
                                     backgroundColor: '#1a1a1a',
                                     borderRadius: '8px',
-                                    padding: '10px',
+                                    padding: '8px',
                                     boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
                                 }}>
                                     {/* 段 a (頂部) */}
                                     <div style={{
                                         position: 'absolute',
-                                        top: '15px',
-                                        left: '25px',
-                                        width: '90px',
-                                        height: '8px',
+                                        top: '10px',
+                                        left: '16px',
+                                        width: '60px',
+                                        height: '6px',
                                         backgroundColor: segments.includes('a') ? '#00ff00' : '#333',
-                                        borderRadius: '4px',
+                                        borderRadius: '3px',
                                         transition: 'all 0.3s ease'
                                     }} />
 
                                     {/* 段 b (右上) */}
                                     <div style={{
                                         position: 'absolute',
-                                        top: '25px',
-                                        right: '15px',
-                                        width: '8px',
-                                        height: '70px',
+                                        top: '16px',
+                                        right: '10px',
+                                        width: '6px',
+                                        height: '45px',
                                         backgroundColor: segments.includes('b') ? '#00ff00' : '#333',
-                                        borderRadius: '4px',
+                                        borderRadius: '3px',
                                         transition: 'all 0.3s ease'
                                     }} />
 
                                     {/* 段 c (右下) */}
                                     <div style={{
                                         position: 'absolute',
-                                        top: '105px',
-                                        right: '15px',
-                                        width: '8px',
-                                        height: '70px',
+                                        top: '68px',
+                                        right: '10px',
+                                        width: '6px',
+                                        height: '45px',
                                         backgroundColor: segments.includes('c') ? '#00ff00' : '#333',
-                                        borderRadius: '4px',
+                                        borderRadius: '3px',
                                         transition: 'all 0.3s ease'
                                     }} />
 
                                     {/* 段 d (底部) */}
                                     <div style={{
                                         position: 'absolute',
-                                        bottom: '30px',
-                                        left: '25px',
-                                        width: '90px',
-                                        height: '8px',
+                                        bottom: '20px',
+                                        left: '16px',
+                                        width: '60px',
+                                        height: '6px',
                                         backgroundColor: segments.includes('d') ? '#00ff00' : '#333',
-                                        borderRadius: '4px',
+                                        borderRadius: '3px',
                                         transition: 'all 0.3s ease'
                                     }} />
 
                                     {/* 段 e (左下) */}
                                     <div style={{
                                         position: 'absolute',
-                                        top: '105px',
-                                        left: '15px',
-                                        width: '8px',
-                                        height: '70px',
+                                        top: '68px',
+                                        left: '10px',
+                                        width: '6px',
+                                        height: '45px',
                                         backgroundColor: segments.includes('e') ? '#00ff00' : '#333',
-                                        borderRadius: '4px',
+                                        borderRadius: '3px',
                                         transition: 'all 0.3s ease'
                                     }} />
 
                                     {/* 段 f (左上) */}
                                     <div style={{
                                         position: 'absolute',
-                                        top: '25px',
-                                        left: '15px',
-                                        width: '8px',
-                                        height: '70px',
+                                        top: '16px',
+                                        left: '10px',
+                                        width: '6px',
+                                        height: '45px',
                                         backgroundColor: segments.includes('f') ? '#00ff00' : '#333',
-                                        borderRadius: '4px',
+                                        borderRadius: '3px',
                                         transition: 'all 0.3s ease'
                                     }} />
 
                                     {/* 段 g (中間) */}
                                     <div style={{
                                         position: 'absolute',
-                                        top: '95px',
-                                        left: '25px',
-                                        width: '90px',
-                                        height: '8px',
+                                        top: '62px',
+                                        left: '16px',
+                                        width: '60px',
+                                        height: '6px',
                                         backgroundColor: segments.includes('g') ? '#00ff00' : '#333',
-                                        borderRadius: '4px',
+                                        borderRadius: '3px',
                                         transition: 'all 0.3s ease'
                                     }} />
                                 </div>
+
+                                <p style={{
+                                    margin: '0',
+                                    color: '#6c757d',
+                                    fontSize: '11px',
+                                    textAlign: 'center',
+                                    maxWidth: '100px',
+                                    lineHeight: '1.3'
+                                }}>
+                                    {`${selectedPosition}: ${positionData.digits.join('、')} 的 ${positionData.segments.join('+')} 段`}
+                                </p>
                             </div>
-
-                            <p style={{
-                                margin: '10px 0 0 0',
-                                color: '#6c757d',
-                                fontSize: '12px',
-                                textAlign: 'center'
-                            }}>
-                                {`位置 ${selectedPosition} 檢查 ${positionData.digits.join('、')} 的 ${positionData.segments.join('+')} 段`}
-                            </p>
-                        </div>
-                    );
-                })()}
-
+                        );
+                    })()}
+                </div>
 
                 {/* 按鈕區域 */}
                 <div style={{
                     display: 'flex',
                     gap: '15px',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    marginBottom: '20px'
                 }}>
                     <button
                         onClick={handleCancel}
