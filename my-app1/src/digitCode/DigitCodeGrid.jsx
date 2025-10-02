@@ -204,11 +204,11 @@ export default function DigitCodeGrid({
         <div style={{
           position: "absolute",
           top: isMobile ? "-60px" : "-60px",
-          left: "0px",
+          left: isMobile ? "0px" : "-100px",
           right: "0",
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
-          columnGap: isMobile ? "1px" : "50px",
+          columnGap: isMobile ? "1px" : "1px",
           zIndex: 10,
           pointerEvents: "auto"
         }}>
@@ -217,7 +217,7 @@ export default function DigitCodeGrid({
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            gap: isMobile ? "1px" : "12px",
+            gap: isMobile ? "1px" : "1px",
             position: "relative"
           }}>
             {['A', 'B', 'C'].map((label) => (
@@ -225,7 +225,7 @@ export default function DigitCodeGrid({
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "4px"
+                gap: "1px"
               }}>
                 <div style={{
                   width: isMobile ? "25px" : "35px",
@@ -250,17 +250,18 @@ export default function DigitCodeGrid({
           {/* D E F 數字輸入框 - 第二列 */}
           <div style={{
             display: "flex",
-            justifyContent: "center",
+            justifyContent: "flex-start",
             alignItems: "center",
-            gap: isMobile ? "1px" : "12px",
-            position: "relative"
+            gap: isMobile ? "1px" : "1px",
+            position: "relative",
+            paddingLeft: isMobile ? "10px" : "70px"
           }}>
             {['D', 'E', 'F'].map((label) => (
               <div key={label} style={{
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "4px"
+                gap: "1px"
               }}>
                 <div style={{
                   width: isMobile ? "25px" : "35px",
@@ -285,17 +286,18 @@ export default function DigitCodeGrid({
           {/* G H I 數字輸入框 - 第三列 */}
           <div style={{
             display: "flex",
-            justifyContent: "center",
+            justifyContent: "flex-start",
             alignItems: "center",
-            gap: isMobile ? "1px" : "12px",
-            position: "relative"
+            gap: isMobile ? "1px" : "1px",
+            position: "relative",
+            paddingLeft: isMobile ? "10px" : "50px"
           }}>
             {['G', 'H', 'I'].map((label) => (
               <div key={label} style={{
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "4px"
+                gap: "1px"
               }}>
                 <div style={{
                   width: isMobile ? "25px" : "35px",
@@ -343,7 +345,7 @@ export default function DigitCodeGrid({
               color: "#666",
               wordSpacing: isMobile ? "18px" : "20px",
               position: "relative",
-              left: isMobile ? "-25px" : "-75px"
+              left: isMobile ? "-25px" : "-465px"
             }}>A B C</span>
           </div>
           {/* D E F - 第二列 */}
@@ -359,7 +361,7 @@ export default function DigitCodeGrid({
               color: "#666",
               wordSpacing: isMobile ? "18px" : "22px",
               position: "relative",
-              left: isMobile ? "-20px" : "-73px"
+              left: isMobile ? "-20px" : "-305px"
             }}>D E F</span>
           </div>
           {/* G H I - 第三列 */}
@@ -375,7 +377,7 @@ export default function DigitCodeGrid({
               color: "#666",
               wordSpacing: isMobile ? "18px" : "22px",
               position: "relative",
-              left: isMobile ? "-20px" : "-73px"
+              left: isMobile ? "-20px" : "-150px"
             }}>G H I</span>
           </div>
         </div>
@@ -383,11 +385,11 @@ export default function DigitCodeGrid({
         {/* 數字輸入方框 - J~N (左側) */}
         <div style={{
           position: "absolute",
-          top: isMobile ? "-15px" : "0px",
-          right: isMobile ? "-20px" : "-70px",
+          top: isMobile ? "-15px" : "-20px",
+          right: isMobile ? "-20px" : "0px",
           display: "flex",
           flexDirection: "column",
-          gap: isMobile ? "1px" : "16px",
+          gap: isMobile ? "1px" : "1px",
           alignItems: "flex-start",
           textAlign: "left",
           zIndex: 10,
@@ -464,11 +466,11 @@ export default function DigitCodeGrid({
         {/* 數字輸入方框 - O~S (左側) */}
         <div style={{
           position: "absolute",
-          top: isMobile ? "295px" : "180px",
-          right: isMobile ? "-10px" : "-70px",
+          top: isMobile ? "295px" : "160px",
+          right: isMobile ? "-10px" : "0px",
           display: "flex",
           flexDirection: "column",
-          gap: isMobile ? "1px" : "18px",
+          gap: isMobile ? "1px" : "1px",
           alignItems: "flex-start",
           textAlign: "left",
           zIndex: 10,

@@ -300,7 +300,7 @@ export default function Question4Modal({
                 padding: '30px',
                 borderRadius: '12px',
                 boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-                maxWidth: '600px',
+                maxWidth: '300px',
                 width: '90%',
                 maxHeight: '80vh',
                 overflow: 'auto'
@@ -318,7 +318,7 @@ export default function Question4Modal({
                 {/* X 座標選擇 (A-I) 和七段顯示器 */}
                 <div style={{ 
                     display: 'flex', 
-                    gap: '20px', 
+                    gap: '5px', 
                     alignItems: 'flex-start',
                     marginBottom: '30px' 
                 }}>
@@ -392,7 +392,9 @@ export default function Question4Modal({
 
                         const commonDigits = xPositionData.digits.filter(digit => yPositionData.digits.includes(digit));
                         return (
-                            <div style={{ flex: '0 0 auto' }}>
+                            <div style={{ 
+                                flex: '0 0 auto'
+                            }}>
                                 <h4 style={{
                                     margin: '0 0 10px 0',
                                     color: '#495057',
@@ -423,7 +425,7 @@ export default function Question4Modal({
                                             position: 'absolute',
                                             top: '8px',
                                             left: '12px',
-                                            width: '36px',
+                                            width: '40px',
                                             height: '4px',
                                             backgroundColor: xSegments.includes('a') && ySegments.includes('a') ? '#00ff00' : '#333',
                                             borderRadius: '2px'
@@ -441,7 +443,7 @@ export default function Question4Modal({
                                         {/* 段 c (右下) */}
                                         <div style={{
                                             position: 'absolute',
-                                            bottom: '12px',
+                                            bottom: '20px',
                                             right: '8px',
                                             width: '4px',
                                             height: '32px',
@@ -451,9 +453,9 @@ export default function Question4Modal({
                                         {/* 段 d (底部) */}
                                         <div style={{
                                             position: 'absolute',
-                                            bottom: '8px',
+                                            bottom: '12px',
                                             left: '12px',
-                                            width: '36px',
+                                            width: '40px',
                                             height: '4px',
                                             backgroundColor: xSegments.includes('d') && ySegments.includes('d') ? '#00ff00' : '#333',
                                             borderRadius: '2px'
@@ -461,7 +463,7 @@ export default function Question4Modal({
                                         {/* 段 e (左下) */}
                                         <div style={{
                                             position: 'absolute',
-                                            bottom: '12px',
+                                            bottom: '20px',
                                             left: '8px',
                                             width: '4px',
                                             height: '32px',
@@ -481,9 +483,9 @@ export default function Question4Modal({
                                         {/* 段 g (中間) */}
                                         <div style={{
                                             position: 'absolute',
-                                            top: '50%',
-                                            left: '12px',
-                                            width: '36px',
+                                            top: '46%',
+                                            left: '16px',
+                                            width: '40px',
                                             height: '4px',
                                             backgroundColor: xSegments.includes('g') && ySegments.includes('g') ? '#00ff00' : '#333',
                                             borderRadius: '2px',

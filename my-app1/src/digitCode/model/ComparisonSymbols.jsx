@@ -11,14 +11,14 @@ export default function ComparisonSymbols({
   columnIndex // 0,1,2 對應 T/U/V 欄，用於 bottom 符號水平定位，以及 right 區分 T-U / U-V
 }) {
   const size = isMobile ? 20 : 16;
-  const bottomOffset = isMobile ? "335px" : "160px";
+  const bottomOffset = isMobile ? "335px" : "205px";
 
   // 依裝置與欄位決定水平位置，避免多個垂直符號重疊
 
   const computedLeft = (() => {
     if (typeof columnIndex !== "number") return isMobile ? "50%" : "50%";
     const mobile = ["50%", "50%", "50%"]; // T, U, V
-    const desktop = ["20%", "50%", "80%"];
+    const desktop = ["20%", "20%", "20%"];
     const list = isMobile ? mobile : desktop;
     return list[Math.max(0, Math.min(2, columnIndex))];
   })();
@@ -28,7 +28,7 @@ export default function ComparisonSymbols({
     if (typeof columnIndex !== "number") return isMobile ? "96px" : "-16px";
     // index: 0 -> 第一個（T 或 W）; 1 -> 第二個（U 或 X）
     const mobile = ["100px", "220px"];
-    const desktop = ["-16px", "8px"];
+    const desktop = ["200px", "480px"];
     const list = isMobile ? mobile : desktop;
     return list[Math.max(0, Math.min(1, columnIndex))];
   })();
@@ -42,7 +42,7 @@ export default function ComparisonSymbols({
           <div style={{
             position: "absolute",
             left: rightLeftOffset,
-            top: "-3%",
+            top: isMobile ? "-3%" : "5%",
             transform: "translateY(200%)",
             zIndex: 10,
             opacity: 0.8,

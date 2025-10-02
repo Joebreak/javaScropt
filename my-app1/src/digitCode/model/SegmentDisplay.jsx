@@ -256,12 +256,12 @@ export default function SegmentDisplay({ digitIndex, isMobileView, evenOddCheck,
             ...(evenOddCheck === 'even' ? {
               // 偶數：顯示在 a-g 段右側
               top: "30%",
-              left: "20%",
+              left: "30%",
               transform: "translateX(8px) translateY(-50%)",
             } : {
               // 奇數：顯示在 a-g 段左側
-              top: "70%",
-              left: "40%",
+              top: "65%",
+              left: "50%",
               transform: "translateX(-8px) translateY(-50%)",
             })
           }),
