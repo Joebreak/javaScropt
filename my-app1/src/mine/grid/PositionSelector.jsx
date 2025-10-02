@@ -42,7 +42,7 @@ const PositionSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =
     const handleConfirm = async () => {
         if (selectedPosition) {
             // 解構 gameData
-            const { room, lastRound, mapData } = gameData;
+            const { room, lastRound, mapList } = gameData;
 
             // 檢查 lastRound 是否存在
             if (!lastRound && lastRound !== 0) {
@@ -53,8 +53,8 @@ const PositionSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =
 
             const { row, col } = selectedPosition;
             let foundData = null;
-            if (Array.isArray(mapData) && mapData.length > 0) {
-                foundData = mapData.find(item =>
+            if (Array.isArray(mapList) && mapList.length > 0) {
+                foundData = mapList.find(item =>
                     item && item.NOTE1 === col && item.NOTE2 === row
                 );
             }
