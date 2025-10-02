@@ -283,7 +283,7 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
     const handleConfirm = async () => {
         if (selectedDirection) {
             // 解構 gameData
-            const { room, lastRound, mapData } = gameData;
+            const { room, lastRound, mapList } = gameData;
 
             // 檢查 lastRound 是否存在
             if (!lastRound && lastRound !== 0) {
@@ -293,7 +293,7 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
             }
 
             // 執行光線追蹤
-            const lightTraceResult = traceLightPath(selectedDirection.entryPoint, selectedDirection.side, mapData || []);
+            const lightTraceResult = traceLightPath(selectedDirection.entryPoint, selectedDirection.side, mapList || []);
             const result = {
                 entryPoint: selectedDirection.entryPoint,
                 lightPath: lightTraceResult.path,
