@@ -41,6 +41,9 @@ export default function DigitCodeRoom() {
   // 答案提交彈跳視窗狀態
   const [showAnswerModal, setShowAnswerModal] = useState(false);
 
+  // 數位顯示範例狀態
+  const [showDigitExample, setShowDigitExample] = useState(false);
+
   // 問題1設定狀態
   const [question1Settings, setQuestion1Settings] = useState({
     selectedPosition: 'A',
@@ -159,12 +162,34 @@ export default function DigitCodeRoom() {
 
   return (
     <div style={{ padding: 0, background: "#f7f7f7", minHeight: "100vh" }}>
+      {/* 數位顯示範例控制按鈕 */}
+      <div style={{ textAlign: "center", padding: "10px 0" }}>
+        <button
+          onClick={() => setShowDigitExample(!showDigitExample)}
+          style={{
+            padding: "8px 16px",
+            background: showDigitExample ? "#dc3545" : "#28a745",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            fontSize: "14px",
+            fontWeight: "bold",
+            cursor: "pointer",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+            transition: "all 0.3s ease"
+          }}
+        >
+          {showDigitExample ? "隱藏" : "顯示"} 數位顯示範例
+        </button>
+      </div>
+
       {/* 數字網格區域 */}
       <DigitCodeGrid
         gameData={gameData}
         userSelections={userSelections}
         onUserSelection={handleUserSelection}
         list={data?.list || []}
+        showDigitExample={showDigitExample}
       />
 
       {/* 重新整理按鈕 */}

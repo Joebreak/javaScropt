@@ -6,7 +6,8 @@ export default function DigitCodeGrid({
   gameData,
   userSelections = [],
   onUserSelection,
-  list = []
+  list = [],
+  showDigitExample = false
 }) {
   const [selectedSegments, setSelectedSegments] = useState({});
   const isMobile = window.innerWidth <= 768;
@@ -147,25 +148,27 @@ export default function DigitCodeGrid({
 
   return (
     <div style={{ padding: "20px" }}>
-      {/* 0-9 數位顯示範例 */}
-      <div style={{
-        background: "#f8f9fa",
-        padding: "20px",
-        borderRadius: "12px",
-        marginBottom: "30px",
-        border: "2px solid #e9ecef"
-      }}>
-        <h3 style={{
-          margin: "0 0 15px 0",
-          color: "#495057",
-          fontSize: "16px",
-          fontWeight: "bold",
-          textAlign: "center"
+      {/* 0-9 數位顯示範例 - 根據 showDigitExample 控制顯示 */}
+      {showDigitExample && (
+        <div style={{
+          background: "#f8f9fa",
+          padding: "20px",
+          borderRadius: "12px",
+          marginBottom: "30px",
+          border: "2px solid #e9ecef"
         }}>
-          數位顯示範例 (0-9)
-        </h3>
-        <DigitDisplayGrid />
-      </div>
+          <h3 style={{
+            margin: "0 0 15px 0",
+            color: "#495057",
+            fontSize: "16px",
+            fontWeight: "bold",
+            textAlign: "center"
+          }}>
+            數位顯示範例 (0-9)
+          </h3>
+          <DigitDisplayGrid />
+        </div>
+      )}
 
       {/* 3x2 可點擊數位段網格 */}
       <div style={{
