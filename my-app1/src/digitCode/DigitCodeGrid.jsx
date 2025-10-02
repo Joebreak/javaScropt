@@ -17,6 +17,22 @@ export default function DigitCodeGrid({
     setSelectedSegments(userSelections);
   }, [userSelections]);
 
+  // 從 list 中提取 type: 1 的記錄，創建位置到數字的映射
+  const getPositionNumbers = () => {
+    if (!list || !Array.isArray(list)) return {};
+    
+    const positionNumbers = {};
+    list.forEach(item => {
+      if (item.type === 1 && item.in && item.out !== undefined) {
+        positionNumbers[item.in] = item.out;
+      }
+    });
+    
+    return positionNumbers;
+  };
+
+  const positionNumbers = getPositionNumbers();
+
   // 處理偶數奇數檢查 - 根據 list 中 type = 3 的記錄
   const getEvenOddCheck = (digit) => {
     if (!list || !Array.isArray(list)) return null;
@@ -176,19 +192,138 @@ export default function DigitCodeGrid({
         display: "grid",
         gridTemplateColumns: "repeat(3, 1fr)",
         gridTemplateRows: "repeat(2, auto)",
-        columnGap: isMobile ? "40px" : "50px",
+        columnGap: isMobile ? "0px" : "50px",
         rowGap: isMobile ? "30px" : "32px",
         justifyContent: "center",
         alignItems: "center",
         maxWidth: isMobile ? "100%" : "800px",
-        margin: "0 auto"
+        margin: "0 auto",
+        marginTop: isMobile ? "60px" : "120px"
       }}>
+        {/* 數字輸入方框 - A~I (最上方) */}
+        <div style={{
+          position: "absolute",
+          top: isMobile ? "-60px" : "-60px",
+          left: "0px",
+          right: "0",
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          columnGap: isMobile ? "1px" : "50px",
+          zIndex: 10,
+          pointerEvents: "auto"
+        }}>
+          {/* A B C 數字輸入框 - 第一列 */}
+          <div style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: isMobile ? "1px" : "12px",
+            position: "relative"
+          }}>
+            {['A', 'B', 'C'].map((label) => (
+              <div key={label} style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "4px"
+              }}>
+                <div style={{
+                  width: isMobile ? "25px" : "35px",
+                  height: isMobile ? "25px" : "35px",
+                  backgroundColor: positionNumbers[label] ? "#e8f5e8" : "#ffffff",
+                  border: positionNumbers[label] ? "2px solid #28a745" : "2px solid #ddd",
+                  borderRadius: "6px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: isMobile ? "14px" : "16px",
+                  fontWeight: "bold",
+                  color: positionNumbers[label] ? "#155724" : "#333",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  transition: "all 0.2s ease"
+                }}>
+                  {positionNumbers[label] || ""}
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* D E F 數字輸入框 - 第二列 */}
+          <div style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: isMobile ? "1px" : "12px",
+            position: "relative"
+          }}>
+            {['D', 'E', 'F'].map((label) => (
+              <div key={label} style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "4px"
+              }}>
+                <div style={{
+                  width: isMobile ? "25px" : "35px",
+                  height: isMobile ? "25px" : "35px",
+                  backgroundColor: positionNumbers[label] ? "#e8f5e8" : "#ffffff",
+                  border: positionNumbers[label] ? "2px solid #28a745" : "2px solid #ddd",
+                  borderRadius: "6px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: isMobile ? "14px" : "16px",
+                  fontWeight: "bold",
+                  color: positionNumbers[label] ? "#155724" : "#333",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  transition: "all 0.2s ease"
+                }}>
+                  {positionNumbers[label] || ""}
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* G H I 數字輸入框 - 第三列 */}
+          <div style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: isMobile ? "1px" : "12px",
+            position: "relative"
+          }}>
+            {['G', 'H', 'I'].map((label) => (
+              <div key={label} style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "4px"
+              }}>
+                <div style={{
+                  width: isMobile ? "25px" : "35px",
+                  height: isMobile ? "25px" : "35px",
+                  backgroundColor: positionNumbers[label] ? "#e8f5e8" : "#ffffff",
+                  border: positionNumbers[label] ? "2px solid #28a745" : "2px solid #ddd",
+                  borderRadius: "6px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: isMobile ? "14px" : "16px",
+                  fontWeight: "bold",
+                  color: positionNumbers[label] ? "#155724" : "#333",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  transition: "all 0.2s ease"
+                }}>
+                  {positionNumbers[label] || ""}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* 行標籤 - A~I (上方，對齊到網格行) */}
         <div style={{
           position: "absolute",
           top: isMobile ? "-20px" : "-20px",
-          left: "0",
-          right: "0",
+          right: "0px",
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
           columnGap: isMobile ? "40px" : "50px",
@@ -208,7 +343,7 @@ export default function DigitCodeGrid({
               color: "#666",
               wordSpacing: isMobile ? "18px" : "20px",
               position: "relative",
-              left: isMobile ? "0px" : "-75px"
+              left: isMobile ? "-25px" : "-75px"
             }}>A B C</span>
           </div>
           {/* D E F - 第二列 */}
@@ -224,7 +359,7 @@ export default function DigitCodeGrid({
               color: "#666",
               wordSpacing: isMobile ? "18px" : "22px",
               position: "relative",
-              left: isMobile ? "0px" : "-73px"
+              left: isMobile ? "-20px" : "-73px"
             }}>D E F</span>
           </div>
           {/* G H I - 第三列 */}
@@ -240,16 +375,57 @@ export default function DigitCodeGrid({
               color: "#666",
               wordSpacing: isMobile ? "18px" : "22px",
               position: "relative",
-              left: isMobile ? "0px" : "-73px"
+              left: isMobile ? "-20px" : "-73px"
             }}>G H I</span>
           </div>
+        </div>
+
+        {/* 數字輸入方框 - J~N (左側) */}
+        <div style={{
+          position: "absolute",
+          top: isMobile ? "-15px" : "0px",
+          right: isMobile ? "-20px" : "-70px",
+          display: "flex",
+          flexDirection: "column",
+          gap: isMobile ? "1px" : "16px",
+          alignItems: "flex-start",
+          textAlign: "left",
+          zIndex: 10,
+          pointerEvents: "auto"
+        }}>
+          {['J', 'K', 'L', 'M', 'N'].map((label) => (
+            <div key={label} style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: "6px"
+            }}>
+              <div style={{
+                width: isMobile ? "22px" : "30px",
+                height: isMobile ? "22px" : "30px",
+                backgroundColor: positionNumbers[label] ? "#e8f5e8" : "#ffffff",
+                border: positionNumbers[label] ? "2px solid #28a745" : "2px solid #ddd",
+                borderRadius: "6px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: isMobile ? "12px" : "14px",
+                fontWeight: "bold",
+                color: positionNumbers[label] ? "#155724" : "#333",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                transition: "all 0.2s ease"
+              }}>
+                {positionNumbers[label] || ""}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* 列標籤 - J~N (左側，對齊到網格列) */}
         <div style={{
           position: "absolute",
           top: isMobile ? "1px" : "0px",
-          left: isMobile ? "-15px" : "-20px",
+          left: isMobile ? "-1px" : "-20px",
           display: "flex",
           flexDirection: "column",
           gap: isMobile ? "5px" : "16px",
@@ -285,11 +461,52 @@ export default function DigitCodeGrid({
           }}>N</span>
         </div>
 
+        {/* 數字輸入方框 - O~S (左側) */}
+        <div style={{
+          position: "absolute",
+          top: isMobile ? "295px" : "180px",
+          right: isMobile ? "-10px" : "-70px",
+          display: "flex",
+          flexDirection: "column",
+          gap: isMobile ? "1px" : "18px",
+          alignItems: "flex-start",
+          textAlign: "left",
+          zIndex: 10,
+          pointerEvents: "auto"
+        }}>
+          {['O', 'P', 'Q', 'R', 'S'].map((label) => (
+            <div key={label} style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: "6px"
+            }}>
+              <div style={{
+                width: isMobile ? "20px" : "30px",
+                height: isMobile ? "20px" : "30px",
+                backgroundColor: positionNumbers[label] ? "#e8f5e8" : "#ffffff",
+                border: positionNumbers[label] ? "2px solid #28a745" : "2px solid #ddd",
+                borderRadius: "6px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: isMobile ? "12px" : "14px",
+                fontWeight: "bold",
+                color: positionNumbers[label] ? "#155724" : "#333",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                transition: "all 0.2s ease"
+              }}>
+                {positionNumbers[label] || ""}
+              </div>
+            </div>
+          ))}
+        </div>
+
         {/* 列標籤 - O~S (左側，對齊到網格列) */}
         <div style={{
           position: "absolute",
           top: isMobile ? "303px" : "180px",
-          left: isMobile ? "-15px" : "-20px",
+          left: isMobile ? "0px" : "-20px",
           display: "flex",
           flexDirection: "column",
           gap: isMobile ? "6px" : "18px",
