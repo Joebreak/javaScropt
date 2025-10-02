@@ -31,7 +31,8 @@ export default function Question4Modal({
     onConfirm,
     initialXPosition = 'A',
     initialYPosition = 'K',
-    gameData
+    gameData,
+    list = []
 }) {
     const [selectedXPosition, setSelectedXPosition] = useState(initialXPosition);
     const [selectedYPosition, setSelectedYPosition] = useState(initialYPosition);
@@ -116,15 +117,36 @@ export default function Question4Modal({
         return xSegments.some(segment => ySegments.includes(segment));
     }, [selectedXPosition]);
 
-    // 當 X 座標改變時，檢查當前 Y 座標是否還有交集
+    // 獲取已使用的 X+Y 組合
+    const usedCombinations = useMemo(() => {
+        return list
+            .filter(item => item.type === 4 && item.in)
+            .map(item => item.in);
+    }, [list]);
+
+    // 檢查 X+Y 組合是否已被使用
+    const isCombinationUsed = useCallback((x, y) => {
+        return usedCombinations.includes(`${x}+${y}`);
+    }, [usedCombinations]);
+
+    // 當 X 座標改變時，自動選擇第一個有交集且未使用的 Y 座標
     useEffect(() => {
-        if (selectedXPosition && selectedYPosition) {
-            if (!hasYIntersectionWithX(selectedYPosition)) {
-                // 如果當前 Y 座標與新的 X 座標沒有交集，清除 Y 座標選擇
+        if (selectedXPosition) {
+            // 找到第一個與當前 X 座標有交集且未使用的 Y 座標
+            const yPositions = positionRanges[1].positions; // J-S
+            const firstValidY = yPositions.find(position => 
+                hasYIntersectionWithX(position) && !isCombinationUsed(selectedXPosition, position)
+            );
+            
+            if (firstValidY) {
+                setSelectedYPosition(firstValidY);
+            } else {
                 setSelectedYPosition('');
             }
+        } else {
+            setSelectedYPosition('');
         }
-    }, [selectedXPosition, selectedYPosition, hasYIntersectionWithX]);
+    }, [selectedXPosition, hasYIntersectionWithX, usedCombinations, isCombinationUsed, positionRanges]);
 
     // 檢查實際數字是否有段交集（基於真實遊戲數據）
     // 返回 null（無配置交集）、true（有實際交集）、false（有配置交集但無實際交集）
@@ -293,64 +315,193 @@ export default function Question4Modal({
                     問題4：X + Y 座標設定
                 </h2>
 
-                {/* X 座標選擇 (A-I) */}
-                <div style={{ marginBottom: '30px' }}>
-                    <h3 style={{
-                        margin: '0 0 15px 0',
-                        color: '#495057',
-                        fontSize: '16px',
-                        fontWeight: '600'
-                    }}>
-                        選擇 X 座標 (A~I)：
-                    </h3>
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px',
-                        maxWidth: '400px',
-                        margin: '0 auto'
-                    }}>
-                        {(() => {
-                            const positions = positionRanges[0].positions; // A-I
-                            const rows = [];
+                {/* X 座標選擇 (A-I) 和七段顯示器 */}
+                <div style={{ 
+                    display: 'flex', 
+                    gap: '20px', 
+                    alignItems: 'flex-start',
+                    marginBottom: '30px' 
+                }}>
+                    {/* X 座標選擇區域 */}
+                    <div style={{ flex: 1 }}>
+                        <h3 style={{
+                            margin: '0 0 15px 0',
+                            color: '#495057',
+                            fontSize: '16px',
+                            fontWeight: '600'
+                        }}>
+                            選擇 X 座標 (A~I)：
+                        </h3>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px',
+                            maxWidth: '300px'
+                        }}>
+                            {(() => {
+                                const positions = positionRanges[0].positions; // A-I
+                                const rows = [];
 
-                            // 每3個一排分組
-                            for (let i = 0; i < positions.length; i += 3) {
-                                const row = positions.slice(i, i + 3);
-                                rows.push(row);
-                            }
+                                // 每3個一排分組
+                                for (let i = 0; i < positions.length; i += 3) {
+                                    const row = positions.slice(i, i + 3);
+                                    rows.push(row);
+                                }
 
-                            return rows.map((row, rowIndex) => (
-                                <div key={rowIndex} style={{
+                                return rows.map((row, rowIndex) => (
+                                    <div key={rowIndex} style={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        gap: '8px'
+                                    }}>
+                                        {row.map(position => (
+                                            <button
+                                                key={position}
+                                                onClick={() => setSelectedXPosition(position)}
+                                                style={{
+                                                    padding: '12px 8px',
+                                                    border: selectedXPosition === position ? '2px solid #28a745' : '2px solid #e9ecef',
+                                                    borderRadius: '8px',
+                                                    backgroundColor: selectedXPosition === position ? '#d4edda' : '#f8f9fa',
+                                                    color: selectedXPosition === position ? '#155724' : '#495057',
+                                                    fontSize: '16px',
+                                                    fontWeight: 'bold',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s ease',
+                                                    textAlign: 'center',
+                                                    minWidth: '50px'
+                                                }}
+                                            >
+                                                {position}
+                                            </button>
+                                        ))}
+                                    </div>
+                                ));
+                            })()}
+                        </div>
+                    </div>
+
+                    {/* 七段顯示器面板 - 小尺寸版本 */}
+                    {selectedXPosition && selectedYPosition && (() => {
+                        const xPositionData = positionMapping[selectedXPosition];
+                        const yPositionData = positionMapping[selectedYPosition];
+                        if (!xPositionData || !yPositionData) return null;
+
+                        const xSegments = xPositionData.segments;
+                        const ySegments = yPositionData.segments;
+
+                        const commonDigits = xPositionData.digits.filter(digit => yPositionData.digits.includes(digit));
+                        return (
+                            <div style={{ flex: '0 0 auto' }}>
+                                <h4 style={{
+                                    margin: '0 0 10px 0',
+                                    color: '#495057',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    textAlign: 'center'
+                                }}>
+                                    七段顯示器
+                                </h4>
+                                {/* 七段顯示器 - 小尺寸 */}
+                                <div style={{
                                     display: 'flex',
                                     justifyContent: 'center',
-                                    gap: '8px'
+                                    alignItems: 'center',
+                                    marginBottom: '10px'
                                 }}>
-                                    {row.map(position => (
-                                        <button
-                                            key={position}
-                                            onClick={() => setSelectedXPosition(position)}
-                                            style={{
-                                                padding: '12px 8px',
-                                                border: selectedXPosition === position ? '2px solid #28a745' : '2px solid #e9ecef',
-                                                borderRadius: '8px',
-                                                backgroundColor: selectedXPosition === position ? '#d4edda' : '#f8f9fa',
-                                                color: selectedXPosition === position ? '#155724' : '#495057',
-                                                fontSize: '16px',
-                                                fontWeight: 'bold',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s ease',
-                                                textAlign: 'center',
-                                                minWidth: '50px'
-                                            }}
-                                        >
-                                            {position}
-                                        </button>
-                                    ))}
+                                    <div style={{
+                                        position: 'relative',
+                                        width: '60px',
+                                        height: '100px',
+                                        backgroundColor: '#1a1a1a',
+                                        borderRadius: '4px',
+                                        padding: '5px',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                    }}>
+                                        {/* 段 a (頂部) */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '8px',
+                                            left: '12px',
+                                            width: '36px',
+                                            height: '4px',
+                                            backgroundColor: xSegments.includes('a') && ySegments.includes('a') ? '#00ff00' : '#333',
+                                            borderRadius: '2px'
+                                        }}></div>
+                                        {/* 段 b (右上) */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '12px',
+                                            right: '8px',
+                                            width: '4px',
+                                            height: '32px',
+                                            backgroundColor: xSegments.includes('b') && ySegments.includes('b') ? '#00ff00' : '#333',
+                                            borderRadius: '2px'
+                                        }}></div>
+                                        {/* 段 c (右下) */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: '12px',
+                                            right: '8px',
+                                            width: '4px',
+                                            height: '32px',
+                                            backgroundColor: xSegments.includes('c') && ySegments.includes('c') ? '#00ff00' : '#333',
+                                            borderRadius: '2px'
+                                        }}></div>
+                                        {/* 段 d (底部) */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: '8px',
+                                            left: '12px',
+                                            width: '36px',
+                                            height: '4px',
+                                            backgroundColor: xSegments.includes('d') && ySegments.includes('d') ? '#00ff00' : '#333',
+                                            borderRadius: '2px'
+                                        }}></div>
+                                        {/* 段 e (左下) */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: '12px',
+                                            left: '8px',
+                                            width: '4px',
+                                            height: '32px',
+                                            backgroundColor: xSegments.includes('e') && ySegments.includes('e') ? '#00ff00' : '#333',
+                                            borderRadius: '2px'
+                                        }}></div>
+                                        {/* 段 f (左上) */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '12px',
+                                            left: '8px',
+                                            width: '4px',
+                                            height: '32px',
+                                            backgroundColor: xSegments.includes('f') && ySegments.includes('f') ? '#00ff00' : '#333',
+                                            borderRadius: '2px'
+                                        }}></div>
+                                        {/* 段 g (中間) */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '50%',
+                                            left: '12px',
+                                            width: '36px',
+                                            height: '4px',
+                                            backgroundColor: xSegments.includes('g') && ySegments.includes('g') ? '#00ff00' : '#333',
+                                            borderRadius: '2px',
+                                            transform: 'translateY(-50%)'
+                                        }}></div>
+                                    </div>
                                 </div>
-                            ));
-                        })()}
-                    </div>
+                                <p style={{
+                                    margin: '5px 0 0 0',
+                                    color: '#6c757d',
+                                    fontSize: '12px',
+                                    textAlign: 'center'
+                                }}>
+                                    交集：{commonDigits.length > 0 ? commonDigits.join('、') : '無'}
+                                </p>
+                            </div>
+                        );
+                    })()}
                 </div>
 
                 {/* Y 座標選擇 (J-S) */}
@@ -389,28 +540,33 @@ export default function Question4Modal({
                                     {row.map(position => {
                                         const hasIntersection = hasYIntersectionWithX(position);
                                         const isSelected = selectedYPosition === position;
+                                        const isUsed = isCombinationUsed(selectedXPosition, position);
+                                        const isDisabled = !hasIntersection || isUsed;
 
                                         return (
                                             <button
                                                 key={position}
-                                                onClick={() => hasIntersection && setSelectedYPosition(position)}
-                                                disabled={!hasIntersection}
+                                                onClick={() => !isDisabled && setSelectedYPosition(position)}
+                                                disabled={isDisabled}
                                                 style={{
                                                     padding: '12px 8px',
-                                                    border: isSelected ? '2px solid #28a745' :
+                                                    border: isUsed ? '2px solid #dc3545' :
+                                                        isSelected ? '2px solid #28a745' :
                                                         hasIntersection ? '2px solid #e9ecef' : '2px solid #d6d6d6',
                                                     borderRadius: '8px',
-                                                    backgroundColor: isSelected ? '#d4edda' :
+                                                    backgroundColor: isUsed ? '#f8d7da' :
+                                                        isSelected ? '#d4edda' :
                                                         hasIntersection ? '#f8f9fa' : '#e9ecef',
-                                                    color: isSelected ? '#155724' :
+                                                    color: isUsed ? '#721c24' :
+                                                        isSelected ? '#155724' :
                                                         hasIntersection ? '#495057' : '#6c757d',
                                                     fontSize: '16px',
                                                     fontWeight: 'bold',
-                                                    cursor: hasIntersection ? 'pointer' : 'not-allowed',
+                                                    cursor: isDisabled ? 'not-allowed' : 'pointer',
                                                     transition: 'all 0.2s ease',
                                                     textAlign: 'center',
                                                     minWidth: '50px',
-                                                    opacity: hasIntersection ? 1 : 0.5
+                                                    opacity: isDisabled ? 0.6 : 1
                                                 }}
                                             >
                                                 {position}
@@ -423,142 +579,6 @@ export default function Question4Modal({
                     </div>
                 </div>
 
-                {/* 七段顯示器面板 - 顯示 X 和 Y 座標的段 */}
-                {selectedXPosition && selectedYPosition && (() => {
-                    const xPositionData = positionMapping[selectedXPosition];
-                    const yPositionData = positionMapping[selectedYPosition];
-                    if (!xPositionData || !yPositionData) return null;
-
-                    const xSegments = xPositionData.segments;
-                    const ySegments = yPositionData.segments;
-
-                    const commonDigits = xPositionData.digits.filter(digit => yPositionData.digits.includes(digit));
-                    return (
-                        <div style={{ marginBottom: '30px' }}>
-                            <p style={{
-                                margin: '10px 0 0 0',
-                                color: '#6c757d',
-                                fontSize: '16px',
-                                textAlign: 'center'
-                            }}>
-                                <strong>實際交集：</strong>
-                                {(() => {
-                                    return commonDigits.length > 0 ? commonDigits.join('、') : '無';
-                                })()}
-                            </p>
-                            <h3 style={{
-                                margin: '0 0 15px 0',
-                                color: '#495057',
-                                fontSize: '16px',
-                                fontWeight: '600',
-                                textAlign: 'center'
-                            }}>
-                                七段顯示器面板 (X+Y 座標)：
-                            </h3>
-                            {/* 七段顯示器 */}
-                            <div style={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                marginBottom: '10px'
-                            }}>
-                                <div style={{
-                                    position: 'relative',
-                                    width: '120px',
-                                    height: '200px',
-                                    backgroundColor: '#1a1a1a',
-                                    borderRadius: '8px',
-                                    padding: '10px',
-                                    boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
-                                }}>
-                                    {/* 段 a (頂部) */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '15px',
-                                        left: '25px',
-                                        width: '90px',
-                                        height: '8px',
-                                        backgroundColor: (xSegments.includes('a') && ySegments.includes('a')) ? '#00ff00' : '#333',
-                                        borderRadius: '4px',
-                                        transition: 'all 0.3s ease'
-                                    }} />
-
-                                    {/* 段 b (右上) */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '25px',
-                                        right: '15px',
-                                        width: '8px',
-                                        height: '70px',
-                                        backgroundColor: (xSegments.includes('b') && ySegments.includes('b')) ? '#00ff00' : '#333',
-                                        borderRadius: '4px',
-                                        transition: 'all 0.3s ease'
-                                    }} />
-
-                                    {/* 段 c (右下) */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '105px',
-                                        right: '15px',
-                                        width: '8px',
-                                        height: '70px',
-                                        backgroundColor: (xSegments.includes('c') && ySegments.includes('c')) ? '#00ff00' : '#333',
-                                        borderRadius: '4px',
-                                        transition: 'all 0.3s ease'
-                                    }} />
-
-                                    {/* 段 d (底部) */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        bottom: '30px',
-                                        left: '25px',
-                                        width: '90px',
-                                        height: '8px',
-                                        backgroundColor: (xSegments.includes('d') && ySegments.includes('d')) ? '#00ff00' : '#333',
-                                        borderRadius: '4px',
-                                        transition: 'all 0.3s ease'
-                                    }} />
-
-                                    {/* 段 e (左下) */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '105px',
-                                        left: '15px',
-                                        width: '8px',
-                                        height: '70px',
-                                        backgroundColor: (xSegments.includes('e') && ySegments.includes('e')) ? '#00ff00' : '#333',
-                                        borderRadius: '4px',
-                                        transition: 'all 0.3s ease'
-                                    }} />
-
-                                    {/* 段 f (左上) */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '25px',
-                                        left: '15px',
-                                        width: '8px',
-                                        height: '70px',
-                                        backgroundColor:  (xSegments.includes('f') && ySegments.includes('f')) ? '#00ff00' : '#333',
-                                        borderRadius: '4px',
-                                        transition: 'all 0.3s ease'
-                                    }} />
-
-                                    {/* 段 g (中間) */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '95px',
-                                        left: '25px',
-                                        width: '90px',
-                                        height: '8px',
-                                        backgroundColor: (xSegments.includes('g') && ySegments.includes('g')) ? '#00ff00' : '#333',
-                                        borderRadius: '4px',
-                                        transition: 'all 0.3s ease'
-                                    }} />
-                                </div>
-                            </div>
-                        </div>
-                    );
-                })()}
 
                 {/* 按鈕區域 */}
                 <div style={{
