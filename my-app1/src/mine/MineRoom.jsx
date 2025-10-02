@@ -101,7 +101,7 @@ export default function MinaRoom() {
     <div style={{ padding: 0, background: "#f7f7f7" }}>
       <RoomGrid
         showActionButtons={!!showActionButtons}
-        gameData={{ room, lastRound, mapData: data?.mapData }}
+        gameData={{ room, lastRound, mapData: data?.mapData, mapList: data?.mapList }}
         onRefresh={refresh}
         showShapeButtons={showShapeButtons}
         setShowShapeButtons={setShowShapeButtons}
@@ -322,7 +322,7 @@ export default function MinaRoom() {
         isOpen={showShapeValidator}
         onClose={() => setShowShapeValidator(false)}
         onConfirm={handleShapeValidatorConfirm}
-        gameData={{ room, lastRound, mapData: data?.mapData }}
+        gameData={{ room, lastRound, mapData: data?.mapData, mapList: data?.mapList }}
         roomGridData={roomGridData}
       />
     </div>

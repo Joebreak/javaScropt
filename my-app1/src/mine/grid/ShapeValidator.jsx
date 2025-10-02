@@ -66,11 +66,11 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
 
         try {
             // 比較當前網格數據與遊戲數據是否匹配
-            const expectedMapData = gameData.mapData || [];
+            const expectedMapData = gameData.mapList || [];
             // 直接使用 roomGridData，如果沒有則使用空網格
             const grid = roomGridData || Array(8).fill().map(() => Array(10).fill(null));
             let validationResult = getCheckResult(expectedMapData, grid);
-            console.log(validationResult);
+
             // 準備 API 請求數據
             const requestBody = {
                 room: gameData.room,

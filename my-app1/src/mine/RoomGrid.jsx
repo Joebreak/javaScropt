@@ -97,12 +97,19 @@ function MinaRoom({
     setShowPositionSelector,
     showRadiateSelector,
     setShowRadiateSelector,
-    onClearGrid,
     onPositionConfirm,
     onRadiateConfirm,
     showExampleShapes = true,
     list = []
 }) {
+    // 檢查 data 中的 NOTE2 值（地圖設定）
+    const hasTransparentExample = gameData?.mapData?.NOTE2 === true;
+
+    // 檢查 data 中的 NOTE3 值（地圖設定）
+    const shouldShowRectangle = gameData?.mapData?.NOTE3 === 1 || gameData?.mapData?.NOTE3 === 2;
+
+    // 檢查 data 中的 NOTE1 值（地圖設定）
+    const shouldShowReal = gameData?.mapData?.NOTE1 === 2;
     const [currentConfig, setCurrentConfig] = useState(getGridConfig());
 
     // 網格狀態（用於形狀驗證）
@@ -115,6 +122,7 @@ function MinaRoom({
     // 範例圖形旋轉狀態
     const [exampleRotations, setExampleRotations] = useState({
         triangle1: 0,
+        triangle1Blue: 0,  // 藍色三角形的獨立旋轉
         triangle2: 0,
         parallelogram: 0,
         diamond: 0,
@@ -178,12 +186,12 @@ function MinaRoom({
     // 獲取當前組合的 ID
     const getCurrentSelection = () => {
         if (!selectedShape) return null;
-        
+
         // 如果是 X 圖形，不需要顏色
         if (selectedShape === 'X_SHAPE') {
             return { color: null, shape: selectedShape };
         }
-        
+
         // 其他圖形需要顏色
         if (!selectedColor) return null;
         return { color: selectedColor, shape: selectedShape };
@@ -195,7 +203,7 @@ function MinaRoom({
 
         if (typeof shapeId === 'object' && shapeId.shape) {
             const shape = shapeTypes.find(s => s.id === shapeId.shape);
-            
+
             if (!shape) {
                 return null;
             }
@@ -533,6 +541,23 @@ function MinaRoom({
                             }} />
                         </div>
 
+                        {/* 藍色三角形範例 - 只有當 NOTE1 ≠ 1 時才顯示 */}
+                        {!shouldShowReal && (
+                            <div
+                                onClick={() => rotateExampleShape('triangle1Blue')}
+                                style={{
+                                    width: '60px',
+                                    height: '30px',
+                                    background: 'blue',
+                                    clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+                                    cursor: 'pointer',
+                                    transform: `rotate(${exampleRotations.triangle1Blue}deg)`,
+                                    transition: 'transform 0.3s ease',
+                                    transformOrigin: 'center'
+                                }}
+                            />
+                        )}
+
                         {/* 黃色直角三角形範例 */}
                         <div
                             onClick={() => rotateExampleShape('triangle2')}
@@ -563,61 +588,91 @@ function MinaRoom({
                             }}
                         />
 
-                        {/* 藍色菱形範例 */}
-                        <div
-                            onClick={() => rotateExampleShape('diamond')}
-                            style={{
-                                width: '30px',
-                                height: '30px',
-                                background: 'blue',
-                                clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-                                cursor: 'pointer',
-                                transform: `rotate(${exampleRotations.diamond}deg)`,
-                                transition: 'transform 0.3s ease',
-                                transformOrigin: 'center'
-                            }}
-                        />
+                        {/* 藍色菱形範例  */}
+                        {shouldShowReal && (
+                            <div
+                                onClick={() => rotateExampleShape('diamond')}
+                                style={{
+                                    width: '30px',
+                                    height: '30px',
+                                    background: 'blue',
+                                    clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+                                    cursor: 'pointer',
+                                    transform: `rotate(${exampleRotations.diamond}deg)`,
+                                    transition: 'transform 0.3s ease',
+                                    transformOrigin: 'center'
+                                }}
+                            />
+                        )}
 
-                        {/* 透明圖形範例 */}
-                        <div
-                            onClick={() => rotateExampleShape('transparent')}
-                            style={{
-                                width: '30px',
-                                height: '15px',
-                                background: 'transparent',
-                                border: '1px dashed #333',
-                                clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
-                                position: 'relative',
-                                cursor: 'pointer',
-                                transform: `rotate(${exampleRotations.transparent}deg)`,
-                                transition: 'transform 0.3s ease',
-                                transformOrigin: 'center'
-                            }}
-                        >
-                            <div style={{
-                                position: 'absolute',
-                                top: '0',
-                                left: '0',
-                                width: '30px',
-                                height: '15px',
-                                background: 'black',
-                                clipPath: 'polygon(51% 0, 49% 0, 50% 100%, 48% 7%, 0 100%, 50% 0, 50% 1%, 96% 99%, 100% 100%, 51% 0, 51% 0, 51% 100%)',
-                            }} />
-                        </div>
+                        {!shouldShowReal && (
+                            <div
+                                onClick={() => rotateExampleShape('diamond')}
+                                style={{
+                                    width: '30px',
+                                    height: '30px',
+                                    background: 'black',
+                                    clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+                                    cursor: 'pointer',
+                                    transform: `rotate(${exampleRotations.diamond}deg)`,
+                                    transition: 'transform 0.3s ease',
+                                    transformOrigin: 'center'
+                                }}
+                            >
+                                <div style={{
+                                    position: 'absolute',
+                                    width: '30px',
+                                    height: '30px',
+                                    background: 'white',
+                                    clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+                                }} />
+                            </div>
+                        )}
 
-                        {/* 黑色矩形範例 */}
-                        <div
-                            onClick={() => rotateExampleShape('rectangle')}
-                            style={{
-                                width: '15px',
-                                height: '30px',
-                                background: 'black',
-                                cursor: 'pointer',
-                                transform: `rotate(${exampleRotations.rectangle}deg)`,
-                                transition: 'transform 0.3s ease',
-                                transformOrigin: 'center'
-                            }}
-                        />
+                        {/* 透明圖形範例 - 只有當 NOTE2 = true 時才顯示 */}
+                        {hasTransparentExample && (
+                             <div
+                             onClick={() => rotateExampleShape('transparent')}
+                             style={{
+                                 width: '30px',
+                                 height: '15px',
+                                 background: 'transparent',
+                                 border: '1px dashed #333',
+                                 clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+                                 position: 'relative',
+                                 cursor: 'pointer',
+                                 transform: `rotate(${exampleRotations.transparent}deg)`,
+                                 transition: 'transform 0.3s ease',
+                                 transformOrigin: 'center'
+                             }}
+                         >
+                             <div style={{
+                                 position: 'absolute',
+                                 top: '0',
+                                 left: '0',
+                                 width: '30px',
+                                 height: '15px',
+                                 background: 'black',
+                                 clipPath: 'polygon(51% 0, 49% 0, 50% 100%, 48% 7%, 0 100%, 50% 0, 50% 1%, 96% 99%, 100% 100%, 51% 0, 51% 0, 51% 100%)',
+                             }} />
+                         </div>
+                        )}
+
+                        {/* 黑色矩形範例 - 只有當 NOTE3 ≠ 0 時才顯示 */}
+                        {shouldShowRectangle && (
+                            <div
+                                onClick={() => rotateExampleShape('rectangle')}
+                                style={{
+                                    width: '15px',
+                                    height: '30px',
+                                    background: 'black',
+                                    cursor: 'pointer',
+                                    transform: `rotate(${exampleRotations.rectangle}deg)`,
+                                    transition: 'transform 0.3s ease',
+                                    transformOrigin: 'center'
+                                }}
+                            />
+                        )}
                     </div>
                 </div>
             )}
@@ -856,7 +911,7 @@ function MinaRoom({
                                         </div>
                                     );
                                 })}
-                                
+
                                 {/* X 圖形 */}
                                 {shapeTypes.slice(5, 6).map(shape => {
                                     const isSelected = selectedShape === shape.id;
