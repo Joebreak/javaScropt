@@ -414,6 +414,7 @@ export default function DigitCodeRoom() {
         onClose={() => setShowQuestion3Modal(false)}
         onSubmit={handleQuestion3Submit}
         gameData={gameData}
+        list={data?.list || []}
       />
 
       {/* 問題4彈跳視窗 */}

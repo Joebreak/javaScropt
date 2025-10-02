@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { getApiUrl } from '../config/api';
 
-export default function Question3Modal({ isOpen, onClose, onSubmit, gameData }) {
+export default function Question3Modal({ isOpen, onClose, onSubmit, gameData, list = [] }) {
   const [selectedDigit, setSelectedDigit] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -23,12 +23,12 @@ export default function Question3Modal({ isOpen, onClose, onSubmit, gameData }) 
 
   // 數字位置選擇選項
   const digitPositions = [
-    { value: "T", label: "T (第1個數字)", position: 1 },
-    { value: "U", label: "U (第2個數字)", position: 2 },
-    { value: "V", label: "V (第3個數字)", position: 3 },
-    { value: "W", label: "W (第4個數字)", position: 4 },
-    { value: "X", label: "X (第5個數字)", position: 5 },
-    { value: "Y", label: "Y (第6個數字)", position: 6 },
+    { value: "T", label: "T", position: 1 },
+    { value: "U", label: "U", position: 2 },
+    { value: "V", label: "V", position: 3 },
+    { value: "W", label: "W", position: 4 },
+    { value: "X", label: "X", position: 5 },
+    { value: "Y", label: "Y", position: 6 },
   ];
 
   // 判斷數字是偶數還是奇數
@@ -39,6 +39,22 @@ export default function Question3Modal({ isOpen, onClose, onSubmit, gameData }) 
     const value = parsedData[digit];
     return value % 2 === 0 ? "偶數" : "奇數";
   };
+
+  // 檢查哪些選項已經被使用過（type: 3 的記錄）
+  const getUsedPositions = () => {
+    if (!list || !Array.isArray(list)) return [];
+    
+    const usedPositions = [];
+    list.forEach(item => {
+      if (item.type === 3 && item.in) {
+        usedPositions.push(item.in);
+      }
+    });
+    
+    return usedPositions;
+  };
+
+  const usedPositions = getUsedPositions();
 
   // 處理提交
   const handleSubmit = async () => {
@@ -176,41 +192,66 @@ export default function Question3Modal({ isOpen, onClose, onSubmit, gameData }) 
           {/* 按鈕選擇區域 */}
           <div style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+            gridTemplateColumns: "repeat(3, 1fr)",
             gap: "10px"
           }}>
-            {digitPositions.map(position => (
-              <button
-                key={position.value}
-                onClick={() => setSelectedDigit(position.value)}
-                style={{
-                  padding: "12px 16px",
-                  fontSize: "14px",
-                  fontWeight: "bold",
-                  background: selectedDigit === position.value ? "#4CAF50" : "#f0f0f0",
-                  color: selectedDigit === position.value ? "white" : "#333",
-                  border: selectedDigit === position.value ? "2px solid #4CAF50" : "2px solid #ddd",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease",
-                  textAlign: "left"
-                }}
-                onMouseOver={(e) => {
-                  if (selectedDigit !== position.value) {
-                    e.target.style.background = "#e0e0e0";
-                    e.target.style.borderColor = "#bbb";
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (selectedDigit !== position.value) {
-                    e.target.style.background = "#f0f0f0";
-                    e.target.style.borderColor = "#ddd";
-                  }
-                }}
-              >
-                {position.label}
-              </button>
-            ))}
+            {digitPositions.map(position => {
+              const isUsed = usedPositions.includes(position.value);
+              const isSelected = selectedDigit === position.value;
+              
+              return (
+                <button
+                  key={position.value}
+                  onClick={() => !isUsed && setSelectedDigit(position.value)}
+                  disabled={isUsed}
+                  style={{
+                    padding: "12px 16px",
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    background: isUsed 
+                      ? "#f8d7da" 
+                      : isSelected 
+                          ? "#4CAF50" 
+                          : "#f0f0f0",
+                    color: isUsed 
+                      ? "#721c24" 
+                      : isSelected 
+                          ? "white" 
+                          : "#333",
+                    border: isUsed 
+                      ? "2px solid #dc3545" 
+                      : isSelected 
+                          ? "2px solid #4CAF50" 
+                          : "2px solid #ddd",
+                    borderRadius: "8px",
+                    cursor: isUsed ? "not-allowed" : "pointer",
+                    transition: "all 0.3s ease",
+                    textAlign: "center",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "2px",
+                    opacity: isUsed ? 0.6 : 1
+                  }}
+                  onMouseOver={(e) => {
+                    if (!isUsed && selectedDigit !== position.value) {
+                      e.target.style.background = "#e0e0e0";
+                      e.target.style.borderColor = "#bbb";
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!isUsed && selectedDigit !== position.value) {
+                      e.target.style.background = "#f0f0f0";
+                      e.target.style.borderColor = "#ddd";
+                    }
+                  }}
+                >
+                  <div style={{ fontSize: "16px", fontWeight: "bold" }}>
+                    {position.label}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
