@@ -3,20 +3,18 @@ import { getApiUrl } from '../config/api';
 
 export default function AnswerModal({ isOpen, onClose, gameData, onAnswerSubmit }) {
     const [answer, setAnswer] = useState([
-        ['', '', ''],
-        ['', '', '']
+        ['0', '0', '0'],
+        ['0', '0', '0']
     ]);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState('');
 
     // 重置答案當模態框打開
     useEffect(() => {
         if (isOpen) {
             setAnswer([
-                ['', '', ''],
-                ['', '', '']
+                ['0', '0', '0'],
+                ['0', '0', '0']
             ]);
-            setError('');
         }
     }, [isOpen]);
 
@@ -25,31 +23,8 @@ export default function AnswerModal({ isOpen, onClose, gameData, onAnswerSubmit 
         const newAnswer = [...answer];
         newAnswer[row][col] = value;
         setAnswer(newAnswer);
-        setError('');
-        // 關閉所有選擇器
-        closeAllSelectors();
     };
 
-    // 關閉所有數字選擇器
-    const closeAllSelectors = () => {
-        for (let row = 0; row < 2; row++) {
-            for (let col = 0; col < 3; col++) {
-                const modal = document.getElementById(`number-selector-${row}-${col}`);
-                if (modal) {
-                    modal.style.display = 'none';
-                }
-            }
-        }
-    };
-
-    // 清除單個格子
-    const clearCell = (row, col) => {
-        const newAnswer = [...answer];
-        newAnswer[row][col] = '';
-        setAnswer(newAnswer);
-        setError('');
-        closeAllSelectors();
-    };
 
     // 檢查答案是否完整
     const isAnswerComplete = () => {
@@ -104,12 +79,10 @@ export default function AnswerModal({ isOpen, onClose, gameData, onAnswerSubmit 
     // 提交答案
     const handleSubmit = async () => {
         if (!isAnswerComplete()) {
-            setError('請填寫所有數字');
             return;
         }
 
         setIsSubmitting(true);
-        setError('');
 
         try {
             const formattedAnswer = formatAnswer();
@@ -151,7 +124,6 @@ export default function AnswerModal({ isOpen, onClose, gameData, onAnswerSubmit 
             onClose();
 
         } catch (err) {
-            setError('提交失敗，請重試');
             console.error('提交答案失敗:', err);
         } finally {
             setIsSubmitting(false);
@@ -174,7 +146,7 @@ export default function AnswerModal({ isOpen, onClose, gameData, onAnswerSubmit 
                 alignItems: 'center',
                 zIndex: 1000
             }}
-            onClick={closeAllSelectors}
+            onClick={onClose}
         >
             <div
                 style={{
@@ -223,35 +195,36 @@ export default function AnswerModal({ isOpen, onClose, gameData, onAnswerSubmit 
                                 gap: '8px'
                             }}>
                                 {row.map((cell, colIndex) => (
-                                    <div key={`${rowIndex}-${colIndex}`} style={{
-                                        width: '60px',
-                                        height: '60px',
-                                        border: '2px solid #ddd',
-                                        borderRadius: '8px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '24px',
-                                        fontWeight: 'bold',
-                                        color: cell ? '#333' : '#999',
-                                        backgroundColor: cell ? '#f8f9fa' : '#fff',
-                                        position: 'relative',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.3s ease'
-                                    }}
-                                        onClick={() => {
-                                            // 如果已經有數字，右鍵清除；左鍵顯示選擇器
-                                            if (cell) {
-                                                clearCell(rowIndex, colIndex);
-                                            } else {
-                                                // 先關閉其他選擇器
-                                                closeAllSelectors();
-                                                // 顯示當前選擇器
-                                                const modal = document.getElementById(`number-selector-${rowIndex}-${colIndex}`);
-                                                if (modal) {
-                                                    modal.style.display = 'block';
-                                                }
-                                            }
+                                    <select
+                                        key={`${rowIndex}-${colIndex}`}
+                                        value={cell || '0'}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            handleNumberSelect(rowIndex, colIndex, value);
+                                        }}
+                                        style={{
+                                            width: '60px',
+                                            height: '60px',
+                                            border: '2px solid #ddd',
+                                            borderRadius: '0px', // 方形
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '24px',
+                                            fontWeight: 'bold',
+                                            color: '#333',
+                                            backgroundColor: '#f8f9fa',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.3s ease',
+                                            textAlign: 'center',
+                                            appearance: 'none', // 移除預設樣式
+                                            WebkitAppearance: 'none', // Safari
+                                            MozAppearance: 'none', // Firefox
+                                            backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundPosition: 'right 8px center',
+                                            backgroundSize: '16px',
+                                            paddingRight: '24px'
                                         }}
                                         onMouseOver={(e) => {
                                             e.target.style.borderColor = '#4f8cff';
@@ -259,85 +232,20 @@ export default function AnswerModal({ isOpen, onClose, gameData, onAnswerSubmit 
                                         }}
                                         onMouseOut={(e) => {
                                             e.target.style.borderColor = '#ddd';
-                                            e.target.style.backgroundColor = cell ? '#f8f9fa' : '#fff';
+                                            e.target.style.backgroundColor = '#f8f9fa';
                                         }}
                                     >
-                                        {cell || '?'}
-
-                                        {/* 數字選擇器 */}
-                                        <div id={`number-selector-${rowIndex}-${colIndex}`} style={{
-                                            position: 'absolute',
-                                            top: '100%',
-                                            left: '50%',
-                                            transform: 'translateX(-50%)',
-                                            display: 'none',
-                                            backgroundColor: 'white',
-                                            border: '2px solid #4f8cff',
-                                            borderRadius: '8px',
-                                            padding: '8px',
-                                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                            zIndex: 1000,
-                                            marginTop: '4px'
-                                        }}>
-                                            <div style={{
-                                                display: 'grid',
-                                                gridTemplateColumns: 'repeat(5, 1fr)',
-                                                gap: '4px'
-                                            }}>
-                                                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
-                                                    <button
-                                                        key={num}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleNumberSelect(rowIndex, colIndex, num.toString());
-                                                            const modal = document.getElementById(`number-selector-${rowIndex}-${colIndex}`);
-                                                            if (modal) {
-                                                                modal.style.display = 'none';
-                                                            }
-                                                        }}
-                                                        style={{
-                                                            width: '32px',
-                                                            height: '32px',
-                                                            border: '1px solid #ddd',
-                                                            borderRadius: '4px',
-                                                            backgroundColor: '#fff',
-                                                            fontSize: '16px',
-                                                            fontWeight: 'bold',
-                                                            cursor: 'pointer',
-                                                            transition: 'all 0.2s ease'
-                                                        }}
-                                                        onMouseOver={(e) => {
-                                                            e.target.style.backgroundColor = '#4f8cff';
-                                                            e.target.style.color = 'white';
-                                                        }}
-                                                        onMouseOut={(e) => {
-                                                            e.target.style.backgroundColor = '#fff';
-                                                            e.target.style.color = '#333';
-                                                        }}
-                                                    >
-                                                        {num}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
+                                        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+                                            <option key={num} value={num.toString()}>
+                                                {num}
+                                            </option>
+                                        ))}
+                                    </select>
                                 ))}
                             </div>
                         ))}
                     </div>
                 </div>
-
-                {/* 錯誤訊息 */}
-                {error && (
-                    <div style={{
-                        color: '#e74c3c',
-                        textAlign: 'center',
-                        marginBottom: '16px',
-                        fontSize: '14px'
-                    }}>
-                        {error}
-                    </div>
-                )}
 
                 {/* 按鈕區域 */}
                 <div style={{
