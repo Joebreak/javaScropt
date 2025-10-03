@@ -106,7 +106,7 @@ function MinaRoom({
     const hasTransparentExample = gameData?.mapData?.NOTE2 === true;
 
     // 檢查 data 中的 NOTE3 值（地圖設定）
-    const shouldShowRectangle = gameData?.mapData?.NOTE3 === 1 || gameData?.mapData?.NOTE3 === 2;
+    const shouldShowRectangle = gameData?.mapData?.NOTE3 === true;
 
     // 檢查 data 中的 NOTE1 值（地圖設定）
     const shouldShowReal = gameData?.mapData?.NOTE1 === 2;
