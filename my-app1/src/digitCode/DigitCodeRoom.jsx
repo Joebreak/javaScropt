@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import DigitCodeGrid from "./DigitCodeGrid";
 import DigitCodeList from "./DigitCodeList";
@@ -14,40 +14,21 @@ export default function DigitCodeRoom() {
   const navigate = useNavigate();
   const { room, rank } = location.state || {};
 
+  // 狀態來跟蹤 showActionButtons
+  const [showActionButtons, setShowActionButtons] = useState(false);
+  const [updateInterval, setUpdateInterval] = useState(30000);
+
   // 數據獲取
-  const { data, loading, refresh } = useDigitCodeData(30000, room);
+  const { data, loading, refresh } = useDigitCodeData(updateInterval, room);
   const lastRound = data?.list?.length ? data.list[0]?.round : 0;
   const remainder = data?.members ? Number(data.members) : 4;
-  const showActionButtons = rank && lastRound !== undefined && Number(rank) === ((Number(lastRound) % remainder) + 1);
-  
-  // 動態控制定時器
-  const intervalRef = useRef(null);
-  
+
+  // 當數據更新時重新計算 showActionButtons 和更新間隔
   useEffect(() => {
-    // 清除現有的定時器
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    
-    // 如果 showActionButtons 為 false，啟動定時器
-    if (!showActionButtons) {
-      intervalRef.current = setInterval(() => {
-        refresh();
-      }, 30000);
-    } else {
-      // 如果 showActionButtons 為 true，立即刷新一次
-      refresh();
-    }
-    
-    // 清理函數
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-  }, [showActionButtons, refresh]);
+    const newShowActionButtons = rank && lastRound !== undefined && Number(rank) === ((Number(lastRound) % remainder) + 1);
+    setShowActionButtons(newShowActionButtons);
+    setUpdateInterval(newShowActionButtons ? 0 : 30000);
+  }, [rank, lastRound, remainder]);
   
   // 用戶選擇記錄 - 使用 localStorage 持久化
   const [userSelections, setUserSelections] = useState(() => {

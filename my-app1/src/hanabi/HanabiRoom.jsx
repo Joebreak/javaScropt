@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useDigitCodeData } from "./useHanabiData";
+import { useHanabiData } from "./useHanabiData";
 import HanabiGrid from "./HanabiGrid";
 import HanabiList from "./HanabiList";
 import HintSystem from "./HintSystem";
@@ -15,16 +15,26 @@ export default function HanabiRoom() {
   const [showHintSystem, setShowHintSystem] = useState(false);
   const [showPlayCardSystem, setShowPlayCardSystem] = useState(false);
 
+  // 狀態來跟蹤 showActionButtons
+  const [showActionButtons, setShowActionButtons] = useState(false);
+  const [updateInterval, setUpdateInterval] = useState(30000);
+
+  // 數據獲取
   const {
     data,
     loading,
     refresh
-  } = useDigitCodeData(30000, room, rank);
+  } = useHanabiData(updateInterval, room, rank);
 
-  // 從 DigitCodeRoom 添加的邏輯
   const lastRound = data?.list?.length ? data.list[0]?.round : 0;
   const remainder = data?.gameState?.players?.length || 4;
-  const showActionButtons = rank && lastRound !== undefined && Number(rank) === ((Number(lastRound) % remainder) + 1);
+
+  // 當數據更新時重新計算 showActionButtons 和更新間隔
+  useEffect(() => {
+    const newShowActionButtons = rank && lastRound !== undefined && Number(rank) === ((Number(lastRound) % remainder) + 1);
+    setShowActionButtons(newShowActionButtons);
+    setUpdateInterval(newShowActionButtons ? 0 : 30000);
+  }, [rank, lastRound, remainder]);
 
   useEffect(() => {
     if (room) {

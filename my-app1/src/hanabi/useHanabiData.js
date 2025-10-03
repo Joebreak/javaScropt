@@ -2,9 +2,9 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { getApiUrl } from "../config/api";
 import { NUMBER_COLOR_MAP } from "./gameData";
 
-export function useDigitCodeData(intervalMs = 0, room, rank = null) {
+export function useHanabiData(intervalMs = 0, room, rank = null) {
   if (!room) {
-    throw new Error('useDigitCodeData: room 參數是必須的');
+    throw new Error('useHanabiData: room 參數是必須的');
   }
   
   const [data, setData] = useState({ list: [] });
