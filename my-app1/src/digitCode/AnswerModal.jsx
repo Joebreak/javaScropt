@@ -177,9 +177,6 @@ export default function AnswerModal({ isOpen, onClose, gameData, onAnswerSubmit 
                         fontSize: '14px'
                     }}>
                         請選擇 3×2 的數字答案<br />
-                        <span style={{ fontSize: '12px', color: '#999' }}>
-                            點擊空白格子選擇數字，點擊有數字的格子清除
-                        </span>
                     </p>
 
                     {/* 答案選擇網格 */}
