@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { getApiUrl } from "../config/api";
 
-export function useDigitCodeData(intervalMs = 0, room) {
+export function useDigitCodeData(intervalMs = 0, room, enabled = false) {
   if (!room) {
     throw new Error('useDigitCodeData: room 參數是必須的');
   }
@@ -69,7 +69,7 @@ export function useDigitCodeData(intervalMs = 0, room) {
 
     fetchData();
 
-    if (intervalMs > 0) {
+    if (intervalMs > 0 && enabled) {
       intervalId = setInterval(() => {
         if (mounted) {
           fetchData();
@@ -83,7 +83,7 @@ export function useDigitCodeData(intervalMs = 0, room) {
         clearInterval(intervalId);
       }
     };
-  }, [intervalMs, fetchData]);
+  }, [intervalMs, enabled, fetchData]);
 
   return { data, loading, refresh: fetchData };
 }
