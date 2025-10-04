@@ -3,7 +3,6 @@ import { ResponsiveDigitDisplay } from "./layouts";
 import { ComparisonSymbols } from "./model";
 
 export default function DigitCodeGrid({
-  gameData,
   userSelections = [],
   onUserSelection,
   list = [],
@@ -163,7 +162,7 @@ export default function DigitCodeGrid({
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div style={{ padding: "0px" }}>
       {/* 0-9 數位顯示範例 - 根據 showDigitExample 控制顯示 */}
       {showDigitExample && (
         <div style={{

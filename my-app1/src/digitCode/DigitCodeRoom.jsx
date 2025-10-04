@@ -203,7 +203,7 @@ export default function DigitCodeRoom() {
       />
 
       {/* 重新整理按鈕 */}
-      <div style={{ textAlign: "center", padding: "20px 0" }}>
+      <div style={{ textAlign: "center", padding: "10px 0" }}>
         <button
           onClick={refresh}
           style={{
