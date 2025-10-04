@@ -324,7 +324,7 @@ export default function DigitCodeGrid({
         <div style={{
           position: "absolute",
           top: isMobile ? "-15px" : "-20px",
-          right: isMobile ? "-20px" : "0px",
+          right: isMobile ? "0px" : "0px",
           display: "flex",
           flexDirection: "column",
           gap: isMobile ? "1px" : "1px",
@@ -365,7 +365,7 @@ export default function DigitCodeGrid({
         <div style={{
           position: "absolute",
           top: isMobile ? "295px" : "160px",
-          right: isMobile ? "-10px" : "0px",
+          right: isMobile ? "0px" : "0px",
           display: "flex",
           flexDirection: "column",
           gap: isMobile ? "1px" : "1px",
