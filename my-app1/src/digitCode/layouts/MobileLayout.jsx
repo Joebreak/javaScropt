@@ -31,10 +31,10 @@ export default function MobileLayout({
           pointerEvents: "none"
         }}>
           <span style={{
-            fontSize: "15px",
+            fontSize: "12px",
             fontWeight: "bold",
             color: "#666",
-            wordSpacing: "10px"
+            wordSpacing: "12px"
           }}>{topLabels}</span>
         </div>
       )}
