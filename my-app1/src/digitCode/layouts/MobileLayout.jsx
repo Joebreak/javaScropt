@@ -17,8 +17,8 @@ export default function MobileLayout({
       {/* 位置標籤 - T~Y 符號 */}
       <div style={{
         position: "absolute",
-        top: -20,
-        left: -15,
+        top: -25,
+        left: 0,
         fontSize: "20px",
         fontWeight: "bold",
         color: "#0000ff",

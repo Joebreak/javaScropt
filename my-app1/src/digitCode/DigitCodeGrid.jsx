@@ -328,7 +328,7 @@ export default function DigitCodeGrid({
           right: "0px",
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
-          columnGap: isMobile ? "40px" : "50px",
+          columnGap: isMobile ? "20px" : "50px",
           zIndex: 10,
           pointerEvents: "none"
         }}>
@@ -343,9 +343,9 @@ export default function DigitCodeGrid({
               fontSize: isMobile ? "15px" : "12px",
               fontWeight: "bold",
               color: "#666",
-              wordSpacing: isMobile ? "18px" : "20px",
+              wordSpacing: isMobile ? "15px" : "20px",
               position: "relative",
-              left: isMobile ? "-25px" : "-465px"
+              left: isMobile ? "-80px" : "-465px"
             }}>A B C</span>
           </div>
           {/* D E F - 第二列 */}
@@ -361,7 +361,7 @@ export default function DigitCodeGrid({
               color: "#666",
               wordSpacing: isMobile ? "18px" : "22px",
               position: "relative",
-              left: isMobile ? "-20px" : "-305px"
+              left: isMobile ? "-55px" : "-305px"
             }}>D E F</span>
           </div>
           {/* G H I - 第三列 */}
@@ -436,31 +436,13 @@ export default function DigitCodeGrid({
           zIndex: 10,
           pointerEvents: "none"
         }}>
-          <span style={{
-            fontSize: isMobile ? "15px" : "12px",
-            fontWeight: "bold",
-            color: "#666"
-          }}>J</span>
-          <span style={{
-            fontSize: isMobile ? "15px" : "12px",
-            fontWeight: "bold",
-            color: "#666"
-          }}>K</span>
-          <span style={{
-            fontSize: isMobile ? "15px" : "12px",
-            fontWeight: "bold",
-            color: "#666"
-          }}>L</span>
-          <span style={{
-            fontSize: isMobile ? "15px" : "12px",
-            fontWeight: "bold",
-            color: "#666"
-          }}>M</span>
-          <span style={{
-            fontSize: isMobile ? "15px" : "12px",
-            fontWeight: "bold",
-            color: "#666"
-          }}>N</span>
+          {['J', 'K', 'L', 'M', 'N'].map((label) => (
+            <span key={label} style={{
+              fontSize: isMobile ? "15px" : "12px",
+              fontWeight: "bold",
+              color: "#666"
+            }}>{label}</span>
+          ))}
         </div>
 
         {/* 數字輸入方框 - O~S (左側) */}
@@ -517,31 +499,13 @@ export default function DigitCodeGrid({
           zIndex: 10,
           pointerEvents: "none"
         }}>
-          <span style={{
-            fontSize: isMobile ? "15px" : "12px",
-            fontWeight: "bold",
-            color: "#666"
-          }}>O</span>
-          <span style={{
-            fontSize: isMobile ? "15px" : "12px",
-            fontWeight: "bold",
-            color: "#666"
-          }}>P</span>
-          <span style={{
-            fontSize: isMobile ? "15px" : "12px",
-            fontWeight: "bold",
-            color: "#666"
-          }}>Q</span>
-          <span style={{
-            fontSize: isMobile ? "15px" : "12px",
-            fontWeight: "bold",
-            color: "#666"
-          }}>R</span>
-          <span style={{
-            fontSize: isMobile ? "15px" : "12px",
-            fontWeight: "bold",
-            color: "#666"
-          }}>S</span>
+          {['O', 'P', 'Q', 'R', 'S'].map((label) => (
+            <span key={label} style={{
+              fontSize: isMobile ? "15px" : "12px",
+              fontWeight: "bold",
+              color: "#666"
+            }}>{label}</span>
+          ))}
         </div>
 
         {[
