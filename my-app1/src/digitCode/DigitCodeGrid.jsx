@@ -321,67 +321,6 @@ export default function DigitCodeGrid({
           </div>
         </div>
 
-        {/* 行標籤 - A~I (上方，對齊到網格行) */}
-        <div style={{
-          position: "absolute",
-          top: isMobile ? "-20px" : "-20px",
-          right: "0px",
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          columnGap: isMobile ? "20px" : "50px",
-          zIndex: 10,
-          pointerEvents: "none"
-        }}>
-          {/* A B C - 第一列 */}
-          <div style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            position: "relative"
-          }}>
-            <span style={{
-              fontSize: isMobile ? "15px" : "12px",
-              fontWeight: "bold",
-              color: "#666",
-              wordSpacing: isMobile ? "15px" : "20px",
-              position: "relative",
-              left: isMobile ? "-80px" : "-465px"
-            }}>A B C</span>
-          </div>
-          {/* D E F - 第二列 */}
-          <div style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            position: "relative"
-          }}>
-            <span style={{
-              fontSize: isMobile ? "15px" : "12px",
-              fontWeight: "bold",
-              color: "#666",
-              wordSpacing: isMobile ? "18px" : "22px",
-              position: "relative",
-              left: isMobile ? "-55px" : "-305px"
-            }}>D E F</span>
-          </div>
-          {/* G H I - 第三列 */}
-          <div style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            position: "relative"
-          }}>
-            <span style={{
-              fontSize: isMobile ? "15px" : "12px",
-              fontWeight: "bold",
-              color: "#666",
-              wordSpacing: isMobile ? "18px" : "22px",
-              position: "relative",
-              left: isMobile ? "-20px" : "-150px"
-            }}>G H I</span>
-          </div>
-        </div>
-
         {/* 數字輸入方框 - J~N (左側) */}
         <div style={{
           position: "absolute",
@@ -420,28 +359,6 @@ export default function DigitCodeGrid({
                 {positionNumbers[label] || ""}
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* 列標籤 - J~N (左側，對齊到網格列) */}
-        <div style={{
-          position: "absolute",
-          top: isMobile ? "1px" : "0px",
-          left: isMobile ? "-1px" : "-20px",
-          display: "flex",
-          flexDirection: "column",
-          gap: isMobile ? "5px" : "16px",
-          alignItems: "flex-start",
-          textAlign: "left",
-          zIndex: 10,
-          pointerEvents: "none"
-        }}>
-          {['J', 'K', 'L', 'M', 'N'].map((label) => (
-            <span key={label} style={{
-              fontSize: isMobile ? "15px" : "12px",
-              fontWeight: "bold",
-              color: "#666"
-            }}>{label}</span>
           ))}
         </div>
 
@@ -486,41 +403,17 @@ export default function DigitCodeGrid({
           ))}
         </div>
 
-        {/* 列標籤 - O~S (左側，對齊到網格列) */}
-        <div style={{
-          position: "absolute",
-          top: isMobile ? "303px" : "180px",
-          left: isMobile ? "0px" : "-20px",
-          display: "flex",
-          flexDirection: "column",
-          gap: isMobile ? "6px" : "18px",
-          alignItems: "flex-start",
-          textAlign: "left",
-          zIndex: 10,
-          pointerEvents: "none"
-        }}>
-          {['O', 'P', 'Q', 'R', 'S'].map((label) => (
-            <span key={label} style={{
-              fontSize: isMobile ? "15px" : "12px",
-              fontWeight: "bold",
-              color: "#666"
-            }}>{label}</span>
-          ))}
-        </div>
 
         {[
-          { index: 0, label: "T" },
-          { index: 1, label: "U" },
-          { index: 2, label: "V" },
-          { index: 3, label: "W" },
+          { index: 0, label: "T" , topLabels : "A B C", leftLabels : "J K L M N"},
+          { index: 1, label: "U" , topLabels : "D E F"},
+          { index: 2, label: "V" , topLabels : "G H I"},
+          { index: 3, label: "W" , leftLabels : "O P Q R S"},
           { index: 4, label: "X" },
           { index: 5, label: "Y" }
-        ].map(({ index, label }) => {
-          const digitLabels = ["T", "U", "V", "W", "X", "Y"];
-          const currentDigit = digitLabels[index];
-
+        ].map(({ index, label , topLabels , leftLabels }) => {
           // 檢查偶數奇數
-          const evenOddCheck = getEvenOddCheck(currentDigit);
+          const evenOddCheck = getEvenOddCheck(label);
 
           return (
             <ResponsiveDigitDisplay
@@ -534,6 +427,9 @@ export default function DigitCodeGrid({
               renderEvenOddMark={renderEvenOddMark}
               renderComparisonIcon={renderComparisonIcon}
               list={list}
+              // 傳入標籤數據 - 從配置中取得
+              topLabels={topLabels}
+              leftLabels={leftLabels}
             />
           );
         })}
@@ -549,12 +445,11 @@ export default function DigitCodeGrid({
             { index: 5, label: "Y" }
           ].map(({ index, label }) => {
             const digitLabels = ["T", "U", "V", "W", "X", "Y"];
-            const currentDigit = digitLabels[index];
 
             // 檢查相鄰位置的比較
-            const rightComparison = index < 2 ? getAdjacentComparison(currentDigit, digitLabels[index + 1]) : null; // T-U, U-V
-            const bottomComparison = index < 3 ? getAdjacentComparison(currentDigit, digitLabels[index + 3]) : null; // T-W, U-X, V-Y (上下關係)
-            const rightComparisonBottom = index >= 3 && index < 5 ? getAdjacentComparison(currentDigit, digitLabels[index + 1]) : null; // W-X, X-Y
+            const rightComparison = index < 2 ? getAdjacentComparison(label, digitLabels[index + 1]) : null; // T-U, U-V
+            const bottomComparison = index < 3 ? getAdjacentComparison(label, digitLabels[index + 3]) : null; // T-W, U-X, V-Y (上下關係)
+            const rightComparisonBottom = index >= 3 && index < 5 ? getAdjacentComparison(label, digitLabels[index + 1]) : null; // W-X, X-Y
 
             return (
               <div key={`comparison-${index}`}>
