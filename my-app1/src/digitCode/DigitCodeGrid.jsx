@@ -229,19 +229,19 @@ export default function DigitCodeGrid({
                 <div style={{
                   width: isMobile ? "25px" : "35px",
                   height: isMobile ? "25px" : "35px",
-                  backgroundColor: positionNumbers[label] ? "#e8f5e8" : "#ffffff",
-                  border: positionNumbers[label] ? "2px solid #28a745" : "2px solid #ddd",
+                  backgroundColor: positionNumbers[label] !== undefined ? "#e8f5e8" : "#ffffff",
+                  border: positionNumbers[label] !== undefined ? "2px solid #28a745" : "2px solid #ddd",
                   borderRadius: "6px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: isMobile ? "14px" : "16px",
                   fontWeight: "bold",
-                  color: positionNumbers[label] ? "#155724" : "#333",
+                  color: positionNumbers[label] !== undefined ? "#155724" : "#333",
                   boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                   transition: "all 0.2s ease"
                 }}>
-                  {positionNumbers[label] || ""}
+                  {positionNumbers[label] !== undefined ? positionNumbers[label] : ""}
                 </div>
               </div>
             ))}
@@ -265,19 +265,19 @@ export default function DigitCodeGrid({
                 <div style={{
                   width: isMobile ? "25px" : "35px",
                   height: isMobile ? "25px" : "35px",
-                  backgroundColor: positionNumbers[label] ? "#e8f5e8" : "#ffffff",
-                  border: positionNumbers[label] ? "2px solid #28a745" : "2px solid #ddd",
+                  backgroundColor: positionNumbers[label] !== undefined ? "#e8f5e8" : "#ffffff",
+                  border: positionNumbers[label] !== undefined ? "2px solid #28a745" : "2px solid #ddd",
                   borderRadius: "6px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: isMobile ? "14px" : "16px",
                   fontWeight: "bold",
-                  color: positionNumbers[label] ? "#155724" : "#333",
+                  color: positionNumbers[label] !== undefined ? "#155724" : "#333",
                   boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                   transition: "all 0.2s ease"
                 }}>
-                  {positionNumbers[label] || ""}
+                  {positionNumbers[label] !== undefined ? positionNumbers[label] : ""}
                 </div>
               </div>
             ))}
@@ -301,19 +301,19 @@ export default function DigitCodeGrid({
                 <div style={{
                   width: isMobile ? "25px" : "35px",
                   height: isMobile ? "25px" : "35px",
-                  backgroundColor: positionNumbers[label] ? "#e8f5e8" : "#ffffff",
-                  border: positionNumbers[label] ? "2px solid #28a745" : "2px solid #ddd",
+                  backgroundColor: positionNumbers[label] !== undefined ? "#e8f5e8" : "#ffffff",
+                  border: positionNumbers[label] !== undefined ? "2px solid #28a745" : "2px solid #ddd",
                   borderRadius: "6px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: isMobile ? "14px" : "16px",
                   fontWeight: "bold",
-                  color: positionNumbers[label] ? "#155724" : "#333",
+                  color: positionNumbers[label] !== undefined ? "#155724" : "#333",
                   boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                   transition: "all 0.2s ease"
                 }}>
-                  {positionNumbers[label] || ""}
+                  {positionNumbers[label] !== undefined ? positionNumbers[label] : ""}
                 </div>
               </div>
             ))}
@@ -343,19 +343,19 @@ export default function DigitCodeGrid({
               <div style={{
                 width: isMobile ? "22px" : "30px",
                 height: isMobile ? "22px" : "30px",
-                backgroundColor: positionNumbers[label] ? "#e8f5e8" : "#ffffff",
-                border: positionNumbers[label] ? "2px solid #28a745" : "2px solid #ddd",
+                backgroundColor: positionNumbers[label] !== undefined ? "#e8f5e8" : "#ffffff",
+                border: positionNumbers[label] !== undefined ? "2px solid #28a745" : "2px solid #ddd",
                 borderRadius: "6px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: isMobile ? "12px" : "14px",
                 fontWeight: "bold",
-                color: positionNumbers[label] ? "#155724" : "#333",
+                color: positionNumbers[label] !== undefined ? "#155724" : "#333",
                 boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                 transition: "all 0.2s ease"
               }}>
-                {positionNumbers[label] || ""}
+                {positionNumbers[label] !== undefined ? positionNumbers[label] : ""}
               </div>
             </div>
           ))}
@@ -384,19 +384,19 @@ export default function DigitCodeGrid({
               <div style={{
                 width: isMobile ? "20px" : "30px",
                 height: isMobile ? "20px" : "30px",
-                backgroundColor: positionNumbers[label] ? "#e8f5e8" : "#ffffff",
-                border: positionNumbers[label] ? "2px solid #28a745" : "2px solid #ddd",
+                backgroundColor: positionNumbers[label] !== undefined ? "#e8f5e8" : "#ffffff",
+                border: positionNumbers[label] !== undefined ? "2px solid #28a745" : "2px solid #ddd",
                 borderRadius: "6px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: isMobile ? "12px" : "14px",
                 fontWeight: "bold",
-                color: positionNumbers[label] ? "#155724" : "#333",
+                color: positionNumbers[label] !== undefined ? "#155724" : "#333",
                 boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                 transition: "all 0.2s ease"
               }}>
-                {positionNumbers[label] || ""}
+                {positionNumbers[label] !== undefined ? positionNumbers[label] : ""}
               </div>
             </div>
           ))}
