@@ -52,7 +52,7 @@ export function useDigitCodeData(intervalMs = 0, room) {
       setData({
         list: filteredList,
         mapData: roundZeroData?.list || [],
-        members: roundZeroData?.data?.NOTE2 || null
+        members: roundZeroData?.data?.note2 || null
       });
 
     } catch (err) {

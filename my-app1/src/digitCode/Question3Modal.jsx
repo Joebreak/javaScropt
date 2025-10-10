@@ -9,8 +9,7 @@ export default function Question3Modal({ isOpen, onClose, onSubmit, gameData, li
   const parseGameData = (data) => {
     if (!data || !Array.isArray(data)) return null;
 
-    // 按照順序提取 NOTE1 值
-    const digits = data.map(item => item.NOTE1);
+    const digits = data.map(item => item.note1);
     return {
       T: digits[0], // 第1個數字
       U: digits[1], // 第2個數字
