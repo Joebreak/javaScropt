@@ -195,7 +195,7 @@ export default function DigitCodeGrid({
         rowGap: isMobile ? "20px" : "32px",
         justifyContent: "center",
         alignItems: "center",
-        maxWidth: isMobile ? "100%" : "800px",
+        maxWidth: isMobile ? "95%" : "800px",
         margin: "0 auto",
         marginTop: isMobile ? "60px" : "120px"
       }}>

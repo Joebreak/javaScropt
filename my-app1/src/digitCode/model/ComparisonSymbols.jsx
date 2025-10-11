@@ -11,7 +11,7 @@ export default function ComparisonSymbols({
   columnIndex // 0,1,2 對應 T/U/V 欄，用於 bottom 符號水平定位，以及 right 區分 T-U / U-V
 }) {
   const size = isMobile ? 20 : 16;
-  const bottomOffset = isMobile ? "335px" : "205px";
+  const bottomOffset = isMobile ? "320px" : "205px";
 
   // 依裝置與欄位決定水平位置，避免多個垂直符號重疊
 
@@ -87,7 +87,7 @@ export default function ComparisonSymbols({
             zIndex: 10,
             opacity: 0.8,
             background: "rgba(255, 255, 255, 0.9)",
-            padding: "1px",
+            padding: "0px",
             borderRadius: "2px",
             display: "inline-block"
           }}>

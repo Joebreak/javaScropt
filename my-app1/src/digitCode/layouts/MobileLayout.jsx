@@ -11,7 +11,6 @@ export default function MobileLayout({
   onNumberClick,
   renderEvenOddMark,
   list = [],
-  // 新增標籤相關 props
   topLabels,
   leftLabels,
 }) {
@@ -34,7 +33,7 @@ export default function MobileLayout({
             fontSize: "12px",
             fontWeight: "bold",
             color: "#666",
-            wordSpacing: "12px"
+            wordSpacing: "10px"
           }}>{topLabels}</span>
         </div>
       )}
