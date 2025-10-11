@@ -192,7 +192,7 @@ export default function DigitCodeGrid({
         gridTemplateColumns: "repeat(3, 1fr)",
         gridTemplateRows: "repeat(2, auto)",
         columnGap: isMobile ? "0px" : "50px",
-        rowGap: isMobile ? "30px" : "32px",
+        rowGap: isMobile ? "20px" : "32px",
         justifyContent: "center",
         alignItems: "center",
         maxWidth: isMobile ? "100%" : "800px",

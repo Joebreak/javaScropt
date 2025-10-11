@@ -171,7 +171,19 @@ export default function DigitCodeRoom() {
   }
 
   return (
-    <div style={{ padding: 0, background: "#f7f7f7", minHeight: "100vh" }}>
+    <div style={{ 
+      background: "#f7f7f7", 
+      minHeight: "100vh", 
+      width: "100vw", 
+      margin: "0", 
+      padding: "0",
+      overflow: "auto",
+      position: "absolute",
+      top: "0",
+      left: "0",
+      right: "0",
+      bottom: "0"
+    }}>
       {/* 數位顯示範例控制按鈕 */}
       <div style={{ textAlign: "center", padding: "10px 0" }}>
         <button
@@ -203,7 +215,7 @@ export default function DigitCodeRoom() {
       />
 
       {/* 重新整理按鈕 */}
-      <div style={{ textAlign: "center", padding: "10px 0" }}>
+      <div style={{ textAlign: "center", padding: "5px 0" }}>
         <button
           onClick={refresh}
           style={{
