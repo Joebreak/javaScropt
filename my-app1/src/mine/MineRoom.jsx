@@ -14,8 +14,9 @@ export default function MinaRoom() {
   const [showActionButtons, setShowActionButtons] = useState(false);
   const [updateInterval, setUpdateInterval] = useState(30000);
 
-  // 數據獲取
-  const { data, loading, refresh } = useRoomData(updateInterval, room);
+  // 數據獲取 - 使用安全的 room 值
+  const safeRoom = room || 'default';
+  const { data, loading, refresh } = useRoomData(updateInterval, safeRoom);
   const lastRound = data?.list?.length ? data.list[0]?.round : 0;
   const remainder = data?.members ? Number(data.members) : 4;
 
@@ -97,14 +98,21 @@ export default function MinaRoom() {
     }
   };
 
+  // 處理直接訪問的情況 - 直接返回首頁
+  useEffect(() => {
+    if (!room) {
+      navigate("/");
+    }
+  }, [room, navigate]);
+
   useEffect(() => {
     if (room) {
       document.title = `mine (房間號碼 ${room})`;
     }
   }, [room]);
 
+  // 如果沒有 room 參數，直接返回 null（會觸發導航）
   if (!room) {
-    navigate("/");
     return null;
   }
   return (

@@ -18,8 +18,9 @@ export default function DigitCodeRoom() {
   const [showActionButtons, setShowActionButtons] = useState(false);
   const [updateInterval, setUpdateInterval] = useState(30000);
 
-  // 數據獲取
-  const { data, loading, refresh } = useDigitCodeData(updateInterval, room);
+  // 數據獲取 - 使用安全的 room 值
+  const safeRoom = room || 'default';
+  const { data, loading, refresh } = useDigitCodeData(updateInterval, safeRoom);
   const lastRound = data?.list?.length ? data.list[0]?.round : 0;
   const remainder = data?.members ? Number(data.members) : 4;
 
@@ -159,6 +160,13 @@ export default function DigitCodeRoom() {
     });
   };
 
+  // 處理直接訪問的情況 - 直接返回首頁
+  useEffect(() => {
+    if (!room) {
+      navigate("/");
+    }
+  }, [room, navigate]);
+
   useEffect(() => {
     if (room) {
       document.title = `Digit Code (房間號碼 ${room})`;
@@ -166,7 +174,6 @@ export default function DigitCodeRoom() {
   }, [room]);
 
   if (!room) {
-    navigate("/");
     return null;
   }
 
