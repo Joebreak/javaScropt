@@ -55,13 +55,13 @@ const PositionSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =
             let foundData = null;
             if (Array.isArray(mapList) && mapList.length > 0) {
                 foundData = mapList.find(item =>
-                    item && item.NOTE1 === col && item.NOTE2 === row
+                    item && item.note1 === col && item.note2 === row
                 );
             }
             // 準備回傳的資料，包含座標和找到的 NOTE3
             const result = {
                 position: selectedPosition,
-                note3: foundData ? foundData.NOTE3 : null,
+                note3: foundData ? foundData.note3 : null,
                 foundData: foundData || null
             };
             // 根據 NOTE3 決定顏色
@@ -80,7 +80,7 @@ const PositionSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =
                 room: room,
                 round: lastRound + 1,
                 data: {
-                    color: getColor(foundData ? foundData.NOTE3 : null),
+                    color: getColor(foundData ? foundData.note3 : null),
                     in: "查看位置",
                     out: `${String.fromCharCode(65 + row)}${col + 1}`
                 }

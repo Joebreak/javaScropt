@@ -44,12 +44,12 @@ export function useRoomData(intervalMs = 0, room) {
         ? json
           .filter(item => item && item.list && item.round === 0)[0] || null
         : null;
-      const filteredMapList = roundZeroData?.list?.filter(item => item && item.NOTE4 > 0 && item.NOTE3 !== null) || [];
+      const filteredMapList = roundZeroData?.list?.filter(item => item && item.note4 > 0 && item.note3 !== null) || [];
       setData({
         list: filteredList,
         mapData: roundZeroData?.data || null,
         mapList: filteredMapList || [],
-        members: roundZeroData?.data?.NOTE6 || null
+        members: roundZeroData?.data?.note6 || null
       });
 
     } catch (err) {

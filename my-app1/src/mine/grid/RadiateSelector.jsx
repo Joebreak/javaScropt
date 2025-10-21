@@ -130,7 +130,7 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
 
     // 取得某座標的地圖資料（避免在迴圈中宣告函式）
     const getCellDataAt = (point, map) => {
-        return map.find(item => item && item.NOTE1 === point.col && item.NOTE2 === point.row) || null;
+        return map.find(item => item && item.note1 === point.col && item.note2 === point.row) || null;
     };
 
     // 光線追蹤函數
@@ -184,8 +184,8 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
             const cellData = getCellDataAt(currentPoint, mapData);
             // console.log('地圖資料地圖資料:', cellData);
             // 記錄遇到的顏色
-            if (cellData && cellData.NOTE3) {
-                encounteredColors.push(cellData.NOTE3);
+            if (cellData && cellData.note3) {
+                encounteredColors.push(cellData.note3);
             }
 
             // 計算當前顏色
@@ -196,8 +196,8 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
                 path.push({
                     row: currentPoint.row,
                     col: currentPoint.col,
-                    note3: cellData ? cellData.NOTE3 : null,
-                    note4: cellData ? cellData.NOTE4 : null,
+                    note3: cellData ? cellData.note3 : null,
+                    note4: cellData ? cellData.note4 : null,
                     color: '被吸收',
                     encounteredColors: [...encounteredColors]
                 });
@@ -207,20 +207,20 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
             path.push({
                 row: currentPoint.row,
                 col: currentPoint.col,
-                note3: cellData ? cellData.NOTE3 : null,
-                note4: cellData ? cellData.NOTE4 : null,
+                note3: cellData ? cellData.note3 : null,
+                note4: cellData ? cellData.note4 : null,
                 color: currentColor,
                 encounteredColors: [...encounteredColors]
             });
 
             // 檢查 cellData 是否存在或 NOTE3 是否為 null
-            if (!cellData || cellData.NOTE3 === null) {
+            if (!cellData || cellData.note3 === null) {
                 continue;
             }
 
             // 檢查 NOTE4 角度
-            if (cellData.NOTE4 && cellData.NOTE4 > 0) {
-                const angle = cellData.NOTE4;
+            if (cellData.note4 && cellData.note4 > 0) {
+                const angle = cellData.note4;
 
                 if (angle === 1) {
                     returnedToStart = true;

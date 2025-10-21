@@ -103,13 +103,13 @@ function MinaRoom({
     list = []
 }) {
     // 檢查 data 中的 NOTE2 值（地圖設定）
-    const hasTransparentExample = gameData?.mapData?.NOTE2 === true;
+    const hasTransparentExample = gameData?.mapData?.note2 === true;
 
     // 檢查 data 中的 NOTE3 值（地圖設定）
-    const shouldShowRectangle = gameData?.mapData?.NOTE3 === true;
+    const shouldShowRectangle = gameData?.mapData?.note3 === true;
 
     // 檢查 data 中的 NOTE1 值（地圖設定）
-    const shouldShowReal = gameData?.mapData?.NOTE1 === 2;
+    const shouldShowReal = gameData?.mapData?.note1 === 2;
     const [currentConfig, setCurrentConfig] = useState(getGridConfig());
 
     // 網格狀態（用於形狀驗證）

@@ -46,12 +46,12 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
             
             const color = colorTypes.find(c => c.id === cellData.color);
             const shape = shapeTypes.find(s => s.id === cellData.shape);
-            const NOTE4 = shape ? getAngleFromShape(shape.id) : null;
-            if (!color || !NOTE4) {
+            const note4 = shape ? getAngleFromShape(shape.id) : null;
+            if (!color || !note4) {
                 console.warn('無法找到對應的顏色或形狀:', cellData);
                 return null;
             }
-            return { NOTE3: color?.id, NOTE4 };
+            return { note3: color?.id, note4 };
         }
         return null;
     };
@@ -129,17 +129,17 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
                 const shapeInfo = getShapeInfo(grid[rowIndex][colIndex]);
                 // 在 expectedMapData 中查找該位置的預期數據
                 const expectedItem = expectedMapData.find(item =>
-                    item && item.NOTE1 === colIndex && item.NOTE2 === rowIndex
+                    item && item.note1 === colIndex && item.note2 === rowIndex
                 );
                 // 如果期望的 NOTE3 是 null，表示該位置應該沒有形狀
-                if ((expectedItem === undefined || expectedItem.NOTE3 === null) && shapeInfo) {
+                if ((expectedItem === undefined || expectedItem.note3 === null) && shapeInfo) {
                     return {
                         success: false,
                         message: '驗證失敗',
                         details: `位置 (${colIndex}, ${rowIndex}) 應該沒有形狀`,
                     };
                 }
-                if (expectedItem && expectedItem.NOTE3 !== null) {
+                if (expectedItem && expectedItem.note3 !== null) {
                     // 如果期望的 NOTE3 不是 null，表示該位置應該有形狀
                     if (!shapeInfo) {
                         return {
@@ -148,14 +148,14 @@ const ShapeValidator = ({ isOpen, onClose, onConfirm, gameData, roomGridData = n
                             details: `位置 (${colIndex}, ${rowIndex}) 缺少形狀`,
                         };
                     }
-                    if (shapeInfo && shapeInfo.NOTE3 !== expectedItem.NOTE3) {
+                    if (shapeInfo && shapeInfo.note3 !== expectedItem.note3) {
                         return {
                             success: false,
                             message: '驗證失敗',
                             details: `位置 (${colIndex}, ${rowIndex}) 顏色不匹配`,
                         };
                     }
-                    if (shapeInfo && shapeInfo.NOTE4 !== expectedItem.NOTE4) {
+                    if (shapeInfo && shapeInfo.note4 !== expectedItem.note4) {
                         return {
                             success: false,
                             message: '驗證失敗',
