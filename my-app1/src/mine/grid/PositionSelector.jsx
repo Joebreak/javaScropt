@@ -55,7 +55,7 @@ const PositionSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =
             let foundData = null;
             if (Array.isArray(mapList) && mapList.length > 0) {
                 foundData = mapList.find(item =>
-                    item && item.note1 === col && item.note2 === row
+                    item && String(item.note1) === String(col) && String(item.note2) === String(row)
                 );
             }
             // 準備回傳的資料，包含座標和找到的 NOTE3
@@ -64,23 +64,11 @@ const PositionSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =
                 note3: foundData ? foundData.note3 : null,
                 foundData: foundData || null
             };
-            // 根據 NOTE3 決定顏色
-            const getColor = (note3) => {
-                switch (note3) {
-                    case 'TYPE0': return '透明';
-                    case 'TYPE1': return '白色';
-                    case 'TYPE2': return '紅色';
-                    case 'TYPE3': return '藍色';
-                    case 'TYPE4': return '黃色';
-                    case 'TYPE5': return '黑色';
-                    default: return '透明';
-                }
-            };
             const requestBody = {
                 room: room,
                 round: lastRound + 1,
                 data: {
-                    color: getColor(foundData ? foundData.note3 : null),
+                    color: foundData ? foundData.note3 : '透明',
                     in: "查看位置",
                     out: `${String.fromCharCode(65 + row)}${col + 1}`
                 }
