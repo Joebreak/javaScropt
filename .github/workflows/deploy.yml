@@ -33,8 +33,15 @@ jobs:
         run: cp build/index.html build/404.html
         working-directory: ./my-app1
 
+      - name: List build files
+        run: ls -la build/
+        working-directory: ./my-app1
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./my-app1/build
+          force_orphan: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
