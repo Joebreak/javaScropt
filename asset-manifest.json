@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/javaScropt/static/css/main.40013edc.css",
+    "main.js": "/javaScropt/static/js/main.0e6839af.js",
+    "index.html": "/javaScropt/index.html",
+    "main.40013edc.css.map": "/javaScropt/static/css/main.40013edc.css.map",
+    "main.0e6839af.js.map": "/javaScropt/static/js/main.0e6839af.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.40013edc.css",
+    "static/js/main.0e6839af.js"
+  ]
+}
