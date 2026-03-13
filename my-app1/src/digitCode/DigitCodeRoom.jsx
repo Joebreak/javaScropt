@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import DigitCodeGrid from "./DigitCodeGrid";
 import DigitCodeList from "./DigitCodeList";
@@ -17,33 +17,40 @@ export default function DigitCodeRoom() {
 
   // 狀態來跟蹤 showActionButtons
   const [showActionButtons, setShowActionButtons] = useState(false);
-  const [updateInterval, setUpdateInterval] = useState(30000);
 
-  // 數據獲取 - 使用安全的 room 值
+  // 數據獲取 - 使用安全的 room 值，設為 0 不自動刷新
   const safeRoom = room || 'default';
-  const { data, loading, refresh } = useDigitCodeData(updateInterval, safeRoom);
+  const { data, loading, refresh } = useDigitCodeData(0, safeRoom);
   const lastRound = data?.list?.length ? data.list[0]?.round : 0;
   const remainder = data?.members ? Number(data.members) : 4;
   const memberCount = data?.members ? Number(data.members) : 0;
 
-  // 當數據更新時重新計算 showActionButtons 和更新間隔
+  // 當數據更新時重新計算 showActionButtons
   useEffect(() => {
     const newShowActionButtons = rank && lastRound !== undefined && Number(rank) === ((Number(lastRound) % remainder) + 1);
     setShowActionButtons(newShowActionButtons);
-    setUpdateInterval(newShowActionButtons ? 0 : 30000);
   }, [rank, lastRound, remainder]);
 
   // 多人時用 WebSocket 推播來觸發 refresh；一個人時照舊靠本地 refresh
   const useWs = memberCount > 1;
   const { messages: wsMessages, sendMessage } = useRoomWebSocket(useWs ? safeRoom : null);
+  const lastProcessedIndexRef = useRef(-1);
 
   useEffect(() => {
     if (!useWs) return;
     if (!wsMessages || wsMessages.length === 0) return;
-    // 只要有新 WS 訊息，就重新抓 digit code 資料
+    
+    // 只處理新的訊息（追蹤已處理的索引）
+    const currentIndex = wsMessages.length - 1;
+    if (currentIndex <= lastProcessedIndexRef.current) return;
+    
+    // 標記這條訊息已處理
+    lastProcessedIndexRef.current = currentIndex;
+    
+    // 多人遊戲時，所有訊息都觸發 refresh（包括自己發送的）
     refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [useWs, wsMessages.length]);
+  }, [useWs, wsMessages]);
   
   // 用戶選擇記錄 - 使用 localStorage 持久化
   const [userSelections, setUserSelections] = useState(() => {
@@ -96,14 +103,16 @@ export default function DigitCodeRoom() {
     
     // 如果標記需要更新畫面，則重新獲取數據
     if (questionData.needsRefresh) {
-      refresh();
-      // 多人遊戲時，透過 WebSocket 通知其他玩家
+      // 多人遊戲時，透過 WebSocket 通知（會自動觸發 refresh）
       if (useWs && sendMessage) {
         sendMessage({
           name: `玩家${rank}`,
           text: '問題1已提交',
           ts: Date.now(),
         });
+      } else {
+        // 單人遊戲時，手動 refresh
+        refresh();
       }
     }
   };
@@ -113,14 +122,16 @@ export default function DigitCodeRoom() {
     
     // 如果標記需要更新畫面，則重新獲取數據
     if (questionData.needsRefresh) {
-      refresh();
-      // 多人遊戲時，透過 WebSocket 通知其他玩家
+      // 多人遊戲時，透過 WebSocket 通知（會自動觸發 refresh）
       if (useWs && sendMessage) {
         sendMessage({
           name: `玩家${rank}`,
           text: '問題2已提交',
           ts: Date.now(),
         });
+      } else {
+        // 單人遊戲時，手動 refresh
+        refresh();
       }
     }
   };
@@ -130,14 +141,16 @@ export default function DigitCodeRoom() {
     
     // 如果標記需要更新畫面，則重新獲取數據
     if (questionData.needsRefresh) {
-      refresh();
-      // 多人遊戲時，透過 WebSocket 通知其他玩家
+      // 多人遊戲時，透過 WebSocket 通知（會自動觸發 refresh）
       if (useWs && sendMessage) {
         sendMessage({
           name: `玩家${rank}`,
           text: '問題3已提交',
           ts: Date.now(),
         });
+      } else {
+        // 單人遊戲時，手動 refresh
+        refresh();
       }
     }
   };
@@ -146,14 +159,16 @@ export default function DigitCodeRoom() {
   const handleQuestion4Submit = (questionData) => {
     // 如果標記需要更新畫面，則重新獲取數據
     if (questionData.needsRefresh) {
-      refresh();
-      // 多人遊戲時，透過 WebSocket 通知其他玩家
+      // 多人遊戲時，透過 WebSocket 通知（會自動觸發 refresh）
       if (useWs && sendMessage) {
         sendMessage({
           name: `玩家${rank}`,
           text: '問題4已提交',
           ts: Date.now(),
         });
+      } else {
+        // 單人遊戲時，手動 refresh
+        refresh();
       }
     }
   };
@@ -162,14 +177,16 @@ export default function DigitCodeRoom() {
   const handleAnswerSubmit = (result) => {
     // 刷新遊戲數據以獲取最新結果
     if (result.needsRefresh) {
-      refresh();
-      // 多人遊戲時，透過 WebSocket 通知其他玩家
+      // 多人遊戲時，透過 WebSocket 通知（會自動觸發 refresh）
       if (useWs && sendMessage) {
         sendMessage({
           name: `玩家${rank}`,
           text: '答案已提交',
           ts: Date.now(),
         });
+      } else {
+        // 單人遊戲時，手動 refresh
+        refresh();
       }
     }
   };
