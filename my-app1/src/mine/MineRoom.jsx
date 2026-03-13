@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import RoomGrid from "./RoomGrid";
 import RoomList from "./RoomList";
@@ -31,15 +31,29 @@ export default function MinaRoom() {
 
   // 多人時用 WebSocket 推播來觸發 refresh；一個人時照舊靠本地 refresh
   const useWs = memberCount > 1;
-  const { messages: wsMessages } = useRoomWebSocket(useWs ? safeRoom : null);
+  const { messages: wsMessages, sendMessage } = useRoomWebSocket(useWs ? safeRoom : null);
+  const lastProcessedIndexRef = useRef(-1);
 
   useEffect(() => {
     if (!useWs) return;
     if (!wsMessages || wsMessages.length === 0) return;
-    // 只要有新 WS 訊息，就重新抓 mine 資料
-    refresh();
+    
+    // 只處理新的訊息（追蹤已處理的索引）
+    const currentIndex = wsMessages.length - 1;
+    if (currentIndex <= lastProcessedIndexRef.current) return;
+    
+    const lastMessage = wsMessages[currentIndex];
+    const isOwnMessage = lastMessage?.name === `玩家${rank}`;
+    
+    // 標記這條訊息已處理
+    lastProcessedIndexRef.current = currentIndex;
+    
+    // 如果不是自己發送的訊息，才 refresh
+    if (!isOwnMessage) {
+      refresh();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [useWs, wsMessages.length]);
+  }, [useWs, wsMessages, rank]);
 
   // 圖形控制狀態
   const [showShapeButtons, setShowShapeButtons] = useState(false);
@@ -60,15 +74,33 @@ export default function MinaRoom() {
   };
 
   const handlePositionConfirm = () => {
+    // 送出者直接 refresh
     if (refresh) {
       refresh();
+    }
+    // 多人遊戲時，透過 WebSocket 通知其他玩家
+    if (useWs && sendMessage) {
+      sendMessage({
+        name: `玩家${rank}`,
+        text: '查詢指定位置已提交',
+        ts: Date.now(),
+      });
     }
     setShowPositionSelector(false);
   };
 
   const handleRadiateConfirm = () => {
+    // 送出者直接 refresh
     if (refresh) {
       refresh();
+    }
+    // 多人遊戲時，透過 WebSocket 通知其他玩家
+    if (useWs && sendMessage) {
+      sendMessage({
+        name: `玩家${rank}`,
+        text: '放射超音波已提交',
+        ts: Date.now(),
+      });
     }
     setShowRadiateSelector(false);
   };
@@ -89,8 +121,17 @@ export default function MinaRoom() {
   };
 
   const handleShapeValidatorConfirm = () => {
+    // 送出者直接 refresh
     if (refresh) {
       refresh();
+    }
+    // 多人遊戲時，透過 WebSocket 通知其他玩家
+    if (useWs && sendMessage) {
+      sendMessage({
+        name: `玩家${rank}`,
+        text: '圖形驗證已提交',
+        ts: Date.now(),
+      });
     }
     setShowShapeValidator(false);
   };
