@@ -4,6 +4,8 @@ const API_CONFIG = {
   prd: {
     cloudflare_room_url: 'https://web-server-api.g132565.workers.dev/api/d1/room/',
     cloudflare_all_room_url: 'https://web-server-api.g132565.workers.dev/api/d1/all_room',
+    // Cloudflare Durable Objects / Workers 總入口，用來交換資訊
+    cloudflare_durable_url: 'https://cannot-stop-room.<你的帳號>.workers.dev',
   },
 };
 
@@ -26,6 +28,8 @@ export const getApiUrl = (key, customEnv = null) => {
     const devConfig = {
       cloudflare_room_url: `${currentOrigin}:9080/api/d1/room/`,
       cloudflare_all_room_url: `${currentOrigin}:9080/api/d1/all_room`,
+      // 本地 Cloudflare Durable Objects / Workers 入口，用來交換資訊
+      cloudflare_durable_url: process.env.REACT_APP_CLOUDFLARE_DURABLE_URL || 'http://localhost:8787',
     };
 
     const url = devConfig[key];

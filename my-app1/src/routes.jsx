@@ -5,6 +5,7 @@ import App from "./App";
 import MineRoom from "./mine/MineRoom";
 import HanabiRoom from "./hanabi/HanabiRoom";
 import DigitCodeRoom from "./digitCode/DigitCodeRoom";
+import CannotStopRoom from "./cannotStop/CannotStopRoom";
 
 export default function AppRoutes() {
   return (
@@ -13,6 +14,7 @@ export default function AppRoutes() {
       <Route path="/mine" element={<MineRoom />} />
       <Route path="/hanabi" element={<HanabiRoom />} />
       <Route path="/digitCode" element={<DigitCodeRoom />} />
+      <Route path="/cannotStopRoom" element={<CannotStopRoom />} />
     </Routes>
   );
 }
