@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import DigitCodeGrid from "./DigitCodeGrid";
 import DigitCodeList from "./DigitCodeList";
 import { useDigitCodeData } from "./useDigitCodeData";
+import { useRoomWebSocket } from "../ws/useRoomWebSocket";
 import Question1Modal from "./Question1Modal";
 import Question2Modal from "./Question2Modal";
 import Question3Modal from "./Question3Modal";
@@ -23,6 +24,7 @@ export default function DigitCodeRoom() {
   const { data, loading, refresh } = useDigitCodeData(updateInterval, safeRoom);
   const lastRound = data?.list?.length ? data.list[0]?.round : 0;
   const remainder = data?.members ? Number(data.members) : 4;
+  const memberCount = data?.members ? Number(data.members) : 0;
 
   // 當數據更新時重新計算 showActionButtons 和更新間隔
   useEffect(() => {
@@ -30,6 +32,18 @@ export default function DigitCodeRoom() {
     setShowActionButtons(newShowActionButtons);
     setUpdateInterval(newShowActionButtons ? 0 : 30000);
   }, [rank, lastRound, remainder]);
+
+  // 多人時用 WebSocket 推播來觸發 refresh；一個人時照舊靠本地 refresh
+  const useWs = memberCount > 1;
+  const { messages: wsMessages } = useRoomWebSocket(useWs ? safeRoom : null);
+
+  useEffect(() => {
+    if (!useWs) return;
+    if (!wsMessages || wsMessages.length === 0) return;
+    // 只要有新 WS 訊息，就重新抓 digit code 資料
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [useWs, wsMessages.length]);
   
   // 用戶選擇記錄 - 使用 localStorage 持久化
   const [userSelections, setUserSelections] = useState(() => {
@@ -220,27 +234,6 @@ export default function DigitCodeRoom() {
         list={data?.list || []}
         showDigitExample={showDigitExample}
       />
-
-      {/* 重新整理按鈕 */}
-      <div style={{ textAlign: "center", padding: "5px 0" }}>
-        <button
-          onClick={refresh}
-          style={{
-            padding: "8px 16px",
-            background: "#4f8cff",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            fontSize: "14px",
-            fontWeight: "bold",
-            cursor: "pointer",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-            transition: "all 0.3s ease"
-          }}
-        >
-          🔄 重新整理
-        </button>
-      </div>
 
       {/* 遊戲操作按鈕 - 只有輪到該玩家時才顯示 */}
       {showActionButtons && (
