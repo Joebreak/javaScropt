@@ -13,20 +13,18 @@ export default function MinaRoom() {
 
   // 狀態來跟蹤 showActionButtons
   const [showActionButtons, setShowActionButtons] = useState(false);
-  const [updateInterval, setUpdateInterval] = useState(30000);
 
   // 數據獲取 - 使用安全的 room 值
   const safeRoom = room || 'default';
-  const { data, loading, refresh } = useRoomData(updateInterval, safeRoom);
+  const { data, loading, refresh } = useRoomData(0, safeRoom); // 設為 0，不自動刷新
   const lastRound = data?.list?.length ? data.list[0]?.round : 0;
   const remainder = data?.members ? Number(data.members) : 4;
   const memberCount = data?.members ? Number(data.members) : 0;
 
-  // 當數據更新時重新計算 showActionButtons 和更新間隔
+  // 當數據更新時重新計算 showActionButtons
   useEffect(() => {
     const newShowActionButtons = rank && lastRound !== undefined && Number(rank) === ((Number(lastRound) % remainder) + 1);
     setShowActionButtons(newShowActionButtons);
-    setUpdateInterval(newShowActionButtons ? 0 : 30000);
   }, [rank, lastRound, remainder]);
 
   // 多人時用 WebSocket 推播來觸發 refresh；一個人時照舊靠本地 refresh
@@ -42,18 +40,13 @@ export default function MinaRoom() {
     const currentIndex = wsMessages.length - 1;
     if (currentIndex <= lastProcessedIndexRef.current) return;
     
-    const lastMessage = wsMessages[currentIndex];
-    const isOwnMessage = lastMessage?.name === `玩家${rank}`;
-    
     // 標記這條訊息已處理
     lastProcessedIndexRef.current = currentIndex;
     
-    // 如果不是自己發送的訊息，才 refresh
-    if (!isOwnMessage) {
-      refresh();
-    }
+    // 多人遊戲時，所有訊息都觸發 refresh（包括自己發送的）
+    refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [useWs, wsMessages, rank]);
+  }, [useWs, wsMessages]);
 
   // 圖形控制狀態
   const [showShapeButtons, setShowShapeButtons] = useState(false);
@@ -74,33 +67,31 @@ export default function MinaRoom() {
   };
 
   const handlePositionConfirm = () => {
-    // 送出者直接 refresh
-    if (refresh) {
-      refresh();
-    }
-    // 多人遊戲時，透過 WebSocket 通知其他玩家
+    // 多人遊戲時，透過 WebSocket 通知（會自動觸發 refresh）
     if (useWs && sendMessage) {
       sendMessage({
         name: `玩家${rank}`,
         text: '查詢指定位置已提交',
         ts: Date.now(),
       });
+    } else if (refresh) {
+      // 單人遊戲時，手動 refresh
+      refresh();
     }
     setShowPositionSelector(false);
   };
 
   const handleRadiateConfirm = () => {
-    // 送出者直接 refresh
-    if (refresh) {
-      refresh();
-    }
-    // 多人遊戲時，透過 WebSocket 通知其他玩家
+    // 多人遊戲時，透過 WebSocket 通知（會自動觸發 refresh）
     if (useWs && sendMessage) {
       sendMessage({
         name: `玩家${rank}`,
         text: '放射超音波已提交',
         ts: Date.now(),
       });
+    } else if (refresh) {
+      // 單人遊戲時，手動 refresh
+      refresh();
     }
     setShowRadiateSelector(false);
   };
@@ -121,17 +112,16 @@ export default function MinaRoom() {
   };
 
   const handleShapeValidatorConfirm = () => {
-    // 送出者直接 refresh
-    if (refresh) {
-      refresh();
-    }
-    // 多人遊戲時，透過 WebSocket 通知其他玩家
+    // 多人遊戲時，透過 WebSocket 通知（會自動觸發 refresh）
     if (useWs && sendMessage) {
       sendMessage({
         name: `玩家${rank}`,
         text: '圖形驗證已提交',
         ts: Date.now(),
       });
+    } else if (refresh) {
+      // 單人遊戲時，手動 refresh
+      refresh();
     }
     setShowShapeValidator(false);
   };
