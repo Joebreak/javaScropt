@@ -5,7 +5,7 @@ const API_CONFIG = {
     cloudflare_room_url: 'https://web-server-api.g132565.workers.dev/api/d1/room/',
     cloudflare_all_room_url: 'https://web-server-api.g132565.workers.dev/api/d1/all_room',
     // Cloudflare Durable Objects / Workers 總入口，用來交換資訊
-    cloudflare_durable_url: 'https://cannot-stop-room.<你的帳號>.workers.dev',
+    cloudflare_durable_url: 'https://cloudflare-workers-practice.g132565.workers.dev/',
   },
 };
 
