@@ -35,7 +35,7 @@ export default function DigitCodeRoom() {
 
   // 多人時用 WebSocket 推播來觸發 refresh；一個人時照舊靠本地 refresh
   const useWs = memberCount > 1;
-  const { messages: wsMessages } = useRoomWebSocket(useWs ? safeRoom : null);
+  const { messages: wsMessages, sendMessage } = useRoomWebSocket(useWs ? safeRoom : null);
 
   useEffect(() => {
     if (!useWs) return;
@@ -97,6 +97,14 @@ export default function DigitCodeRoom() {
     // 如果標記需要更新畫面，則重新獲取數據
     if (questionData.needsRefresh) {
       refresh();
+      // 多人遊戲時，透過 WebSocket 通知其他玩家
+      if (useWs && sendMessage) {
+        sendMessage({
+          name: `玩家${rank}`,
+          text: '問題1已提交',
+          ts: Date.now(),
+        });
+      }
     }
   };
 
@@ -106,6 +114,14 @@ export default function DigitCodeRoom() {
     // 如果標記需要更新畫面，則重新獲取數據
     if (questionData.needsRefresh) {
       refresh();
+      // 多人遊戲時，透過 WebSocket 通知其他玩家
+      if (useWs && sendMessage) {
+        sendMessage({
+          name: `玩家${rank}`,
+          text: '問題2已提交',
+          ts: Date.now(),
+        });
+      }
     }
   };
 
@@ -115,6 +131,14 @@ export default function DigitCodeRoom() {
     // 如果標記需要更新畫面，則重新獲取數據
     if (questionData.needsRefresh) {
       refresh();
+      // 多人遊戲時，透過 WebSocket 通知其他玩家
+      if (useWs && sendMessage) {
+        sendMessage({
+          name: `玩家${rank}`,
+          text: '問題3已提交',
+          ts: Date.now(),
+        });
+      }
     }
   };
 
@@ -123,6 +147,14 @@ export default function DigitCodeRoom() {
     // 如果標記需要更新畫面，則重新獲取數據
     if (questionData.needsRefresh) {
       refresh();
+      // 多人遊戲時，透過 WebSocket 通知其他玩家
+      if (useWs && sendMessage) {
+        sendMessage({
+          name: `玩家${rank}`,
+          text: '問題4已提交',
+          ts: Date.now(),
+        });
+      }
     }
   };
 
@@ -131,6 +163,14 @@ export default function DigitCodeRoom() {
     // 刷新遊戲數據以獲取最新結果
     if (result.needsRefresh) {
       refresh();
+      // 多人遊戲時，透過 WebSocket 通知其他玩家
+      if (useWs && sendMessage) {
+        sendMessage({
+          name: `玩家${rank}`,
+          text: '答案已提交',
+          ts: Date.now(),
+        });
+      }
     }
   };
 
