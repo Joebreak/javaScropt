@@ -63,22 +63,11 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
         return usedIn.has(option.label) || usedOut.has(option.label);
     };
 
-    // 將 NOTE3 轉換為顏色名稱
-    const getColorName = (note3) => {
-        switch (note3) {
-            case 'TYPE1': return '白色';
-            case 'TYPE2': return '紅色';
-            case 'TYPE3': return '藍色';
-            case 'TYPE4': return '黃色';
-            case 'TYPE5': return '黑色';
-            default: return '透明';
-        }
-    };
     // 根據所有遇到的顏色計算最終顏色
     const calculateFinalColor = (encounteredColors) => {
         // 過濾掉透明和空值
+
         const validColors = encounteredColors
-            .map(color => getColorName(color))
             .filter(color => color !== '透明' && color !== null && color !== undefined);
 
         if (validColors.length === 0) {
@@ -130,7 +119,7 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
 
     // 取得某座標的地圖資料（避免在迴圈中宣告函式）
     const getCellDataAt = (point, map) => {
-        return map.find(item => item && item.note1 === point.col && item.note2 === point.row) || null;
+        return map.find(item => item && String(item.note1) === String(point.col) && String(item.note2) === String(point.row)) || null;
     };
 
     // 光線追蹤函數
@@ -182,7 +171,6 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
             currentPoint = nextPos;
             // 在 mapData 中尋找當前位置的資料（避免在迴圈中宣告函式）
             const cellData = getCellDataAt(currentPoint, mapData);
-            // console.log('地圖資料地圖資料:', cellData);
             // 記錄遇到的顏色
             if (cellData && cellData.note3) {
                 encounteredColors.push(cellData.note3);
@@ -222,10 +210,10 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
             if (cellData.note4 && cellData.note4 > 0) {
                 const angle = cellData.note4;
 
-                if (angle === 1) {
+                if (angle === '1') {
                     returnedToStart = true;
                     break;
-                } else if (angle === 2) {
+                } else if (angle === '2') {
                     // 從左邊到上面 或 從上面到左邊
                     if (currentDirection === 'right') {
                         currentDirection = 'up';
@@ -235,7 +223,7 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
                         returnedToStart = true;
                         break;
                     }
-                } else if (angle === 3) {
+                } else if (angle === '3') {
                     // 從右邊到上面 或 從上面到右邊
                     if (currentDirection === 'left') {
                         currentDirection = 'up';
@@ -245,7 +233,7 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
                         returnedToStart = true;
                         break;
                     }
-                } else if (angle === 4) {
+                } else if (angle === '4') {
                     // 從左邊到下面 或 從下面到左邊
                     if (currentDirection === 'right') {
                         currentDirection = 'down';
@@ -255,7 +243,7 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
                         returnedToStart = true;
                         break;
                     }
-                } else if (angle === 5) {
+                } else if (angle === '5') {
                     // 從右邊到下面 或 從下面到右邊
                     if (currentDirection === 'left') {
                         currentDirection = 'down';
@@ -291,7 +279,6 @@ const RadiateSelector = ({ isOpen, onClose, onConfirm, gameData, list = [] }) =>
                 setSelectedDirection(null);
                 return;
             }
-
             // 執行光線追蹤
             const lightTraceResult = traceLightPath(selectedDirection.entryPoint, selectedDirection.side, mapList || []);
             const result = {
