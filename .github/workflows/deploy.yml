@@ -1,12 +1,12 @@
 name: hanabi test
 
-on:
-  push:
-    branches:
-      - hanabi
-  schedule:
-    - cron: "0 22 * * *"
-  workflow_dispatch:
+# on:
+#   push:
+#     branches:
+#       - hanabi
+#   schedule:
+#     - cron: "0 22 * * *"
+#   workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
