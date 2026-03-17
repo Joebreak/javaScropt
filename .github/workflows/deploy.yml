@@ -1,12 +1,19 @@
 name: hanabi test
 
+# 只允許手動觸發（按鈕執行）
+on:
+  workflow_dispatch:
+
+# 以下為舊的自動觸發方式，暫時停用：
+# - push：每次 push 到 hanabi 分支就自動部署
+# - schedule：每天 22:00 自動部署一次
+# 若之後要恢復自動部署，把這一段的註解取消即可
 # on:
 #   push:
 #     branches:
 #       - hanabi
 #   schedule:
 #     - cron: "0 22 * * *"
-#   workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
