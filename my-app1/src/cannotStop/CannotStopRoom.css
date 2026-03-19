@@ -1,0 +1,160 @@
+.cannotStop-container {
+  padding: 24px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.cannotStop-title {
+  color: #1976d2;
+  margin-bottom: 4px;
+}
+
+.cannotStop-sub {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.cannotStop-card {
+  background: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 16px;
+}
+
+.cannotStop-card-scroll {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.cannotStop-pre {
+  font-size: 12px;
+  overflow: auto;
+  margin: 0;
+}
+
+.cannotStop-input {
+  padding: 8px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  width: 160px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.cannotStop-btn {
+  padding: 8px 16px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  background: #4f8cff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cannotStop-btn:disabled {
+  background: #bfc7d9;
+  color: #eee;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.cannotStop-btn-secondary {
+  padding: 8px 16px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  background: #888;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cannotStop-btn-secondary:disabled {
+  background: #ccc;
+  color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.cannotStop-btn-danger {
+  padding: 8px 16px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  background: #c00;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cannotStop-btn-danger:disabled {
+  background: #f4b8b8;
+  color: #fff0f0;
+  cursor: not-allowed;
+}
+
+.cannotStop-message {
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.cannotStop-track-row {
+  margin-bottom: 8px;
+}
+
+.cannotStop-track-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.cannotStop-track-bar-wrap {
+  height: 10px;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.cannotStop-track-bar-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.cannotStop-track-bar-fill--mid {
+  background: #4caf50;
+}
+
+.cannotStop-track-bar-fill--seven {
+  background: #ff7043;
+}
+
+.cannotStop-track-bar-fill--edge {
+  background: #4f8cff;
+}
+
+.cannotStop-hint {
+  font-size: 12px;
+  color: #666;
+  margin-top: 8px;
+}
+
+.cannotStop-dice-label {
+  margin-bottom: 8px;
+}
+
+.cannotStop-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cannotStop-decision-row {
+  margin-top: 12px;
+}
+
+.cannotStop-btn-continue {
+  margin-left: 8px;
+}
