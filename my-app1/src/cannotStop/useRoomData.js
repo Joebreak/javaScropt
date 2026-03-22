@@ -2,13 +2,20 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { getApiUrl } from "../config/api";
 
 /**
- * 依 room 抓房間資料，members 來自 round 0 的 data.note2
+ * 依 room 抓房間資料
+ * - round === 0：遊戲基本資料（members ← data.note2；另可有 currentPlayerRank、dice[]）
+ * - round !== 0：每回合紀錄，頂層含 data（玩家序號）、list（{ num, count }[]）
+ * - data 可能是 JSON 字串，會嘗試 parse
  */
 export function useRoomData(intervalMs = 0, room) {
   if (!room) {
     throw new Error("useRoomData: room 參數是必須的");
   }
-  const [data, setData] = useState({ list: [], members: null });
+  const [data, setData] = useState({
+    list: [],
+    members: null,
+    meta: null,
+  });
   const [loading, setLoading] = useState(true);
   const isFetchingRef = useRef(false);
 
@@ -29,18 +36,51 @@ export function useRoomData(intervalMs = 0, room) {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
 
-      const filteredList = Array.isArray(json)
-        ? json
-            .filter((item) => item && item.round !== 0)
-            .map((item) => ({ id: item.id, round: item.round, ...item.data }))
-            .reverse()
-        : [];
-      const roundZeroData = Array.isArray(json)
-        ? json.filter((item) => item && item.list && item.round === 0)[0] || null
-        : null;
-      const members = roundZeroData?.data?.note2 ?? null;
+      const roundZero =
+        Array.isArray(json)
+          ? json.find((item) => item && Number(item.round) === 0) || null
+          : null;
 
-      setData({ list: filteredList, members });
+      const rawZeroData = roundZero?.data;
+      const metaParsed =
+        typeof rawZeroData === "string"
+          ? (() => {
+              try {
+                return JSON.parse(rawZeroData);
+              } catch {
+                return null;
+              }
+            })()
+          : rawZeroData ?? null;
+
+      const members = metaParsed?.note2 ?? null;
+      const meta = metaParsed;
+
+      const roundRecords = Array.isArray(json)
+        ? json
+            .filter(
+              (item) =>
+                item &&
+                item.round != null &&
+                Number(item.round) !== 0
+            )
+            .map((item) => ({
+              id: item.id,
+              room: item.room,
+              type: item.type ?? null,
+              round: Number(item.round),
+              /** 玩家序號（API 的 data） */
+              data: item.data,
+              list: Array.isArray(item.list) ? item.list : [],
+            }))
+            .sort((a, b) => b.round - a.round)
+        : [];
+
+      setData({
+        list: roundRecords,
+        members,
+        meta,
+      });
     } catch (err) {
       console.error("API 失敗：", err);
     } finally {

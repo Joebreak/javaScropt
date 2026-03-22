@@ -19,6 +19,10 @@ const pool = mysql.createPool(dbConfig);
 // 測試資料庫連接
 console.log('🔗 正在測試資料庫連接...');
 
+// 模擬 Cloudflare D1 房間（Cannot Stop 等）：GET/POST /api/d1/room/:room
+const d1RoomRoutes = require('./d1RoomRoutes');
+app.use('/api/d1/room', d1RoomRoutes);
+
 // MySQL 查詢 API
 app.get('/api/mysql/test', async (req, res) => {
   try {
