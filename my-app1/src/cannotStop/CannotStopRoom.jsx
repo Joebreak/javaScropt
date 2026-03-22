@@ -19,20 +19,30 @@ const PENDING_ROUTE_COLOR = "#ff9800";
 /** 非自己回合時，對方 WS 剛選的路線提示色（與橘色、玩家色區隔） */
 const REMOTE_PICK_ROUTE_COLOR = "#7c4dff";
 
-/** 與遊戲內 TRACK_LENGTH 一致，供 WS 即時預覽用（不可在 useMemo 前引用 hook 內物件） */
+/**
+ * 各路線格數上限（封頂、WS、畫面條數）— 只改這一份即可。
+ * TRACK_LENGTH / trackConfig 由此衍生，勿再重複寫數字。
+ */
 const TRACK_CAP = {
   2: 3,
-  3: 4,
-  4: 5,
-  5: 6,
-  6: 7,
-  7: 8,
-  8: 7,
-  9: 6,
-  10: 5,
-  11: 4,
+  3: 5,
+  4: 7,
+  5: 9,
+  6: 11,
+  7: 13,
+  8: 11,
+  9: 9,
+  10: 7,
+  11: 5,
   12: 3,
 };
+
+const TRACK_LENGTH = TRACK_CAP;
+
+const trackConfig = Object.keys(TRACK_CAP)
+  .map(Number)
+  .sort((a, b) => a - b)
+  .map((sum) => ({ sum, length: TRACK_CAP[sum] }));
 
 /** 從廣播文字解析「前進：和7、和8…」（舊格式，無數量）→ [7,8] */
 function parseForwardSumsFromText(text) {
@@ -93,6 +103,52 @@ function listToTrackMap(list) {
   return m;
 }
 
+/** 爆掉回合：最後一筆為本次四顆 + 此後綴（前面仍為本回合已擲，格式同 handleStop） */
+const BUST_DICE_SUFFIX = "（爆掉）";
+
+function buildBustDicePayload(turnDiceRollsSnapshot, diceFour) {
+  const arr = Array.isArray(diceFour) ? diceFour : [];
+  const last = `${arr.join(",")}${BUST_DICE_SUFFIX}`;
+  return [...(Array.isArray(turnDiceRollsSnapshot) ? turnDiceRollsSnapshot : []), last];
+}
+
+/** 盤面 map → POST 用 list（僅 count>0）— 爆掉時送「上一輪存檔」，data.dice 仍含本回合擲骰 + 最後一筆爆掉 */
+function trackMapToList(tracks) {
+  const list = [];
+  if (!tracks || typeof tracks !== "object") return list;
+  for (let num = 2; num <= 12; num++) {
+    const count = tracks[num] || 0;
+    if (count > 0) list.push({ num, count });
+  }
+  return list;
+}
+
+/** 回合紀錄 data 可能是 JSON 字串 */
+function parseRecData(raw) {
+  if (raw == null) return null;
+  if (typeof raw === "string") {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+  if (typeof raw === "object" && !Array.isArray(raw)) return raw;
+  return null;
+}
+
+/** 該玩家已「走完」的路線數（高度 >= 該路和長） */
+function countCompletedRoutesForPlayer(tracks) {
+  if (!tracks || typeof tracks !== "object") return 0;
+  let n = 0;
+  for (let s = 2; s <= 12; s++) {
+    const cap = TRACK_LENGTH[s];
+    if (!cap) continue;
+    if ((tracks[s] || 0) >= cap) n++;
+  }
+  return n;
+}
+
 /** 任一玩家某路線已封頂 → 其餘玩家該路線進度視為 0（Cannot Stop 佔領規則） */
 function applyTrackCompletionKnockout(byRank) {
   const out = {};
@@ -138,6 +194,20 @@ function buildDiceOptions(diceArr) {
     { id: 1, sums: [d1 + d3, d2 + d4], pairs: [[1, 3], [2, 4]] },
     { id: 2, sums: [d1 + d4, d2 + d3], pairs: [[1, 4], [2, 3]] },
   ];
+}
+
+const TURN_SESSION_V = 1;
+
+function turnSessionStorageKey(room, rank) {
+  return `cannotStop_turn_${String(room)}_${String(rank)}`;
+}
+
+function clearTurnSessionStorage(room, rank) {
+  try {
+    localStorage.removeItem(turnSessionStorageKey(room, rank));
+  } catch {
+    /* ignore */
+  }
 }
 
 function withAlpha(hex, a) {
@@ -221,6 +291,12 @@ export default function CannotStopRoom() {
   const { messages: wsMessages, sendMessage, status: wsStatus } =
     useRoomWebSocket(useWs ? safeRoom : null);
   const lastWsIndexRef = useRef(-1);
+  /** 本機回合還原完成後才允許 persist，避免先清空再還原 */
+  const [turnSessionHydrated, setTurnSessionHydrated] = useState(false);
+
+  useEffect(() => {
+    setTurnSessionHydrated(false);
+  }, [safeRoom, myRank]);
   const latestRecordByPlayerRef = useRef({});
   /** 非自己回合：由 WS 擲骰訊息還原的畫面（唯讀） */
   const [remoteObserverDice, setRemoteObserverDice] = useState(null); // { dice, fromRank }
@@ -407,6 +483,34 @@ export default function CannotStopRoom() {
     return applyTrackCompletionKnockout(out);
   }, [playerHeightMap, remoteWsBoardByRank]);
 
+  /** 任一人盤面上已封頂 3 條不同路線 → 遊戲結束，該玩家獲勝（取最小座位號） */
+  const gameWinnerRank = useMemo(() => {
+    const map = displayPlayerHeightMap;
+    const ranks = Object.keys(map)
+      .map(Number)
+      .filter(Number.isFinite)
+      .sort((a, b) => a - b);
+    for (const rk of ranks) {
+      if (countCompletedRoutesForPlayer(map[rk]) >= 3) return rk;
+    }
+    return null;
+  }, [displayPlayerHeightMap]);
+
+  const gameIsOver = gameWinnerRank != null;
+
+  const winMessage = useMemo(() => {
+    if (gameWinnerRank == null) return "";
+    if (Number.isFinite(myRank) && myRank === gameWinnerRank) {
+      return "恭喜！你已先完成 3 條路線獲勝。所有人無法再擲骰或前進。";
+    }
+    return `遊戲結束：玩家 ${gameWinnerRank} 已先完成 3 條路線獲勝。所有人無法再擲骰或前進。`;
+  }, [gameWinnerRank, myRank]);
+
+  useEffect(() => {
+    if (gameWinnerRank == null) return;
+    setPhase((p) => (p === "ended" ? p : "ended"));
+  }, [gameWinnerRank]);
+
   /**
    * 擲骰紀錄：每筆含該回合 data.currentPlayerRank + 骰點字串。
    * 僅 round0 meta 時用 meta.currentPlayerRank 套全部骰。
@@ -417,15 +521,13 @@ export default function CannotStopRoom() {
       .sort((a, b) => Number(a.round) - Number(b.round));
     const out = [];
     for (const rec of rounds) {
-      const d = rec.data;
-      if (
-        d &&
-        typeof d === "object" &&
-        !Array.isArray(d) &&
-        Array.isArray(d.dice)
-      ) {
-        const rank = Number(d.currentPlayerRank);
-        const pr = Number.isFinite(rank) && rank >= 1 ? rank : NaN;
+      const d = parseRecData(rec.data);
+      if (!d || !Array.isArray(d.dice)) continue;
+      const rank = Number(d.currentPlayerRank);
+      const pr = Number.isFinite(rank) && rank >= 1 ? rank : NaN;
+      if (d.dice.length === 0) {
+        out.push({ rank: pr, roll: "（爆掉·無有效擲骰）" });
+      } else {
         for (const x of d.dice) {
           out.push({ rank: pr, roll: String(x) });
         }
@@ -509,45 +611,171 @@ export default function CannotStopRoom() {
     setSavedTracks(listToTrackMap(rec.list));
   }, [latestRecordByPlayer, myRank, phase, dice]);
 
-  // 每條路徑長度配置
-  const TRACK_LENGTH = useMemo(
-    () => ({
-      2: 3,
-      3: 4,
-      4: 5,
-      5: 6,
-      6: 7,
-      7: 8,
-      8: 7,
-      9: 6,
-      10: 5,
-      11: 4,
-      12: 3,
-    }),
-    []
-  );
+  /** 輪到我：從 localStorage 還原本回合路線／骰子（lastRound + 當前輪序須一致） */
+  useEffect(() => {
+    if (loading) return;
+    if (turnSessionHydrated) return;
 
-  const trackConfig = useMemo(
-    () => [
-      { sum: 2, length: 3 },
-      { sum: 3, length: 4 },
-      { sum: 4, length: 5 },
-      { sum: 5, length: 6 },
-      { sum: 6, length: 7 },
-      { sum: 7, length: 8 },
-      { sum: 8, length: 7 },
-      { sum: 9, length: 6 },
-      { sum: 10, length: 5 },
-      { sum: 11, length: 4 },
-      { sum: 12, length: 3 },
-    ],
-    []
+    if (!Number.isFinite(myRank) || !isMyTurn) {
+      setTurnSessionHydrated(true);
+      return;
+    }
+
+    try {
+      const raw = localStorage.getItem(turnSessionStorageKey(safeRoom, myRank));
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p.v === TURN_SESSION_V) {
+          if (Number(p.lastRound) !== Number(lastRound)) {
+            clearTurnSessionStorage(safeRoom, myRank);
+          } else if (
+            Number(p.currentPlayerRank) !== Number(currentPlayerRank)
+          ) {
+            clearTurnSessionStorage(safeRoom, myRank);
+          } else {
+            const hasData =
+              (p.turnTracks && Object.keys(p.turnTracks).length > 0) ||
+              (p.chosenRoutes && p.chosenRoutes.length > 0) ||
+              (p.turnDiceRolls && p.turnDiceRolls.length > 0) ||
+              (p.dice && Array.isArray(p.dice) && p.dice.length === 4) ||
+              (p.phase &&
+                p.phase !== "idle" &&
+                p.phase !== "ended" &&
+                p.phase !== "bust");
+
+            if (hasData && p.phase !== "bust") {
+              setTurnTracks(p.turnTracks || {});
+              setChosenRoutes(
+                Array.isArray(p.chosenRoutes) ? p.chosenRoutes : []
+              );
+              setTurnDiceRolls(
+                Array.isArray(p.turnDiceRolls) ? p.turnDiceRolls : []
+              );
+              if (p.phase) setPhase(p.phase);
+              if (p.dice && Array.isArray(p.dice) && p.dice.length === 4) {
+                setDice(p.dice);
+                setOptions(
+                  Array.isArray(p.options) && p.options.length > 0
+                    ? p.options
+                    : buildDiceOptions(p.dice)
+                );
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("cannotStop restore turn session", e);
+    }
+    setTurnSessionHydrated(true);
+  }, [
+    loading,
+    turnSessionHydrated,
+    safeRoom,
+    myRank,
+    lastRound,
+    currentPlayerRank,
+    isMyTurn,
+  ]);
+
+  /** 本機持久化：本回合未存檔進度（僅當前玩家、hydrate 後才寫入） */
+  useEffect(() => {
+    if (!turnSessionHydrated) return;
+    if (!isMyTurn || !Number.isFinite(myRank)) return;
+
+    const hasProgress =
+      Object.keys(turnTracks).length > 0 ||
+      chosenRoutes.length > 0 ||
+      turnDiceRolls.length > 0 ||
+      (phase !== "idle" && phase !== "ended" && phase !== "bust") ||
+      (dice != null && Array.isArray(dice) && dice.length === 4);
+
+    if (!hasProgress) {
+      clearTurnSessionStorage(safeRoom, myRank);
+      return;
+    }
+
+    try {
+      localStorage.setItem(
+        turnSessionStorageKey(safeRoom, myRank),
+        JSON.stringify({
+          v: TURN_SESSION_V,
+          lastRound: Number(lastRound) || 0,
+          currentPlayerRank,
+          turnTracks,
+          chosenRoutes,
+          turnDiceRolls,
+          phase,
+          dice,
+          options,
+        })
+      );
+    } catch (e) {
+      console.warn("cannotStop persist turn session", e);
+    }
+  }, [
+    turnSessionHydrated,
+    isMyTurn,
+    myRank,
+    safeRoom,
+    lastRound,
+    currentPlayerRank,
+    turnTracks,
+    chosenRoutes,
+    turnDiceRolls,
+    phase,
+    dice,
+    options,
+  ]);
+
+  /**
+   * 爆掉：送 API — data.dice = 本回合每次擲骰字串 + 最後一筆「x,x,x,x（爆掉）」；list=上一輪存檔
+   */
+  const submitBustRoundToApi = useCallback(
+    async (tracksSnapshot, diceStrings) => {
+      const list = trackMapToList(tracksSnapshot);
+      const roomId = Number(safeRoom);
+      const rankForData = Number.isFinite(myRank) ? myRank : currentPlayerRank;
+      const dice =
+        Array.isArray(diceStrings) && diceStrings.length > 0
+          ? diceStrings.map(String)
+          : [];
+      const requestBody = {
+        room: Number.isFinite(roomId) ? roomId : safeRoom,
+        type: null,
+        data: {
+          currentPlayerRank: rankForData,
+          dice,
+        },
+        list,
+        round: Number(lastRound) + 1,
+      };
+      try {
+        const apiUrl = getApiUrl("cloudflare_room_url");
+        const requestUrl = `${apiUrl}${safeRoom}`;
+        const response = await fetch(requestUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        setPhase("idle");
+        setMessage("已記錄爆掉回合（盤面為上一輪存檔），換下一位。");
+        if (refresh) await refresh();
+        broadcastWs("已提交爆掉回合紀錄");
+      } catch (err) {
+        console.error("CannotStop bust submit failed:", err);
+        setMessage("爆掉紀錄提交失敗，請檢查網路後重新整理再試。");
+      }
+    },
+    [safeRoom, lastRound, myRank, currentPlayerRank, refresh, broadcastWs]
   );
 
   // 擲 4 顆骰子 + 產生 3 種組合
   const handleRoll = () => {
     // 只能在輪到自己，且「本回合尚未選組合」時才能再擲
     if (!isMyTurn) return;
+    if (gameIsOver) return;
     if (phase !== "idle") return;
     if (phase === "ended") return;
 
@@ -581,6 +809,8 @@ export default function CannotStopRoom() {
     });
 
     if (!hasAnyMove) {
+      if (gameIsOver) return;
+      const diceForApi = buildBustDicePayload(turnDiceRolls, diceArr);
       setTurnDiceRolls([]);
       // 爆掉：清除本回合紀錄，回到上一輪存檔
       setTurnTracks(savedTracks);
@@ -588,8 +818,11 @@ export default function CannotStopRoom() {
       setDice(null);
       setOptions([]);
       setPhase("bust");
-      setMessage("這次沒有任何合法的前進組合，本回合爆掉，進度清除。");
+      setMessage("這次沒有任何合法的前進組合，本回合爆掉，正在提交紀錄…");
       broadcastWs("本回合爆掉（沒有任何可走組合）");
+      if (Number.isFinite(myRank))
+        clearTurnSessionStorage(safeRoom, myRank);
+      void submitBustRoundToApi(savedTracks, diceForApi);
       return;
     }
 
@@ -602,6 +835,10 @@ export default function CannotStopRoom() {
 
   const canAdvanceSum = (sum) => {
     if (!TRACK_LENGTH[sum]) return false;
+    const cap = TRACK_LENGTH[sum];
+    const height = turnTracks[sum] || 0;
+    // 本路線已到頂：不可再前進（勿只靠 chosenRoutes，否則 7 滿了仍會 true）
+    if (height >= cap) return false;
     if (sumsWithFinisher.has(sum) && !chosenRoutes.includes(sum)) return false;
     if (chosenRoutes.includes(sum)) return true;
     return chosenRoutes.length < 3;
@@ -617,6 +854,7 @@ export default function CannotStopRoom() {
   // 實際套用某些和（可以是一條或兩條）
   const handleChooseMove = (moveSums) => {
     if (!isMyTurn) return;
+    if (gameIsOver) return;
     if (phase !== "deciding") return;
     const validSums = moveSums.filter((s) => TRACK_LENGTH[s]);
     if (validSums.length === 0) {
@@ -637,16 +875,12 @@ export default function CannotStopRoom() {
     setChosenRoutes(newChosen);
     setTurnTracks(nextTurnTracks);
     setPhase("waitingDecision");
-    setMessage(
-      `你選擇了要前進：${validSums.join("、")}，決定要繼續還是停下來？`
-    );
 
     const finishedRoutes = newChosen.filter(
       (s) => nextTurnTracks[s] >= TRACK_LENGTH[s]
     );
     if (finishedRoutes.length >= 3) {
       setPhase("ended");
-      setMessage(`恭喜完成 3 條路線，獲勝！`);
     }
 
     broadcastWs(
@@ -659,16 +893,11 @@ export default function CannotStopRoom() {
   // 停下來：把本回合前進結果丟給 API，並把本地進度存檔
   const handleStop = async () => {
     if (!isMyTurn) return;
+    if (phase !== "waitingDecision" && phase !== "ended") return;
 
     // list：每條路 2~12 的「目前高度」(count)，只送 count > 0 的項
     // 若後端也實作規則：任一玩家某路線 count===該路頂時，應把其他玩家該 num 從 DB 清零（與前端 knockout 一致）
-    const list = [];
-    for (let num = 2; num <= 12; num++) {
-      const count = turnTracks[num] || 0;
-      if (count > 0) {
-        list.push({ num, count });
-      }
-    }
+    const list = trackMapToList(turnTracks);
 
     const roomId = Number(safeRoom);
     const rankForData = Number.isFinite(myRank) ? myRank : currentPlayerRank;
@@ -702,6 +931,8 @@ export default function CannotStopRoom() {
         throw new Error(`HTTP ${response.status}`);
       }
 
+      const won = countCompletedRoutesForPlayer(turnTracks) >= 3;
+
       // 本地也同步存檔
       setSavedTracks(turnTracks);
       setTurnTracks({});
@@ -709,8 +940,15 @@ export default function CannotStopRoom() {
       setChosenRoutes([]);
       setDice(null);
       setOptions([]);
-      setPhase("idle");
-      setMessage("已存檔，下次從現在的位置繼續爬。");
+      setPhase(won ? "ended" : "idle");
+      setMessage(
+        won
+          ? "已存檔。遊戲已結束。"
+          : "已存檔，下次從現在的位置繼續爬。"
+      );
+
+      if (Number.isFinite(myRank))
+        clearTurnSessionStorage(safeRoom, myRank);
 
       broadcastWs(
         `已停下存檔｜${list
@@ -729,6 +967,7 @@ export default function CannotStopRoom() {
   // 繼續擲：直接立刻擲下一次，不需要再按一次「擲 4 顆骰子」
   const handleContinue = () => {
     if (!isMyTurn) return;
+    if (gameIsOver) return;
     if (phase !== "waitingDecision") return;
     if (phase === "ended") return;
 
@@ -754,14 +993,19 @@ export default function CannotStopRoom() {
     });
 
     if (!hasAnyMove) {
+      if (gameIsOver) return;
+      const diceForApi = buildBustDicePayload(turnDiceRolls, diceArr);
       setTurnDiceRolls([]);
       setTurnTracks(savedTracks);
       setChosenRoutes([]);
       setDice(null);
       setOptions([]);
       setPhase("bust");
-      setMessage("這次沒有任何合法的前進組合，本回合爆掉，進度清除。");
+      setMessage("本回合爆掉，正在提交紀錄…");
       broadcastWs("本回合爆掉（沒有任何可走組合）");
+      if (Number.isFinite(myRank))
+        clearTurnSessionStorage(safeRoom, myRank);
+      void submitBustRoundToApi(savedTracks, diceForApi);
       return;
     }
 
@@ -769,7 +1013,6 @@ export default function CannotStopRoom() {
     setDice(diceArr);
     setOptions(opts);
     setPhase("deciding");
-    setMessage("已自動擲骰，請選擇要前進的路線。");
     broadcastWs(`繼續擲骰：${diceArr.join("、")}，請選擇路線`);
   };
 
@@ -784,10 +1027,11 @@ export default function CannotStopRoom() {
             <span
               className="cannotStop-header-current-swatch"
               style={{ background: loginPlayerColor }}
-              title={`你的座位：玩家 ${myRank}`}
+              title="你的代表色"
               role="img"
-              aria-label={`登入玩家 ${myRank}`}
+              aria-label="你的代表色"
             />
+            目標：優先走完 3 條路線玩家獲勝
           </>
         )}
         {useWs && (
@@ -803,17 +1047,21 @@ export default function CannotStopRoom() {
         )}
       </p>
       {loading && <p className="cannotStop-sub">載入中…</p>}
-      {isMyTurn && message && (
-        <p className="cannotStop-message">{message}</p>
+      {(gameIsOver || (isMyTurn && message)) && (
+        <p className="cannotStop-message">
+          {gameIsOver ? winMessage : message}
+        </p>
       )}
 
       <div className="cannotStop-card">
         <p className="cannotStop-hint">
-          {isMyTurn
-            ? "輪到你時按「擲骰子」。"
+          {gameIsOver
+            ? "遊戲已結束。"
+            : isMyTurn
+              ? "輪到你時按「擲骰子」，每回合只能走三條路線。"
               : "目前不是你的回合。"}
         </p>
-        {isMyTurn && (
+        {isMyTurn && !gameIsOver && (
           <>
             <button
               onClick={phase === "waitingDecision" ? handleContinue : handleRoll}
@@ -837,10 +1085,23 @@ export default function CannotStopRoom() {
             )}
           </>
         )}
+        {isMyTurn &&
+          gameIsOver &&
+          phase === "ended" &&
+          Object.keys(turnTracks).length > 0 && (
+            <button
+              type="button"
+              onClick={handleStop}
+              className="cannotStop-btn-danger"
+            >
+              停下來（存檔並結算）
+            </button>
+          )}
       </div>
 
       {/* 顯示本次骰子與 3 種選擇（本人可操作；旁觀僅顯示 WS 擲骰還原畫面） */}
-      {((isMyTurn && dice) || (!isMyTurn && remoteObserverDice?.dice)) && (
+      {!gameIsOver &&
+        ((isMyTurn && dice) || (!isMyTurn && remoteObserverDice?.dice)) && (
         <div className="cannotStop-card">
           <div className="cannotStop-dice-label">
             本次骰子：
@@ -930,7 +1191,7 @@ export default function CannotStopRoom() {
       )}
 
       {/* 圖例：橘＝僅當前玩家；紫＝僅非當前玩家（多人） */}
-      {isMyTurn && (
+      {isMyTurn && !gameIsOver && (
         <p className="cannotStop-sub cannotStop-pending-hint">
           <span
             className="cannotStop-legend-swatch"
@@ -940,7 +1201,7 @@ export default function CannotStopRoom() {
           刻度格數＝已走格數。
         </p>
       )}
-      {!isMyTurn && memberCount > 1 && (
+      {!isMyTurn && memberCount > 1 && !gameIsOver && (
         <p className="cannotStop-sub cannotStop-pending-hint">
           <span
             className="cannotStop-legend-swatch"
@@ -1002,9 +1263,6 @@ export default function CannotStopRoom() {
                   ) : (
                     ranksToShow.map((r) => {
                       const c = displayPlayerHeightMap[r][t.sum] || 0;
-                      const pct = Math.round(
-                        Math.min(1, c / t.length) * 100
-                      );
                       const baseColor =
                         PLAYER_COLORS[(r - 1) % PLAYER_COLORS.length];
                       const labelPending =
@@ -1027,8 +1285,6 @@ export default function CannotStopRoom() {
                               : baseColor,
                           }}
                         >
-                          玩家{r}:{c}/{t.length} ({pct}%)
-                          {labelPending && " · 已選路線"}
                         </span>
                       );
                     })
@@ -1044,9 +1300,9 @@ export default function CannotStopRoom() {
                     const savedC =
                       r === myRank
                         ? Math.min(
-                            Math.max(0, savedTracks[t.sum] || 0),
-                            t.length
-                          )
+                          Math.max(0, savedTracks[t.sum] || 0),
+                          t.length
+                        )
                         : c;
                     const unsavedC =
                       isMyTurn && r === myRank
