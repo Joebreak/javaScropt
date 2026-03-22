@@ -70,12 +70,9 @@ export function useRoomData(intervalMs = 0, room) {
 
       // Mine 房用 note6；Cannot Stop 文件寫 note2。後端若只填一種 → memberCount=0 → useWs 不開 → 看不到 WS
       const n2 = Number(metaParsed?.note2);
-      const n6 = Number(metaParsed?.note6);
       const members = Number.isFinite(n2) && n2 >= 1
         ? n2
-        : Number.isFinite(n6) && n6 >= 1
-          ? n6
-          : null;
+        : null;
       const meta = metaParsed;
 
       const roundRecords = Array.isArray(json)

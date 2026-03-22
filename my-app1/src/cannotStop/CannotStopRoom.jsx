@@ -255,7 +255,7 @@ export default function CannotStopRoom() {
   const { room, rank } = location.state || {};
 
   const safeRoom = room || "default";
-  const { data, loading, refresh, lastFetchOkAt, lastFetchError } = useRoomData(
+  const { data, loading, refresh, lastFetchOkAt } = useRoomData(
     0,
     safeRoom
   );
@@ -291,8 +291,9 @@ export default function CannotStopRoom() {
   );
 
   const useWs = memberCount > 1;
-  const { messages: wsMessages, sendMessage, status: wsStatus } =
-    useRoomWebSocket(useWs ? safeRoom : null);
+  const { messages: wsMessages, sendMessage } = useRoomWebSocket(
+    useWs ? safeRoom : null
+  );
   const lastWsIndexRef = useRef(-1);
   /** 本機回合還原完成後才允許 persist，避免先清空再還原 */
   const [turnSessionHydrated, setTurnSessionHydrated] = useState(false);
@@ -1037,66 +1038,15 @@ export default function CannotStopRoom() {
             目標：優先走完 3 條路線玩家獲勝
           </>
         )}
-        {useWs && (
-          <>
-            {" · "}
-            即時連線：
-            {wsStatus === "open"
-              ? "已連線"
-              : wsStatus === "connecting"
-                ? "連線中…"
-                : "未連線"}
-          </>
-        )}
       </p>
       <p className="cannotStop-sub cannotStop-sync-line" role="status">
-        {loading
-          ? "房間資料：讀取中…"
-          : lastFetchError
-            ? `房間資料：更新失敗（${lastFetchError}）`
-            : lastFetchOkAt != null
-              ? `房間資料：已同步 · ${new Date(lastFetchOkAt).toLocaleString()}`
-              : "房間資料：尚未成功載入"}
         {!useWs && !loading && lastFetchOkAt != null && (
           <span className="cannotStop-sync-line__hint">
             {" "}
-            · 單人模式，無 WebSocket；請依上方時間確認 API 有更新
-          </span>
-        )}
-        {useWs && !loading && lastFetchOkAt != null && (
-          <span className="cannotStop-sync-line__hint">
-            {" "}
-            · 即時動作另見下方 WS 廣播
+            · 單人模式；請依上方時間確認資料有更新
           </span>
         )}
       </p>
-      {useWs && (
-        <div className="cannotStop-ws-log" aria-live="polite">
-          <div className="cannotStop-ws-log__title">
-            即時廣播（WS）· {wsMessages.length} 則
-          </div>
-          {wsMessages.length === 0 ? (
-            <span className="cannotStop-sub" style={{ marginBottom: 0 }}>
-              尚無訊息（擲骰／前進／停存檔後會出現）
-            </span>
-          ) : (
-            <ul className="cannotStop-ws-log__list">
-              {[...wsMessages.slice(-25)]
-                .reverse()
-                .map((m, i) => (
-                  <li
-                    key={`${m.ts ?? "t"}-${i}-${String(m.text).slice(0, 24)}`}
-                  >
-                    <span className="cannotStop-ws-log__who">
-                      {m.name != null ? String(m.name) : "—"}
-                    </span>
-                    {m.text != null ? String(m.text) : ""}
-                  </li>
-                ))}
-            </ul>
-          )}
-        </div>
-      )}
       {loading && <p className="cannotStop-sub">載入中…</p>}
       {(gameIsOver || (isMyTurn && message)) && (
         <p className="cannotStop-message">
@@ -1178,11 +1128,17 @@ export default function CannotStopRoom() {
                   return (
                     <div
                       key={opt.id}
-                      className="cannotStop-option-readonly"
+                      className="cannotStop-option-readonly cannotStop-option-readonly--stack"
                     >
-                      組合 {opt.id + 1}：骰{p1a}({d[p1a - 1]}) + 骰{p1b}(
-                      {d[p1b - 1]}) = {s1} ／ 骰{p2a}({d[p2a - 1]}) + 骰{p2b}(
-                      {d[p2b - 1]}) = {s2}
+                      <span className="cannotStop-option-readonly__head">
+                        組合 {opt.id + 1}
+                      </span>
+                      <span>
+                        骰{p1a}({d[p1a - 1]}) + 骰{p1b}({d[p1b - 1]}) = {s1}
+                      </span>
+                      <span>
+                        骰{p2a}({d[p2a - 1]}) + 骰{p2b}({d[p2b - 1]}) = {s2}
+                      </span>
                     </div>
                   );
                 }
@@ -1195,12 +1151,17 @@ export default function CannotStopRoom() {
                       key={`${opt.id}-both`}
                       type="button"
                       onClick={() => handleChooseMove([s1, s2])}
-                      className="cannotStop-btn-secondary"
+                      className="cannotStop-btn-secondary cannotStop-btn-option--twoline"
                       disabled={!isMyTurn || phase !== "deciding"}
                     >
-                      骰{p1a}({dice[p1a - 1]}) + 骰{p1b}({dice[p1b - 1]}) = {s1}
-                      {" ， "}
-                      骰{p2a}({dice[p2a - 1]}) + 骰{p2b}({dice[p2b - 1]}) = {s2}
+                      <span className="cannotStop-btn-option__line">
+                        骰{p1a}({dice[p1a - 1]}) + 骰{p1b}({dice[p1b - 1]}) ={" "}
+                        {s1}
+                      </span>
+                      <span className="cannotStop-btn-option__line">
+                        骰{p2a}({dice[p2a - 1]}) + 骰{p2b}({dice[p2b - 1]}) ={" "}
+                        {s2}
+                      </span>
                     </button>
                   );
                 } else {
