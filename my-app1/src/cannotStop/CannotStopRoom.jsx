@@ -1046,6 +1046,33 @@ export default function CannotStopRoom() {
           </>
         )}
       </p>
+      {useWs && (
+        <div className="cannotStop-ws-log" aria-live="polite">
+          <div className="cannotStop-ws-log__title">
+            即時廣播（WS）· {wsMessages.length} 則
+          </div>
+          {wsMessages.length === 0 ? (
+            <span className="cannotStop-sub" style={{ marginBottom: 0 }}>
+              尚無訊息（擲骰／前進／停存檔後會出現）
+            </span>
+          ) : (
+            <ul className="cannotStop-ws-log__list">
+              {[...wsMessages.slice(-25)]
+                .reverse()
+                .map((m, i) => (
+                  <li
+                    key={`${m.ts ?? "t"}-${i}-${String(m.text).slice(0, 24)}`}
+                  >
+                    <span className="cannotStop-ws-log__who">
+                      {m.name != null ? String(m.name) : "—"}
+                    </span>
+                    {m.text != null ? String(m.text) : ""}
+                  </li>
+                ))}
+            </ul>
+          )}
+        </div>
+      )}
       {loading && <p className="cannotStop-sub">載入中…</p>}
       {(gameIsOver || (isMyTurn && message)) && (
         <p className="cannotStop-message">
