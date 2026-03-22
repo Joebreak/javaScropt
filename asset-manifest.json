@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/javaScropt/static/css/main.b069a4e3.css",
-    "main.js": "/javaScropt/static/js/main.76f0ff27.js",
+    "main.css": "/javaScropt/static/css/main.e84136a7.css",
+    "main.js": "/javaScropt/static/js/main.3574a185.js",
     "index.html": "/javaScropt/index.html",
-    "main.b069a4e3.css.map": "/javaScropt/static/css/main.b069a4e3.css.map",
-    "main.76f0ff27.js.map": "/javaScropt/static/js/main.76f0ff27.js.map"
+    "main.e84136a7.css.map": "/javaScropt/static/css/main.e84136a7.css.map",
+    "main.3574a185.js.map": "/javaScropt/static/js/main.3574a185.js.map"
   },
   "entrypoints": [
-    "static/css/main.b069a4e3.css",
-    "static/js/main.76f0ff27.js"
+    "static/css/main.e84136a7.css",
+    "static/js/main.3574a185.js"
   ]
 }
