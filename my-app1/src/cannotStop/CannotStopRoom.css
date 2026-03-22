@@ -23,6 +23,15 @@
   line-height: 1.5;
 }
 
+.cannotStop-sync-line {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+.cannotStop-sync-line__hint {
+  color: #888;
+  font-weight: 400;
+}
+
 /** 多人 WS 廣播紀錄（除錯／對照用） */
 .cannotStop-ws-log {
   font-size: 11px;

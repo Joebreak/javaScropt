@@ -29,6 +29,9 @@ export function useRoomData(intervalMs = 0, room) {
     meta: null,
   });
   const [loading, setLoading] = useState(true);
+  /** 最後一次成功 GET 房間的時間（ms），給 UI 確認「有從伺服器更新」 */
+  const [lastFetchOkAt, setLastFetchOkAt] = useState(null);
+  const [lastFetchError, setLastFetchError] = useState(null);
   const isFetchingRef = useRef(false);
 
   const fetchData = useCallback(async () => {
@@ -100,8 +103,11 @@ export function useRoomData(intervalMs = 0, room) {
         members,
         meta,
       });
+      setLastFetchOkAt(Date.now());
+      setLastFetchError(null);
     } catch (err) {
       console.error("API 失敗：", err);
+      setLastFetchError(err?.message || String(err));
     } finally {
       setLoading(false);
       isFetchingRef.current = false;
@@ -123,5 +129,11 @@ export function useRoomData(intervalMs = 0, room) {
     };
   }, [intervalMs, fetchData]);
 
-  return { data, loading, refresh: fetchData };
+  return {
+    data,
+    loading,
+    refresh: fetchData,
+    lastFetchOkAt,
+    lastFetchError,
+  };
 }

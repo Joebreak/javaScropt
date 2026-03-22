@@ -255,7 +255,10 @@ export default function CannotStopRoom() {
   const { room, rank } = location.state || {};
 
   const safeRoom = room || "default";
-  const { data, loading, refresh } = useRoomData(0, safeRoom);
+  const { data, loading, refresh, lastFetchOkAt, lastFetchError } = useRoomData(
+    0,
+    safeRoom
+  );
   const lastRound = data?.list?.length ? data.list[0]?.round : 0;
   const memberCount = data?.members != null ? Number(data.members) : 0;
   const remainder = memberCount || 4;
@@ -1044,6 +1047,27 @@ export default function CannotStopRoom() {
                 ? "連線中…"
                 : "未連線"}
           </>
+        )}
+      </p>
+      <p className="cannotStop-sub cannotStop-sync-line" role="status">
+        {loading
+          ? "房間資料：讀取中…"
+          : lastFetchError
+            ? `房間資料：更新失敗（${lastFetchError}）`
+            : lastFetchOkAt != null
+              ? `房間資料：已同步 · ${new Date(lastFetchOkAt).toLocaleString()}`
+              : "房間資料：尚未成功載入"}
+        {!useWs && !loading && lastFetchOkAt != null && (
+          <span className="cannotStop-sync-line__hint">
+            {" "}
+            · 單人模式，無 WebSocket；請依上方時間確認 API 有更新
+          </span>
+        )}
+        {useWs && !loading && lastFetchOkAt != null && (
+          <span className="cannotStop-sync-line__hint">
+            {" "}
+            · 即時動作另見下方 WS 廣播
+          </span>
         )}
       </p>
       {useWs && (
