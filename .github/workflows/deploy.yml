@@ -3,6 +3,9 @@ name: hanabi test
 # 只允許手動觸發（按鈕執行）
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - hanabi
 
 # 以下為舊的自動觸發方式，暫時停用：
 # - push：每次 push 到 hanabi 分支就自動部署
@@ -17,6 +20,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # 與 Actions 內建 Node 對齊（Node 20 runner 將淘汰）：https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,8 +31,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: "24"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -37,7 +43,7 @@ jobs:
         working-directory: ./my-app1
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./my-app1/build
